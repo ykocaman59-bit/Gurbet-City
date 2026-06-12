@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini GTA Türkiye Prototipi</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body, html { width: 100%; height: 100%; overflow: hidden; background: #111; }
+        
+        /* GİRİŞ MENÜSÜ STİLLERİ */
+        #menu-container {
+            position: absolute; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #1e1e2f, #0f0f1a);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 10; color: white; padding: 20px;
+        }
+        .menu-card {
+            background: rgba(255, 255, 255, 0.1); padding: 30px; border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3); backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1); text-align: center; width: 100%; max-width: 400px;
+        }
+        h1 { margin-bottom: 20px; color: #ff4757; text-shadow: 0 2px 10px rgba(255,71,87,0.4); font-size: 28px; }
+        label { display: block; margin: 15px 0 5px; text-align: left; font-size: 14px; color: #ccc; }
+        select {
+            width: 100%; padding: 12px; border-radius: 8px; border: none;
+            background: #2f3542; color: white; font-size: 16px; outline: none; margin-bottom: 10px;
+        }
+        button {
+            width: 100%; padding: 15px; border-radius: 8px; border: none;
+            background: #2ed573; color: white; font-size: 18px; font-weight: bold;
+            cursor: pointer; margin-top: 25px; transition: 0.2s;
+        }
+        button:hover { background: #26af5f; transform: translateY(-2px); }
+        
+        /* OYUN HUD (ARAYÜZ) STİLLERİ */
+        #hud {
+            position: absolute; top: 20px; left: 20px; z-index: 5;
+            background: rgba(0,0,0,0.7); color: white; padding: 15px;
+            border-radius: 10px; font-size: 16px; border-left: 5px solid #ff4757;
+            pointer-events: none; display: none;
+        }
+        #hud h3 { color: #2ed573; margin-bottom: 5px; }
+        #controls-tip {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: rgba(0,0,0,0.8); color: #fff; padding: 10px 20px;
+            border-radius: 20px; font-size: 14px; z-index: 5; pointer-events: none; display: none;
+        }
+        
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+
+    <!-- 1. ADIM: ŞEHİR VE İLÇE SEÇİM MENÜSÜ -->
+    <div id="menu-container">
+        <div class="menu-card">
+            <h1>MİNİ GTA TÜRKİYE</h1>
+            <p style="color: #a4b0be; font-size: 14px; margin-bottom: 10px;">Başlamak istediğiniz konumu seçin:</p>
+            
+            <label for="city-select">Şehir Seçin:</label>
+            <select id="city-select" onchange="updateDistricts()">
+                <option value="istanbul">İstanbul</option>
+                <option value="ankara">Ankara</option>
+            </select>
+
+            <label for="district-select">İlçe Seçin:</label>
+            <select id="district-select">
+                <!-- JavaScript dinamik dolduracak -->
+            </select>
+
+            <button onclick="startGame()">Oyunu Başlat</button>
+        </div>
+    </div>
+
+    <!-- OYUN ARAYÜZÜ -->
+    <div id="hud">
+        <h3 id="hud-location">İstanbul - Kadıköy</h3>
+        <p>Hız: <span id="speed-text">0</span> km/s</p>
+    </div>
+    <div id="controls-tip">W, A, S, D veya Yön Tuşları ile arabayı sürün!</div>
+
+    <!-- OYUN CANVAS ALANI -->
+    <canvas id="gameCanvas"></canvas>
+
+    <script>
+        // Şehir ve İlçe Veritabanı
+        const locationData = {
+            istanbul: ["Kadıköy", "Beşiktaş", "Üsküdar", "Fatih"],
+            ankara: ["Çankaya", "Kızılay", "Keçiören", "Mamak"]
+        };
+
+        // İlçeleri Şehre Göre Güncelleyen Fonksiyon
+        function updateDistricts() {
+            const citySelect = document.getElementById("city-select");
+            const districtSelect = document.getElementById("district-select");
+            const selectedCity = citySelect.value;
+            
+            districtSelect.innerHTML = "";
+            locationData[selectedCity].forEach(district => {
+                let option = document.createElement("option");
+                option.value = district.toLowerCase();
+                option.textContent = district;
+                districtSelect.appendChild(option);
+            });
+        }
+        // Sayfa ilk açıldığında ilçeleri doldur
+        updateDistricts();
+
+        // OYUN MOTORU DEĞİŞKENLERİ
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        
+        let gameRunning = false;
+        let selectedCity = "";
+        let selectedDistrict = "";
+
+        // Araba Özellikleri
+        const car = {
+            x: 400, y: 500,
+            width: 30, height: 60,
+            angle: 0, speed: 0,
+            maxSpeed: 6, maxReverseSpeed: -3,
+            acc: 0.15, dec: 0.1, friction: 0.05,
+            turnSpeed: 0.04
+        };
+
+        // Klavye Kontrolleri
+        const keys = { w: false, s: false, a: false, d: false, ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false };
+
+        window.addEventListener("keydown", e => { if(e.key in keys || ['w','a','s','d'].includes(e.key.toLowerCase())) keys[e.key.toLowerCase()] = true; });
+        window.addEventListener("keyup", e => { if(e.key in keys || ['w','a','s','d'].includes(e.key.toLowerCase())) keys[e.key.toLowerCase()] = false; });
+
+        // Harita Yapıları (Binalar ve Süsler)
+        let buildings = [];
+
+        function initMap(city) {
+            buildings = [];
+            car.x = canvas.width / 2;
+            car.y = canvas.height / 2;
+            car.speed = 0;
+            car.angle = 0;
+
+            if (city === "istanbul") {
+                // İstanbul Haritası: Deniz kenarı binaları ve yollar
+                buildings.push({x: 100, y: 100, w: 150, h: 120, label: "Tarihi Bina", color: "#d291bc"});
+                buildings.push({x: 400, y: 100, w: 200, h: 150, label: "Eminönü Pasajı", color: "#8395a7"});
+                buildings.push({x: 150, y: 400, w: 180, h: 220, label: "Kadıköy İskele", color: "#54a0ff"});
+                // Deniz Sınırı Temsili (Ekranın altı deniz olsun)
+                buildings.push({x: 0, y: canvas.height - 100, w: canvas.width, h: 100, label: "BOĞAZİÇİ DENİZİ (Girilmez)", color: "#00d2d3", isWater: true});
+            } else if (city === "ankara") {
+                // Ankara Haritası: Bakanlıklar, Anıtkabir silüeti simülasyonu
+                buildings.push({x: canvas.width/2 - 100, y: 80, w: 200, h: 140, label: "ANITKABİR SİLÜETİ", color: "#feca57"});
+                buildings.push({x: 100, y: 300, w: 160, h: 250, label: "Bakanlık Binası", color: "#57606f"});
+                buildings.push({x: 550, y: 350, w: 200, h: 180, label: "Kızılay AVM", color: "#ff6b6b"});
+            }
+        }
+
+        // Oyunu Başlatan Ana Fonksiyon
+        function startGame() {
+            const citySelect = document.getElementById("city-select");
+            const districtSelect = document.getElementById("district-select");
+            
+            selectedCity = citySelect.value;
+            selectedDistrict = districtSelect.options[districtSelect.selectedIndex].text;
+
+            // Menüyü kapat, HUD'ı aç
+            document.getElementById("menu-container").style.display = "none";
+            document.getElementById("hud").style.display = "block";
+            document.getElementById("controls-tip").style.display = "block";
+            document.getElementById("hud-location").textContent = `${citySelect.options[citySelect.selectedIndex].text} - ${selectedDistrict}`;
+
+            // Ekran boyutunu ayarla
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            initMap(selectedCity);
+            gameRunning = true;
+            
+            // Oyun döngüsünü başlat
+            requestAnimationFrame(gameLoop);
+        }
+
+        // FİZİK VE HAREKET GÜNCELLEME
+        function updatePhysics() {
+            // İleri / Geri Hareket
+            if (keys.w || keys.arrowup) {
+                if (car.speed < car.maxSpeed) car.speed += car.acc;
+            } else if (keys.s || keys.arrowdown) {
+                if (car.speed > car.maxReverseSpeed) car.speed -= car.acc;
+            } else {
+                // Sürtünme ile yavaşlama
+                if (car.speed > 0) car.speed -= car.friction;
+                else if (car.speed < 0) car.speed += car.friction;
+                if (Math.abs(car.speed) < 0.1) car.speed = 0;
+            }
+
+            // Direksiyon Dönüşleri (Sadece araba hareket ediyorsa dönebilir)
+            if (car.speed !== 0) {
+                const direction = car.speed > 0 ? 1 : -1;
+                if (keys.a || keys.arrowleft) car.angle -= car.turnSpeed * direction;
+                if (keys.d || keys.arrowright) car.angle += car.turnSpeed * direction;
+            }
+
+            // Pozisyon Güncelleme (Trigonometrik açı hesaplaması)
+            car.x += Math.sin(car.angle) * car.speed;
+            car.y -= Math.cos(car.angle) * car.speed;
+
+            // Ekran Sınırları Çarpışma Kontrolü
+            if (car.x < 15) car.x = 15;
+            if (car.x > canvas.width - 15) car.x = canvas.width - 15;
+            if (car.y < 30) car.y = 30;
+            if (car.y > canvas.height - 30) car.y = canvas.height - 30;
+
+            // HUD Hızını Güncelle
+            document.getElementById("speed-text").textContent = Math.round(Math.abs(car.speed) * 20);
+        }
+
+        // ÇİZİM FONKSİYONU
+        function draw() {
+            // Zemin Rengi (Şehre Göre Asfalt Tonu)
+            ctx.fillStyle = selectedCity === "istanbul" ? "#341f97" : "#222f3e"; // İstanbul hafif morumsu gece/deniz teması, Ankara tam gri
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Asfalt Yol Efekti Çizimi (Arka plan yolları)
+            ctx.fillStyle = "#1e272e";
+            ctx.fillRect(50, window.innerHeight/2 - 60, canvas.width - 100, 120);
+            ctx.fillRect(window.innerWidth/2 - 60, 50, 120, canvas.height - 100);
+
+            // Binaları Çiz
+            buildings.forEach(bld => {
+                ctx.fillStyle = bld.color;
+                ctx.fillRect(bld.x, bld.y, bld.w, bld.h);
+                
+                // Bina Kenarlıkları (Derinlik hissi için)
+                ctx.strokeStyle = "rgba(0,0,0,0.3)";
+                ctx.lineWidth = 4;
+                ctx.strokeRect(bld.x, bld.y, bld.w, bld.h);
+
+                // Bina İsimleri (Gerçekçi tabela efekti)
+                ctx.fillStyle = "#fff";
+                ctx.font = "bold 14px Arial";
+                ctx.textAlign = "center";
+                ctx.fillText(bld.label, bld.x + bld.w/2, bld.y + bld.h/2);
+            });
+
+            // ARABAYI ÇİZ (Dönüş açısına göre rotate uygulanıyor)
+            ctx.save();
+            ctx.translate(car.x, car.y);
+            ctx.rotate(car.angle);
+
+            // Araba Gövdesi
+            ctx.fillStyle = "#ff4757"; // Kırmızı spor araba
+            ctx.fillRect(-car.width/2, -car.height/2, car.width, car.height);
+
+            // Camlar
+            ctx.fillStyle = "#2f3542";
+            ctx.fillRect(-car.width/2 + 3, -car.height/4, car.width - 6, 12); // Ön cam
+            ctx.fillRect(-car.width/2 + 3, car.height/6, car.width - 6, 8);   // Arka cam
+
+            // Farlar (İleri hareket ediyorsa sarı parlar)
+            ctx.fillStyle = "#eded12";
+            ctx.fillRect(-car.width/2 + 2, -car.height/2, 6, 4);
+            ctx.fillRect(car.width/2 - 8, -car.height/2, 6, 4);
+
+            ctx.restore();
+        }
+
+        // SONSUZ OYUN DÖNGÜSÜ
+        function gameLoop() {
+            if (!gameRunning) return;
+            updatePhysics();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Pencere boyutu değiştiğinde canvası güncelle
+        window.addEventListener("resize", () => {
+            if (gameRunning) {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                initMap(selectedCity);
+            }
+        });
+    </script>
+</body>
+</html>
+
