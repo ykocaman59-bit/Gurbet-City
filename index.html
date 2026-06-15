@@ -2,71 +2,73 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TikTok Bölge Savaşları - Canlı</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>TikTok Bölge Savaşları - Gelişmiş Canlı Ekran</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Arial', sans-serif; user-select: none; }
+        /* TİKTOK CANLI YAYIN TAM EKRAN OYUN TEMASI */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Arial Black', sans-serif; user-select: none; }
+        
         body {
-            background: #090d16; color: #fff; min-height: 100vh;
-            display: flex; flex-direction: column; padding: 10px;
+            background: #060913; color: #fff; min-height: 100vh;
+            display: flex; flex-direction: column; padding: 10px; overflow-x: hidden;
         }
 
-        /* Üst Panel */
+        /* Üst Başlık Alnı */
         #header { text-align: center; margin-bottom: 10px; position: relative; padding: 5px; }
-        #header h1 { font-size: 20px; color: #fff; text-shadow: 0 0 8px #ffbc00; }
+        #header h1 { font-size: 22px; color: #fff; text-shadow: 0 0 10px #ffbc00, 0 0 20px #ffbc00; letter-spacing: 1px; }
         #header span { color: #ffbc00; }
         .btn-reset {
             position: absolute; right: 5px; top: 5px; background: #22c55e; border: none;
-            color: white; padding: 6px 12px; font-weight: bold; border-radius: 5px; cursor: pointer; font-size: 12px;
+            color: white; padding: 6px 15px; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 11px;
         }
 
-        /* Ana Şablon Düzeni */
-        #main-layout { display: flex; flex: 1; gap: 10px; min-height: 0; }
+        /* DEV HARİTA ALANI (Göt kadar kalmasın diye tam esnek yapıldı) */
+        #map-container {
+            width: 100%; background: radial-gradient(circle, #0f172a 0%, #070a12 100%);
+            border: 3px solid #1e293b; border-radius: 12px; position: relative;
+            margin-bottom: 15px; box-shadow: 0 0 25px rgba(0,0,0,0.7);
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+        }
+        canvas { display: block; width: 100%; height: 100%; }
 
-        /* Sol ve Sağ Paneller */
-        .side-panel { flex: 1; display: flex; flex-direction: column; gap: 10px; max-width: 280px; min-width: 150px; }
+        /* ALT PANEL DÜZENİ: Bilgiler ve Yan Veriler */
+        #bottom-layout {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px;
+        }
+        
         .box {
-            background: #111827; border: 1px solid #1f2937;
-            border-radius: 8px; padding: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            background: rgba(16, 22, 37, 0.9); border: 1px solid #1f2937;
+            border-radius: 8px; padding: 10px;
         }
-        .box h3 { font-size: 12px; color: #ffbc00; border-bottom: 1px solid #1f2937; padding-bottom: 4px; margin-bottom: 8px; text-transform: uppercase; }
+        .box h3 { font-size: 13px; color: #ffbc00; border-bottom: 2px solid #1f2937; padding-bottom: 4px; margin-bottom: 8px; text-transform: uppercase; }
         
-        .gift-item { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 5px; background: #1f2937; padding: 5px; border-radius: 4px; }
-        .gift-item .count { color: #00ffcc; font-weight: bold; }
-        
-        #chat-flow { flex: 1; overflow-y: auto; display: flex; flex-direction: column; justify-content: flex-end; font-size: 11px; min-height: 120px; }
-        .chat-msg { margin-bottom: 3px; }
+        /* Liste Tasarımları */
+        .list-item { display: flex; justify-content: space-between; font-size: 12px; padding: 4px 6px; background: #151f32; margin-bottom: 4px; border-radius: 4px; }
+        #chat-flow { max-height: 120px; overflow-y: auto; font-size: 12px; }
+        .chat-msg { margin-bottom: 3px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 2px; }
         .chat-msg .username { color: #38bdf8; font-weight: bold; }
-        .chat-msg .cmd { color: #f43f5e; }
+        .chat-msg .cmd { color: #f43f5e; font-weight: bold; }
 
-        /* ORTA PANEL: Bozulmayan Canvas Harita Alanı */
-        #map-panel {
-            flex: 2; background: #0f172a; border-radius: 10px; border: 2px solid #1e293b;
-            display: flex; align-items: center; justify-content: center; position: relative; padding: 5px;
-            min-height: 350px;
+        /* Kurallar Şeridi */
+        #rules-bar {
+            grid-column: 1 / -1; background: #111827; border: 1px solid #ffbc00;
+            border-radius: 8px; padding: 10px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; text-align: center;
         }
-        canvas { background: #0b0f19; border-radius: 6px; width: 100%; height: 100%; max-height: 500px; }
+        .rule-card h4 { color: #ffbc00; font-size: 11px; margin-bottom: 2px; }
+        .rule-card p { color: #9ca3af; font-size: 10px; }
 
-        .leader-li { display: flex; justify-content: space-between; padding: 4px 6px; background: #1f2937; margin-bottom: 4px; border-radius: 4px; font-size: 11px; }
-        .win-li { font-size: 11px; padding: 4px; border-left: 3px solid #eab308; margin-bottom: 4px; background: #111827; }
-
-        /* Alt Kurallar */
-        #bottom-panel {
-            background: #111827; border: 1px solid #ffbc00;
-            border-radius: 10px; padding: 8px; margin-top: 10px;
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px;
+        /* Manuel Test Konsolu */
+        #console-panel {
+            grid-column: 1 / -1; background: #111827; padding: 10px; border-radius: 8px;
+            display: flex; gap: 10px; border: 1px dashed #4b5563; margin-top: 5px;
         }
-        .info-card { background: #1f2937; padding: 6px; border-radius: 6px; text-align: center; font-size: 11px; }
-        .info-card h4 { color: #ffbc00; margin-bottom: 2px; font-size: 11px; }
-        .info-card p { color: #9ca3af; font-size: 10px; }
+        #console-panel input { background: #1f2937; color: white; border: 1px solid #374151; padding: 8px; border-radius: 6px; font-size: 13px; }
+        #console-panel button { background: #2563eb; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; }
 
-        /* Manuel Test Alanı */
-        #test-area {
-            background: #111827; padding: 8px; margin-top: 10px; border-radius: 8px;
-            display: flex; gap: 8px; border: 1px dashed #4b5563;
+        @media (max-width: 600px) {
+            #rules-bar { grid-template-columns: repeat(2, 1fr); }
         }
-        #test-area input { background: #1f2937; color: white; border: 1px solid #374151; padding: 6px; border-radius: 4px; font-size: 12px; }
-        #test-area button { background: #2563eb; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; }
     </style>
 </head>
 <body>
@@ -76,55 +78,41 @@
         <button class="btn-reset" onclick="finishGame()">Oyunu Bitir</button>
     </div>
 
-    <div id="main-layout">
-        <!-- Sol Panel -->
-        <div class="side-panel">
-            <div class="box">
-                <h3>🌹 Hediyeler & Askerler</h3>
-                <div class="gift-item"><span>🌹 Gül</span><span class="count">+50</span></div>
-                <div class="gift-item"><span>🎵 TikTok</span><span class="count">+100</span></div>
-                <div class="gift-item"><span>🦁 Aslan</span><span class="count">+500</span></div>
-            </div>
-            <div class="box" style="flex: 1; display: flex; flex-direction: column;">
-                <h3>💬 Canlı Sohbet Akışı</h3>
-                <div id="chat-flow"></div>
-            </div>
-        </div>
-
-        <!-- Orta Panel (Görsel Bal Peteği Haritası) -->
-        <div id="map-panel">
-            <canvas id="gameCanvas"></canvas>
-        </div>
-
-        <!-- Sağ Panel -->
-        <div class="side-panel">
-            <div class="box" style="flex: 1;">
-                <h3>🏆 Liderlik Tablosu</h3>
-                <div id="leaderboard"></div>
-            </div>
-            <div class="box" style="flex: 0.6;">
-                <h3>🤝 Aktif İttifaklar</h3>
-                <div id="alliances-list" style="font-size: 11px; color: #9ca3af;"></div>
-            </div>
-            <div class="box" style="flex: 0.8;">
-                <h3>👑 Geçmiş Winler</h3>
-                <div id="win-history"></div>
-            </div>
-        </div>
+    <div id="map-container">
+        <canvas id="gameCanvas"></canvas>
     </div>
 
-    <div id="bottom-panel">
-        <div class="info-card"><h4>BÖLGE ALMAK</h4><p>join [no] (Örn: join 11)</p></div>
-        <div class="info-card"><h4>SALDIRI</h4><p>attack [no] / all attack</p></div>
-        <div class="info-card"><h4>ASKER KASMAK</h4><p>Yoruma 99 yazın (+20)</p></div>
-        <div class="info-card"><h4>İTTİFAK</h4><p>ittifak [no] yazın</p></div>
-    </div>
+    <div id="bottom-layout">
+        
+        <div class="box">
+            <h3>🏆 Liderlik Tablosu</h3>
+            <div id="leaderboard"></div>
+        </div>
 
-    <!-- Hızlı Test Paneli -->
-    <div id="test-area">
-        <input type="text" id="testUser" placeholder="Oyuncu Adı" style="flex: 1;">
-        <input type="text" id="testMsg" placeholder="Komut (Örn: join 15)" style="flex: 2;">
-        <button onclick="simulateAction()">Gönder ve Çalıştır</button>
+        <div class="box">
+            <h3>💬 Canlı Sohbet Akışı</h3>
+            <div id="chat-flow"></div>
+        </div>
+
+        <div class="box">
+            <h3>👑 Geçmiş Winler / İttifaklar</h3>
+            <div id="win-history"></div>
+            <div id="alliances-list" style="font-size: 11px; color: #9ca3af; margin-top: 5px; border-top: 1px dashed #334155; padding-top: 5px;"></div>
+        </div>
+
+        <div id="rules-bar">
+            <div class="rule-card"><h4>BÖLGE ALMAK</h4><p>join <span style="color:#ffbc00;">[no]</span> (Boşsa alır)</p></div>
+            <div class="rule-card"><h4>SALDIRI YAPMAK</h4><p>attack <span style="color:#f43f5e;">[no]</span> / all attack</p></div>
+            <div class="rule-card"><h4>ASKER KASMAK</h4><p>Yoruma <span style="color:#00ffcc;">99</span> yazın (+20)</p></div>
+            <div class="rule-card"><h4>İTTİFAK KURMAK</h4><p>ittifak <span style="color:#38bdf8;">[no]</span> yazın</p></div>
+        </div>
+
+        <div id="console-panel">
+            <input type="text" id="tUser" placeholder="Oyuncu İsmi" style="flex: 1;">
+            <input type="text" id="tMsg" placeholder="Komut yaz (Örn: join 25 veya 99 veya attack 50)" style="flex: 2;">
+            <button onclick="triggerAction()">Kodu Çalıştır</button>
+        </div>
+
     </div>
 
     <script>
@@ -134,60 +122,63 @@
         let regions = {};
         let players = {};
         let alliances = [];
-        let winHistory = JSON.parse(localStorage.getItem('tiktok_hex_wins')) || [];
+        let winHistory = JSON.parse(localStorage.getItem('tiktok_ultra_wins')) || [];
         const colors = ['#22c55e', '#3b82f6', '#a855f7', '#ef4444', '#eab308', '#ec4899', '#06b6d4', '#f97316'];
 
-        // Bal Peteği (Hexagon) Çizim Ayarları
-        const hexRadius = 24; 
+        // Savaş haritası altıgen (hex) oranları
+        const hexRadius = 26; 
         const hexHeight = hexRadius * Math.sqrt(3);
         const cols = 10;
         const rows = 10;
 
-        // 100 Bölgeyi Petek Düzeninde Matrise Yerleştirme
+        // 100 Bölge Yapılandırması
         function initGame() {
             let id = 1;
             for (let r = 0; r < rows; r++) {
                 for (let c = 0; c < cols; c++) {
                     if (id <= 100) {
-                        // Petek yapısı için x ve y koordinat hesapları
                         let x = c * hexRadius * 1.5 + hexRadius;
                         let y = r * hexHeight + (c % 2 * hexHeight / 2) + hexHeight / 2;
-                        
-                        regions[id] = { id: id, x: x, y: y, owner: null, army: 0, flash: false };
+                        regions[id] = { id: id, x: x, y: y, owner: null, army: 0, battleFlash: false };
                         id++;
                     }
                 }
             }
-            resizeCanvas();
+            adjustCanvasDimensions();
             updateWinHistoryUI();
-            drawMap();
         }
 
-        // Ekran Boyutu Değişince Haritayı Ölçekleme (Asla Bozulmaz)
-        function resizeCanvas() {
-            const rect = canvas.parentNode.getBoundingClientRect();
-            canvas.width = rect.width;
-            canvas.height = rect.height;
-            drawMap();
-        }
-        window.addEventListener('resize', resizeCanvas);
+        // Haritanın Ekranda Dev Gibi Durmasını Sağlayan Dinamik Boyut Motoru
+        function adjustCanvasDimensions() {
+            const container = document.getElementById('map-container');
+            
+            // Sabit petek matrisinin toplam orijinal sınırları
+            const totalWidth = cols * hexRadius * 1.5 + hexRadius;
+            const totalHeight = rows * hexHeight + (hexHeight / 2);
+            
+            // Ekran genişliğine göre dinamik ölçek hesabı
+            const screenWidth = container.clientWidth;
+            const scaleFactor = screenWidth / totalWidth;
+            
+            // Canvas boyutlarını ve yüksekliğini haritaya tam oturacak şekilde hesapla
+            canvas.width = screenWidth;
+            canvas.height = totalHeight * scaleFactor;
+            container.style.height = canvas.height + "px"; // Kutu daralmasın, devleşsin!
 
-        // Canvas Üzerine Gerçek Zamanlı Altıgen Haritayı Çizme Algoritması
-        function drawMap() {
+            renderCanvas(scaleFactor);
+        }
+        window.addEventListener('resize', adjustCanvasDimensions);
+
+        // Grafiksel Haritayı Çizme Fonksiyonu
+        function renderCanvas(scale) {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // Dinamik ölçek hesaplama (Haritayı canvasın ortasına sığdırır)
-            let scaleX = canvas.width / (cols * hexRadius * 1.5 + hexRadius);
-            let scaleY = canvas.height / (rows * hexHeight + hexHeight);
-            let scale = Math.min(scaleX, scaleY, 1) * 0.95; // Pay bırak
-            
             ctx.save();
             ctx.scale(scale, scale);
 
             for (let i = 1; i <= 100; i++) {
                 let reg = regions[i];
                 
-                // Altıgen Köşelerini Çiz
+                // Altıgen Çizimi
                 ctx.beginPath();
                 for (let j = 0; j < 6; j++) {
                     let angle = j * Math.PI / 3;
@@ -195,202 +186,204 @@
                 }
                 ctx.closePath();
 
-                // Boyama Mantığı
-                if (reg.flash) {
-                    ctx.fillStyle = '#ffffff'; // Saldırı anında beyaz patlama efekti
+                // Durum Renklendirmesi
+                if (reg.battleFlash) {
+                    ctx.fillStyle = '#ffffff'; // Saldırı patlama efekti
                 } else if (reg.owner) {
                     ctx.fillStyle = players[reg.owner].color;
                 } else {
-                    ctx.fillStyle = '#1e293b'; // Boş alan rengi
+                    ctx.fillStyle = '#1c2536'; // Boş orijinal bölge rengi
                 }
                 ctx.fill();
 
-                // Kenarlık Çizgisi
-                ctx.strokeStyle = reg.owner ? '#ffffff' : '#374151';
+                // Çizgiler
+                ctx.strokeStyle = reg.owner ? '#ffffff' : '#2d3748';
                 ctx.lineWidth = reg.owner ? 2 : 1;
                 ctx.stroke();
 
-                // Bölge Bilgi Metinleri
+                // Yazılar (Bölge No)
                 ctx.fillStyle = 'rgba(255,255,255,0.3)';
-                ctx.font = 'bold 10px Arial';
+                ctx.font = 'bold 11px Arial';
                 ctx.textAlign = 'center';
-                ctx.fillText(reg.id, reg.x, reg.y - 8);
+                ctx.fillText(reg.id, reg.x, reg.y - 7);
 
+                // Oyuncu Adı ve Asker Sayısı
                 if (reg.owner) {
                     ctx.fillStyle = '#ffffff';
-                    ctx.font = '900 9px Arial';
-                    // İsmin ilk 6 harfini al sığsın
-                    let displayName = reg.owner.substring(0,6);
-                    ctx.fillText(displayName, reg.x, reg.y + 3);
+                    ctx.font = '900 10px Arial';
+                    ctx.fillText(reg.owner.substring(0, 7), reg.x, reg.y + 4);
                     
                     ctx.fillStyle = '#00ffcc';
                     ctx.font = 'bold 9px Arial';
-                    ctx.fillText(reg.army, reg.x, reg.y + 12);
+                    ctx.fillText(`⚔️${reg.army}`, reg.x, reg.y + 14);
                 }
             }
             ctx.restore();
         }
 
-        // KOMUT MOTORU
-        function processCommand(user, msg) {
+        // TİKTOK KOMUT DOĞRULAMA ALGORİTMASI
+        function parseInput(user, text) {
             user = user.trim();
-            msg = msg.trim().toLowerCase();
-            if(!user || !msg) return;
+            text = text.trim().toLowerCase();
+            if (!user || !text) return;
 
-            addChatLog(user, msg);
+            pushChat(user, text);
 
-            // 1. JOIN (Bölge Boşsa Alır, Doluysa İşe Yaramaz)
-            if (msg.startsWith('join ')) {
-                let id = parseInt(msg.replace('join ', ''));
-                if (id >= 1 && id <= 100) {
-                    if (!regions[id].owner) {
+            // 1. JOIN (İstediğin Mantık: Boşsa alır, doluysa hiçbir şey yapmaz)
+            if (text.startsWith('join ')) {
+                let num = parseInt(text.replace('join ', ''));
+                if (num >= 1 && num <= 100) {
+                    if (!regions[num].owner) { // Boşluk kontrolü tam burada
                         if (!players[user]) {
                             players[user] = { color: colors[Object.keys(players).length % colors.length], score: 100 };
                         }
-                        regions[id].owner = user;
-                        regions[id].army = 30; 
-                        drawMap();
-                        updateLeaderboard();
+                        regions[num].owner = user;
+                        regions[num].army = 35; // İlk giriş askeri
+                        triggerRefresh();
                     }
                 }
             }
             
-            // 2. 99 (Yoruma 99 Yazınca Sahip Olduğu Tüm Bölgelere +20 Asker)
-            else if (msg === '99') {
-                let hasRegion = false;
+            // 2. 99 KOMUTU (Yoruma 99 yazanın haritadaki tüm bölgelerine +20 asker biner)
+            else if (text === '99') {
+                let apply = false;
                 for (let i = 1; i <= 100; i++) {
                     if (regions[i].owner === user) {
                         regions[i].army += 20;
-                        hasRegion = true;
+                        apply = true;
                     }
                 }
-                if (hasRegion) drawMap();
+                if (apply) triggerRefresh();
             }
 
-            // 3. ATTACK (Savaş Açma)
-            else if (msg.startsWith('attack ') && msg !== 'all attack') {
-                let id = parseInt(msg.replace('attack ', ''));
-                if (id >= 1 && id <= 100) executeAttack(user, id);
+            // 3. ATTACK (Bölgeye Saldırı)
+            else if (text.startsWith('attack ') && text !== 'all attack') {
+                let targetId = parseInt(text.replace('attack ', ''));
+                if (targetId >= 1 && targetId <= 100) startWar(user, targetId);
             }
 
-            // 4. ALL ATTACK (Tüm Düşman Bölgelerine Eş Zamanlı Saldırı)
-            else if (msg === 'all attack') {
+            // 4. ALL ATTACK (Tüm haritadaki düşmanlara topyekün savaş)
+            else if (text === 'all attack') {
                 for (let i = 1; i <= 100; i++) {
                     if (regions[i].owner && regions[i].owner !== user) {
-                        executeAttack(user, i);
+                        startWar(user, i);
                     }
                 }
             }
 
-            // 5. İTTİFAK (O numaralı bölgede biri varsa ittifak kurar)
-            else if (msg.startsWith('ittifak ')) {
-                let id = parseInt(msg.replace('ittifak ', ''));
+            // 5. İTTİFAK SİSTEMİ (O bölgedeki biriyle ittifak bağı kurar)
+            else if (text.startsWith('ittifak ')) {
+                let id = parseInt(text.replace('ittifak ', ''));
                 if (id >= 1 && id <= 100) {
-                    let targetUser = regions[id].owner;
-                    if (targetUser && targetUser !== user) {
-                        let isAlly = alliances.some(pair => pair.includes(user) && pair.includes(targetUser));
-                        if (!isAlly) {
-                            alliances.push([user, targetUser]);
-                            updateAlliancesUI();
+                    let allyTarget = regions[id].owner;
+                    if (allyTarget && allyTarget !== user) {
+                        let alreadyAllies = alliances.some(p => p.includes(user) && p.includes(allyTarget));
+                        if (!alreadyAllies) {
+                            alliances.push([user, allyTarget]);
+                            renderAlliances();
                         }
                     }
                 }
             }
         }
 
-        // Savaş Hesaplama Mekanizması
-        function executeAttack(attacker, targetId) {
+        // Savaş Dinamiği Mekanizması
+        function startWar(attacker, targetId) {
             let target = regions[targetId];
             if (!target.owner || target.owner === attacker) return;
 
-            // İttifak kontrolü
-            if (alliances.some(pair => pair.includes(attacker) && pair.includes(target.owner))) return;
+            // İttifak koruması devrede mi?
+            if (alliances.some(p => p.includes(attacker) && p.includes(target.owner))) return;
 
-            // Toplam ordu toplama dalgası
-            let totalAttackPower = 0;
+            let totalPower = 0;
             for (let i = 1; i <= 100; i++) {
                 if (regions[i].owner === attacker && regions[i].army > 10) {
-                    let send = Math.floor(regions[i].army / 2);
-                    regions[i].army -= send;
-                    totalAttackPower += send;
+                    let attackForce = Math.floor(regions[i].army / 2);
+                    regions[i].army -= attackForce;
+                    totalPower += attackForce;
                 }
             }
 
-            if (totalAttackPower > 0) {
-                target.flash = true;
-                drawMap();
+            if (totalPower > 0) {
+                target.battleFlash = true;
+                triggerRefresh();
 
                 setTimeout(() => {
-                    target.flash = false;
-                    if (totalAttackPower > target.army) {
+                    target.battleFlash = false;
+                    if (totalPower > target.army) {
                         target.owner = attacker;
-                        target.army = totalAttackPower - target.army;
-                        players[attacker].score += 150;
+                        target.army = totalPower - target.army;
+                        players[attacker].score += 250; // Skoru tetikle
                     } else {
-                        target.army -= totalAttackPower;
+                        target.army -= totalPower;
                     }
-                    drawMap();
-                    updateLeaderboard();
-                }, 300);
+                    triggerRefresh();
+                }, 250);
             }
         }
 
-        // Arayüz Tablolarını Güncelleme Fonksiyonları
-        function updateLeaderboard() {
+        function triggerRefresh() {
+            adjustCanvasDimensions();
+            refreshLeaderboard();
+        }
+
+        // Alt Liste Güncellemeleri
+        function refreshLeaderboard() {
             let lb = document.getElementById('leaderboard'); lb.innerHTML = '';
-            let scores = {};
+            let data = {};
             for (let i = 1; i <= 100; i++) {
-                if (regions[i].owner) scores[regions[i].owner] = (scores[regions[i].owner] || 0) + regions[i].army;
+                if (regions[i].owner) data[regions[i].owner] = (data[regions[i].owner] || 0) + regions[i].army;
             }
-            Object.entries(scores).sort((a,b) => b[1] - a[1]).forEach(([name, army]) => {
-                lb.innerHTML += `<div class="leader-li"><span><b style="color:${players[name].color}">■</b> ${name}</span><span>${army} Asker</span></div>`;
+            Object.entries(data).sort((a,b) => b[1] - a[1]).slice(0, 5).forEach(([name, army]) => {
+                lb.innerHTML += `<div class="list-item"><span><b style="color:${players[name].color}">■</b> ${name}</span><span>${army} Asker</span></div>`;
             });
         }
 
-        function updateAlliancesUI() {
+        function renderAlliances() {
             let div = document.getElementById('alliances-list'); div.innerHTML = '';
-            alliances.forEach(p => { div.innerHTML += `<div>🤝 ${p[0]} & ${p[1]}</div>`; });
+            alliances.forEach(p => { div.innerHTML += `<span>🤝 ${p[0]}-${p[1]} </span>`; });
         }
 
-        function addChatLog(user, msg) {
+        function pushChat(user, msg) {
             const flow = document.getElementById('chat-flow');
-            let d = document.createElement('div'); d.className = 'chat-msg';
-            d.innerHTML = `<span class="username">${user}</span>: <span class="cmd">${msg}</span>`;
-            flow.appendChild(d);
-            if (flow.childNodes.length > 6) flow.removeChild(flow.firstChild);
+            let m = document.createElement('div'); m.className = 'chat-msg';
+            m.innerHTML = `<span class="username">${user}</span>: <span class="cmd">${msg}</span>`;
+            flow.appendChild(m);
+            if (flow.childNodes.length > 5) flow.removeChild(flow.firstChild);
             flow.scrollTop = flow.scrollHeight;
         }
 
-        // Oyunu Bitirme ve Win Geçmişi Listeleme Mantığı
+        // Oyunu Bitirme ve Winleri Kaydetme Sistemi
         function finishGame() {
-            let winner = null; let max = -1;
+            let topUser = null; let maxScore = -1;
             Object.keys(players).forEach(p => {
-                if (players[p].score > max) { max = players[p].score; winner = p; }
+                if (players[p].score > maxScore) { maxScore = players[p].score; topUser = p; }
             });
-            if (winner) {
-                winHistory.push({ name: winner, score: max });
-                winHistory.sort((a,b) => b.score - a.score);
-                localStorage.setItem('tiktok_hex_wins', JSON.stringify(winHistory));
+
+            if (topUser) {
+                winHistory.push({ name: topUser, score: maxScore });
+                winHistory.sort((a,b) => b.score - a.score); // Büyükten küçüğe kusursuz sıralama
+                localStorage.setItem('tiktok_ultra_wins', JSON.stringify(winHistory));
                 updateWinHistoryUI();
-                alert(`Kazanan: ${winner}!`);
+                alert(`Tur Bitti! Kazanan: ${topUser}`);
             }
             players = {}; alliances = []; initGame();
         }
 
         function updateWinHistoryUI() {
             let div = document.getElementById('win-history'); div.innerHTML = '';
-            winHistory.forEach((w, i) => {
-                div.innerHTML += `<div class="win-li">${i+1}. ${w.name} <span style="float:right;color:#eab308;">${w.score} P</span></div>`;
+            winHistory.slice(0, 5).forEach((w, idx) => {
+                div.innerHTML += `<div class="list-item"><span>${idx+1}. ${w.name}</span> <span style="color:#eab308;">${w.score} Puan</span></div>`;
             });
         }
 
-        // Test Paneli Gönder Butonu Akışı
-        function simulateAction() {
-            let u = document.getElementById('testUser').value || "Yusuf";
-            let m = document.getElementById('testMsg').value;
-            if(!m) return;
-            processCommand(u, m);
-            document.getElementById('testMsg').value = '';
+        // Yayıncı Manuel Gönderme Buton Akışı
+        function triggerAction() {
+            let user = document.getElementById('tUser').value || "Yusuf";
+            let msg = document.getElementById('tMsg').value;
+            if (!msg) return;
+            parseInput(user, msg);
+            document.getElementById('tMsg').value = '';
         }
 
         initGame();
