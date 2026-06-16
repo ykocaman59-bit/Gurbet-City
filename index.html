@@ -3,36 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TikTok Canlı Yayın Savaş Motoru - Hediye ve Beğeni Entegreli</title>
+    <title>TikTok Canlı Yayın Savaş Motoru - Sonsuz Rastgele Renkli</title>
     <!-- Resmi TikTok Canlı Chat Bağlantı Kütüphanesi -->
     <script src="https://cdn.jsdelivr.net/npm/@node-it/tiktok-live-connector-browser@1.0.0/dist/tiktok-live-connector.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Arial Black', sans-serif; user-select: none; }
-        body { background: #050811; color: #fff; min-height: 100vh; display: flex; flex-direction: column; padding: 10px; overflow-x: hidden; }
+        body { background: #04060d; color: #fff; min-height: 100vh; display: flex; flex-direction: column; padding: 10px; overflow-x: hidden; }
 
         /* YAYINCI ANA KONTROL PANELİ */
         #streamer-panel {
-            background: #111827; padding: 12px; border-radius: 12px; border: 2px solid #ff0050;
+            background: #0f172a; padding: 12px; border-radius: 12px; border: 2px solid #ff0050;
             margin-bottom: 12px; display: flex; flex-direction: column; gap: 10px;
-            box-shadow: 0 0 15px rgba(255, 0, 80, 0.3);
+            box-shadow: 0 0 15px rgba(255, 0, 80, 0.2);
         }
         .panel-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-        input { background: #1f2937; color: white; border: 1px solid #374151; padding: 6px 10px; border-radius: 6px; font-size: 12px; }
+        input { background: #1e293b; color: white; border: 1px solid #334155; padding: 6px 10px; border-radius: 6px; font-size: 12px; }
         
         .btn-connect { background: #ff0050; color: white; border: none; padding: 6px 14px; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 12px; }
-        .btn-reset { background: #22c55e; border: none; color: white; padding: 6px 14px; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 12px; margin-left: auto; }
+        .btn-reset { background: #10b981; border: none; color: white; padding: 6px 14px; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 12px; margin-left: auto; }
 
         /* HEDİYE ASKER AYARLARI KUTULARI */
         .gift-settings {
             display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px;
-            background: #1f2937; padding: 10px; border-radius: 8px; border: 1px solid #374151;
+            background: #1e293b; padding: 10px; border-radius: 8px; border: 1px solid #334155;
         }
         .gift-input-group { display: flex; flex-direction: column; gap: 4px; font-size: 11px; color: #ffbc00; }
         .gift-input-group input { width: 100%; text-align: center; font-weight: bold; color: #00ffcc; }
 
         /* DEV HARİTA ALANI */
         #map-container {
-            width: 100%; background: radial-gradient(circle, #0f172a 0%, #05070f 100%);
+            width: 100%; background: radial-gradient(circle, #0f172a 0%, #020408 100%);
             border: 3px solid #1e293b; border-radius: 12px; position: relative;
             margin-bottom: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden;
         }
@@ -40,10 +40,10 @@
 
         /* GRID PANELLER */
         #bottom-layout { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
-        .box { background: rgba(16, 22, 37, 0.95); border: 1px solid #1f2937; border-radius: 8px; padding: 10px; }
-        .box h3 { font-size: 13px; color: #ffbc00; border-bottom: 2px solid #1f2937; padding-bottom: 4px; margin-bottom: 8px; text-transform: uppercase; }
+        .box { background: rgba(15, 23, 42, 0.95); border: 1px solid #1e293b; border-radius: 8px; padding: 10px; }
+        .box h3 { font-size: 13px; color: #ffbc00; border-bottom: 2px solid #1e293b; padding-bottom: 4px; margin-bottom: 8px; text-transform: uppercase; }
         
-        .list-item { display: flex; justify-content: space-between; font-size: 12px; padding: 4px 6px; background: #151f32; margin-bottom: 4px; border-radius: 4px; }
+        .list-item { display: flex; justify-content: space-between; font-size: 12px; padding: 4px 6px; background: #0f172a; margin-bottom: 4px; border-radius: 4px; }
         #chat-flow { max-height: 110px; overflow-y: auto; font-size: 11px; min-height: 80px; }
         .chat-msg { margin-bottom: 3px; border-left: 3px solid #38bdf8; padding-left: 5px; }
         .chat-msg.gift-msg { border-left: 3px solid #ec4899; background: rgba(236, 72, 153, 0.1); }
@@ -52,7 +52,7 @@
         .chat-msg .gift-highlight { color: #ec4899; font-weight: bold; text-shadow: 0 0 5px #ec4899; }
 
         #rules-bar {
-            grid-column: 1 / -1; background: #111827; border: 1px solid #ffbc00;
+            grid-column: 1 / -1; background: #0f172a; border: 1px solid #ffbc00;
             border-radius: 8px; padding: 8px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; text-align: center;
         }
         .rule-card h4 { color: #ffbc00; font-size: 10px; }
@@ -63,16 +63,15 @@
 </head>
 <body>
 
-    <!-- YAYINCI KONTROL VE AYAR PANELİ (YAYINDAYKEN DEĞİŞTİRİLEBİLİR) -->
+    <!-- YAYINCI PANELİ -->
     <div id="streamer-panel">
         <div class="panel-row">
             <input type="text" id="ttAccount" placeholder="@TikTokKullaniciAdi">
             <button class="btn-connect" onclick="connectTikTokLive()">Yayına Bağlan</button>
             <span id="status-text" style="color:#ef4444; font-size:11px; font-weight:bold;">BAĞLANTI YOK</span>
-            <button class="btn-reset" onclick="clearMap()">Sıfırla</button>
+            <button class="btn-reset" onclick="clearMap()">Sıfırla & Yeni Renkler Yap</button>
         </div>
         
-        <!-- Yayıncının Değiştirebileceği Asker Miktarları -->
         <div class="gift-settings">
             <div class="gift-input-group">
                 <label>🌹 Gül Askeri</label>
@@ -132,8 +131,7 @@
         let regions = {};
         let players = {};
         let alliances = [];
-        let playerLikes = {}; // Kullanıcıların beğenilerini saymak için
-        const colors = ['#22c55e', '#3b82f6', '#a855f7', '#ef4444', '#eab308', '#ec4899', '#06b6d4', '#f97316', '#10b981', '#6366f1'];
+        let playerLikes = {};
 
         const hexRadius = 26; 
         const hexHeight = hexRadius * Math.sqrt(3);
@@ -141,13 +139,29 @@
         const rows = 10;
 
         function initGame() {
+            regions = {};
             let id = 1;
+
+            // HER AÇILIŞTA RENK SPEKTRUMUNU RASTGELE BAŞLATAN SİHİRLİ FORMÜL
+            let randomHueOffset = Math.floor(Math.random() * 360); 
+            // Her sayının birbirinden tamamen farklı tonda olması için adımı da dinamik yapıyoruz
+            let randomStep = Math.floor(Math.random() * 15) + 10; 
+
             for (let r = 0; r < rows; r++) {
                 for (let c = 0; c < cols; c++) {
                     if (id <= 100) {
                         let x = c * hexRadius * 1.5 + hexRadius;
                         let y = r * hexHeight + (c % 2 * hexHeight / 2) + hexHeight / 2;
-                        regions[id] = { id: id, x: x, y: y, owner: null, army: 0, maxArmy: 0, underAttack: false };
+                        
+                        // Tamamen benzersiz ve her açılışta değişen dinamik renk kodu
+                        let computedHue = (randomHueOffset + (id * randomStep)) % 360;
+                        let defaultColor = `hsla(${computedHue}, 65%, 18%, 0.45)`; // Boşken loş gizemli parıltı
+                        let activeColor = `hsla(${computedHue}, 90%, 45%, 0.95)`;  // Feth edilince parlayan hali
+                        
+                        regions[id] = { 
+                            id: id, x: x, y: y, owner: null, army: 0, maxArmy: 0, underAttack: false,
+                            defaultColor: defaultColor, activeColor: activeColor
+                        };
                         id++;
                     }
                 }
@@ -184,22 +198,25 @@
                 }
                 ctx.closePath();
 
-                if (reg.owner) { ctx.fillStyle = players[reg.owner].color; }
-                else { ctx.fillStyle = '#1c2638'; }
+                if (reg.owner) {
+                    ctx.fillStyle = reg.activeColor;
+                } else {
+                    ctx.fillStyle = reg.defaultColor;
+                }
                 ctx.fill();
 
-                // KRİTİK SEVİYE - ALEV SİMÜLASYONU
+                // KUŞATMA KRİTİK SEVİYE - ALEV SİMÜLASYONU
                 if (reg.underAttack && reg.army > 0 && reg.army < (reg.maxArmy * 0.35)) {
                     ctx.strokeStyle = Math.random() > 0.5 ? '#ff4500' : '#ffcc00';
                     ctx.lineWidth = 4;
                 } else {
-                    ctx.strokeStyle = reg.owner ? '#ffffff' : '#2d3950';
+                    ctx.strokeStyle = reg.owner ? '#ffffff' : 'rgba(255,255,255,0.12)';
                     ctx.lineWidth = reg.owner ? 2 : 1;
                 }
                 ctx.stroke();
 
-                ctx.fillStyle = reg.owner ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.15)';
-                ctx.font = 'bold 10px Arial';
+                ctx.fillStyle = reg.owner ? '#ffffff' : 'rgba(255,255,255,0.65)';
+                ctx.font = 'bold 11px Arial';
                 ctx.textAlign = 'center';
                 ctx.fillText(reg.id, reg.x, reg.y - 7);
 
@@ -215,14 +232,13 @@
             ctx.restore();
         }
 
-        // 1. OYUNCU KAYIT VE RENK SİSTEMİ
         function checkAndRegisterPlayer(user) {
             if (!players[user]) {
-                players[user] = { color: colors[Object.keys(players).length % colors.length] };
+                let randHue = Math.floor(Math.random() * 360);
+                players[user] = { color: `hsl(${randHue}, 85%, 50%)` };
             }
         }
 
-        // 2. YORUM/KOMUT YORUMLAYICI MOTOR
         function handleTikTokChat(user, message) {
             user = user.trim(); message = message.trim();
             if (!user || !message) return;
@@ -235,7 +251,7 @@
                 if (id >= 1 && id <= 100 && !regions[id].owner) {
                     regions[id].owner = user;
                     regions[id].army = 50; regions[id].maxArmy = 50;
-                    pushLog(user, `${id} numaralı bölgeyi fethetti!`, false);
+                    pushLog(user, `${id} numaralı gizemli bölgeyi fethetti!`, false);
                     refreshUI();
                 }
             }
@@ -274,13 +290,11 @@
             }
         }
 
-        // 3. ENTEGRE HEDİYE ALICI MOTORU (YAYINCI PANELİNDEN GELEN DEĞERLERİ OKUR)
         function handleTikTokGift(user, giftName) {
             checkAndRegisterPlayer(user);
             let armyCount = 0;
             let formattedName = giftName.toLowerCase();
 
-            // Paneldeki anlık input kutularından güncel verileri çekiyoruz
             if (formattedName.includes("rose") || formattedName.includes("gül")) {
                 armyCount = parseInt(document.getElementById('g_rose').value) || 50;
             } else if (formattedName.includes("tiktok")) {
@@ -292,13 +306,11 @@
             } else if (formattedName.includes("universe") || formattedName.includes("evren") || formattedName.includes("galaksi")) {
                 armyCount = parseInt(document.getElementById('g_universe').value) || 5000;
             } else {
-                // Listede olmayan küçük bir hediye geldiyse teselli olarak 30 asker ver
                 armyCount = 30;
             }
 
-            pushLog(user, `Hediye Gönderdi: ${giftName} (+${armyCount} Asker!)`, true);
+            pushLog(user, `Hediye Gönderdi: ${giftName} (+${armyCount} Ordu!)`, true);
 
-            // Oyuncunun haritada kalesi var mı bak, varsa hepsine bölüştür veya ekle
             let added = false;
             for (let i = 1; i <= 100; i++) {
                 if (regions[i].owner === user) {
@@ -308,7 +320,6 @@
                 }
             }
 
-            // Eğer hiç bölgesi yoksa, haritadaki rastgele boş bir bölgeyi ona hediye ordusuyla tahsis et!
             if (!added) {
                 let emptyRegs = Object.values(regions).filter(r => r.owner === null);
                 if (emptyRegs.length > 0) {
@@ -321,16 +332,14 @@
             refreshUI();
         }
 
-        // 4. BEĞENİ (LIKE) ALGILAMA MOTORU
         function handleTikTokLike(user, likeCount) {
             checkAndRegisterPlayer(user);
             if (!playerLikes[user]) playerLikes[user] = 0;
             playerLikes[user] += likeCount;
 
-            // Her 10 beğeni biriktiğinde +1 asker ver
             if (playerLikes[user] >= 10) {
                 let addedUnits = Math.floor(playerLikes[user] / 10);
-                playerLikes[user] %= 10; // Kalan beğeniyi devret
+                playerLikes[user] %= 10;
 
                 let hasRegion = false;
                 for (let i = 1; i <= 100; i++) {
@@ -344,7 +353,6 @@
             }
         }
 
-        // 5. KUŞATMA MOTORU (ZAMANA YAYILI ÇATIŞMA)
         function startSiegeEngine(attacker, targetId) {
             let target = regions[targetId];
             if (!target.owner || target.owner === attacker) return;
@@ -372,7 +380,7 @@
 
                 let attackDamage = Math.min(6, attackWavePower);
                 attackWavePower -= attackDamage;
-                target.army -= (attackDamage * 0.80); // Savunma bonusu
+                target.army -= (attackDamage * 0.80);
 
                 if (target.army <= 0) {
                     clearInterval(siegeInterval);
@@ -380,7 +388,7 @@
                     target.army = Math.max(15, attackWavePower);
                     target.maxArmy = target.army;
                     target.underAttack = false;
-                    pushLog(attacker, `${targetId} numaralı kaleyi yıkarak ele geçirdi!`, false);
+                    pushLog(attacker, `${targetId} numaralı kaleyi fethetti!`, false);
                 }
                 refreshUI();
             }, 250);
@@ -394,7 +402,8 @@
                 if (regions[i].owner) scoreboard[regions[i].owner] = (scoreboard[regions[i].owner] || 0) + regions[i].army;
             }
             Object.entries(scoreboard).sort((a,b) => b[1] - a[1]).slice(0, 5).forEach(([name, army]) => {
-                lb.innerHTML += `<div class="list-item"><span><b>■</b> ${name}</span><span>${Math.floor(army)} Asker</span></div>`;
+                let pColor = players[name] ? players[name].color : '#fff';
+                lb.innerHTML += `<div class="list-item"><span><b style="color:${pColor}">■</b> ${name}</span><span>${Math.floor(army)} Asker</span></div>`;
             });
         }
 
@@ -412,40 +421,26 @@
             flow.scrollTop = flow.scrollHeight;
         }
 
-        function clearMap() { players = {}; alliances = []; playerLikes = {}; initGame(); }
+        function clearMap() { 
+            players = {}; alliances = []; playerLikes = {}; 
+            initGame(); // Her sıfırlandığında renkleri tamamen yeniden karıştırır!
+        }
 
-        // 6. TİKTOK CANLI KÖPRÜSÜNÜ KURMA VE TETİKLEMEK
         function connectTikTokLive() {
             let account = document.getElementById('ttAccount').value.trim();
             if(!account) { alert("Lütfen TikTok kullanıcı adınızı girin!"); return; }
             
             let status = document.getElementById('status-text');
-            status.innerText = "BAĞLANILIYOR..."; status.style.color = "#eab308";
+            status.innerText = "BAĞLANILIYOR..."; status.style.color = "#ffbc00";
 
             let connection = new TikTokLiveConnector(account);
 
-            // 1. Canlı Yorumları Dinle
-            connection.on('chat', data => {
-                handleTikTokChat(data.uniqueId, data.comment);
-            });
+            connection.on('chat', data => { handleTikTokChat(data.uniqueId, data.comment); });
+            connection.on('gift', data => { handleTikTokGift(data.uniqueId, data.giftName); });
+            connection.on('like', data => { handleTikTokLike(data.uniqueId, data.likeCount); });
 
-            // 2. Canlı Hediyeleri Dinle (Yeni Eklendi!)
-            connection.on('gift', data => {
-                handleTikTokGift(data.uniqueId, data.giftName);
-            });
-
-            // 3. Canlı Beğenileri Dinle (Yeni Eklendi!)
-            connection.on('like', data => {
-                handleTikTokLike(data.uniqueId, data.likeCount);
-            });
-
-            connection.on('connected', () => {
-                status.innerText = "YAYIN AKTİF ✔"; status.style.color = "#22c55e";
-            });
-
-            connection.on('disconnected', () => {
-                status.innerText = "BAĞLANTI KOPTU"; status.style.color = "#ef4444";
-            });
+            connection.on('connected', () => { status.innerText = "YAYIN AKTİF ✔"; status.style.color = "#10b981"; });
+            connection.on('disconnected', () => { status.innerText = "BAĞLANTI KOPTU"; status.style.color = "#ef4444"; });
         }
 
         initGame();
