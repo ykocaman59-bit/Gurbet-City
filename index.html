@@ -3,400 +3,425 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Battlezone Live - Hibrit PC & Mobil Sürüm</title>
-    
+    <title>BATTLEZONE LIVE</title>
     <style>
-        /* Kopyalamayı ve Seçimi Tamamen Engelleme */
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
         }
 
         body {
-            background-color: #0b0f17;
-            color: #f1f5f9;
-            overflow-x: hidden;
-            overflow-y: auto;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
+            background-color: #0b0f19;
+            color: #f3f4f6;
+            overflow: hidden;
+            height: 100vh;
         }
 
-        /* 1. SİNEMATİK GİRİŞ ANİMASYONU (SPLASH SCREEN) */
-        #splash-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #070a12;
-            z-index: 100000;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            transition: opacity 0.8s ease-out, visibility 0.8s;
-        }
-
-        .animated-title {
-            font-size: 36px;
-            font-weight: 900;
-            color: #2563eb;
-            letter-spacing: 4px;
-            text-shadow: 0 0 20px rgba(37, 99, 235, 0.6);
-            animation: introBlast 2.3s ease-in-out forwards;
-        }
-
-        @keyframes introBlast {
-            0% { transform: scale(0.7); opacity: 0; filter: blur(10px); }
-            40% { transform: scale(1.05); opacity: 1; filter: blur(0px); }
-            70% { transform: scale(1); opacity: 1; }
-            100% { transform: scale(1.2); opacity: 0; filter: blur(5px); }
-        }
-
-        /* 2. GİRİŞ VE ANA MENÜ EKRANI */
+        /* --- GİRİŞ MENÜSÜ OVERLAY --- */
         #launch-menu-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+            background-color: #0b0f19;
             z-index: 9999;
             display: flex;
-            align-items: center;
             justify-content: center;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.4s ease-in-out;
+            align-items: center;
+            padding: 20px;
         }
 
-        .login-box {
+        .menu-box {
             background: #111827;
-            border: 2px solid #2563eb;
+            border: 2px solid #1e3a8a;
             border-radius: 16px;
-            padding: 35px 30px;
-            width: 90%;
-            max-width: 420px;
+            padding: 30px;
+            width: 100%;
+            max-width: 400px;
             text-align: center;
-            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.7);
+            box-shadow: 0 0 25px rgba(30, 58, 138, 0.3);
         }
 
-        .login-box h2 {
-            color: #2563eb;
+        .menu-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #3b82f6;
             margin-bottom: 25px;
-            text-transform: uppercase;
             letter-spacing: 1px;
-            font-size: 26px;
-        }
-
-        .menu-btn-group {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
+            text-transform: uppercase;
         }
 
         .menu-btn {
             width: 100%;
-            background: #1f2937;
-            border: 1px solid #4b5563;
+            background: linear-gradient(135deg, #1e40af, #1d4ed8);
             color: white;
-            border-radius: 8px;
-            padding: 14px;
-            font-size: 15px;
+            border: none;
+            padding: 15px;
+            font-size: 16px;
             font-weight: bold;
+            border-radius: 10px;
+            margin-bottom: 15px;
             cursor: pointer;
             transition: all 0.2s;
-            text-transform: uppercase;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
 
-        .menu-btn:hover {
-            background: #2563eb;
-            border-color: #3b82f6;
-            transform: translateY(-2px);
+        .menu-btn:active {
+            transform: scale(0.98);
         }
 
-        .menu-btn.primary { background: #2563eb; border: none; }
-        .menu-btn.primary:hover { background: #1d4ed8; }
+        .menu-btn.secondary {
+            background: linear-gradient(135deg, #d97706, #b45309);
+        }
 
-        #connection-form { display: none; margin-top: 20px; text-align: left; }
-        .input-group { margin-bottom: 15px; }
-        .input-group label { display: block; color: #9ca3af; font-size: 12px; margin-bottom: 6px; text-transform: uppercase; }
+        /* --- KULLANICI ADI GİRİŞ PANELİ --- */
+        #username-panel {
+            display: none;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 12px;
+            color: #9ca3af;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
         .input-group input {
             width: 100%;
-            background: #1f2937;
+            background-color: #1f2937;
             border: 1px solid #4b5563;
+            padding: 12px;
             border-radius: 8px;
-            padding: 12px 16px;
-            color: #fff;
-            font-size: 16px;
+            color: white;
+            font-size: 15px;
             outline: none;
         }
 
-        /* SANA ÖZEL MODALLAR (PENCERELER) */
-        .custom-modal {
-            display: none;
+        .input-group input:focus {
+            border-color: #3b82f6;
+        }
+
+        /* --- OYUN ANA ARAYÜZÜ --- */
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100%;
+        }
+
+        /* Üst Bar */
+        .top-bar {
+            background-color: #111827;
+            padding: 12px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #1f2937;
+        }
+
+        .brand {
+            font-weight: bold;
+            color: #ef4444;
+            font-size: 14px;
+        }
+
+        .status-badge {
+            font-size: 12px;
+            font-weight: 600;
+            background-color: #1f2937;
+            padding: 6px 12px;
+            border-radius: 20px;
+            color: #9ca3af;
+        }
+
+        .exit-btn {
+            background-color: #dc2626;
+            color: white;
+            border: none;
+            padding: 6px 15px;
+            font-size: 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Canlı Sohbet Alanı */
+        .chat-section {
+            background-color: #111827;
+            margin: 10px;
+            border-radius: 12px;
+            padding: 12px;
+            flex: 1;
+            max-height: 220px;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #1f2937;
+        }
+
+        .chat-title {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: bold;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            font-size: 13px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .chat-msg {
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        .chat-user {
+            color: #60a5fa;
+            font-weight: bold;
+        }
+
+        /* Harita Alanı (1-80 Butonlar) */
+        .map-section {
+            flex: 2;
+            overflow-y: auto;
+            padding: 0 10px 10px 10px;
+        }
+
+        .map-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+        }
+
+        .region-btn {
+            background-color: #1f2937;
+            border: 1px solid #374151;
+            border-radius: 8px;
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #f3f4f6;
+            cursor: pointer;
+            padding: 2px;
+        }
+
+        .reg-num {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .reg-user {
+            font-size: 9px;
+            color: #ffffff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        /* --- POP-UP MODAL (BAŞARI SIRALAMASI) --- */
+        .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.85);
+            background-color: rgba(0,0,0,0.75);
             z-index: 10000;
-            align-items: center;
+            display: none;
             justify-content: center;
+            align-items: center;
+            padding: 20px;
         }
 
         .modal-box {
-            background: #111827;
-            padding: 25px;
+            background-color: #111827;
+            border: 2px solid #d97706;
             border-radius: 16px;
-            width: 85%;
-            max-width: 380px;
-            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);
+            width: 100%;
+            max-width: 360px;
+            padding: 20px;
             position: relative;
         }
 
-        .modal-box.alert-border { border: 2px solid #ef4444; text-align: center; }
-        .modal-box.leader-border { border: 2px solid #fbbf24; }
-        .modal-close-x { position: absolute; top: 12px; right: 15px; font-size: 22px; color: #9ca3af; cursor: pointer; font-weight: bold; }
-        .modal-close-x:hover { color: #fff; }
-        .modal-box h3 { margin-bottom: 15px; font-size: 20px; }
-        .alert-border h3 { color: #ef4444; }
-        .leader-border h3 { color: #fbbf24; text-align: center; }
-
-        /* OYUN PANELİ (ÜST KISIM) */
-        header { background: #111827; padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #1f2937; }
-        .live-badge { background: #ef4444; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
-        .main-title { font-size: 18px; font-weight: 800; color: #fbbf24; text-align: center; flex: 1; margin: 0 10px; }
-        
-        /* 🖥️ DÜNYA STANDARDI HİBRİT TASARIM (BİLGİSAYAR İÇİN YAN YANA) */
-        .game-container {
+        .modal-header {
             display: flex;
-            flex: 1;
-            padding: 15px;
-            gap: 15px;
-            max-width: 1400px;
-            width: 100%;
-            margin: 0 auto;
-        }
-
-        .panel { background: #111827; border: 1px solid #1f2937; border-radius: 12px; display: flex; flex-direction: column; padding: 15px; }
-        .panel-title { color: #f59e0b; font-size: 13px; font-weight: bold; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
-
-        .side-panel { width: 300px; shrink: 0; }
-        .chat-box { flex: 1; min-height: 250px; overflow-y: auto; background: #0f172a; border: 1px solid #1e293b; border-radius: 8px; padding: 10px; }
-        
-        /* Merkez Harita Alanı */
-        .center-side { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0f172a; border-radius: 12px; border: 1px solid #1e293b; padding: 20px; min-height: 400px; }
-        
-        /* 1000192173.png Formatındaki Esnek Organik Petek Matrisi */
-        .organic-map-container { 
-            display: grid; 
-            grid-template-columns: repeat(10, minmax(35px, 55px)); 
-            grid-auto-rows: minmax(32px, 48px); 
-            gap: 5px; 
             justify-content: center;
-            width: 100%;
-        }
-        
-        .map-zone {
-            background: #1f2937;
-            border: 1px solid #374151;
-            color: #fff;
-            font-size: 11px;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 18px;
             font-weight: bold;
+            color: #d97706;
+            text-transform: uppercase;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: #9ca3af;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .leaderboard-list {
+            list-style: none;
+            max-height: 250px;
+            overflow-y: auto;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            border-radius: 6px;
-            transition: background-color 0.3s;
+            gap: 8px;
         }
-        .map-zone:nth-child(2n) { transform: translateY(12px); background: #1e293b; }
-        .zone-user { font-size: 8px; color: #fbbf24; text-align: center; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-        .chat-msg { font-size: 12px; margin-bottom: 6px; word-break: break-all; }
-        .chat-user { font-weight: bold; color: #3b82f6; }
-        
-        .modal-leaderboard-wrapper { background: #0f172a; border: 1px solid #1e293b; border-radius: 8px; max-height: 280px; overflow-y: auto; padding: 10px; }
-        footer { background: #111827; padding: 12px 20px; border-top: 1px solid #1f2937; display: flex; justify-content: space-between; font-size: 12px; color: #9ca3af; }
+        .leaderboard-item {
+            background-color: #1f2937;
+            padding: 10px 15px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+        }
 
-        /* 📱 TELEFONLAR VE APK (DİKEY) İÇİN SİHİRLİ ESNEK KATLANMA KURALLARI (RESPONSIVE) */
-        @media (max-width: 900px) {
-            .game-container {
-                flex-direction: column; /* Yan yana olan düzeni alt alta çevir */
-                padding: 8px;
-                gap: 10px;
-            }
-            .side-panel {
-                width: 100%; /* Telefon ekranında sohbet kutusunu tam genişlik yap */
-            }
-            .center-side {
-                width: 100%;
-                padding: 10px;
-                min-height: auto;
-            }
-            .organic-map-container {
-                grid-template-columns: repeat(10, 1fr); /* Petekleri ekrana sığdır */
-                gap: 3px;
-            }
-            .map-zone {
-                font-size: 9px;
-                padding: 2px 0;
-            }
-            .map-zone:nth-child(2n) {
-                transform: translateY(6px); /* Mobilde kaymayı küçült ki taşmasın */
-            }
-            header {
-                padding: 10px;
-            }
-            .main-title {
-                font-size: 13px;
-            }
+        .no-data {
+            color: #9ca3af;
+            text-align: center;
+            font-size: 13px;
+            padding: 20px 0;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(3px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 <body>
 
-    <div id="splash-screen">
-        <div class="animated-title">BATTLEZONE LIVE</div>
-    </div>
-
-    <div id="custom-alert" class="custom-modal">
-        <div class="modal-box alert-border">
-            <h3>SİSTEM UYARISI</h3>
-            <p id="alert-msg">Mesaj...</p>
-            <button style="background:#ef4444; color:white; border:none; padding:10px 24px; border-radius:6px; font-weight:bold; cursor:pointer; margin-top:15px; width:100%;" onclick="closeCustomAlert()">TAMAM</button>
-        </div>
-    </div>
-
-    <div id="custom-leaderboard-modal" class="custom-modal">
-        <div class="modal-box leader-border">
-            <span class="modal-close-x" onclick="closeLeaderboardModal()">×</span>
-            <h3>🏆 BAŞARI SIRALAMASI</h3>
-            <div class="modal-leaderboard-wrapper" id="popup-leaderboard-box">
-                <div style="color:#4b5563; text-align:center; font-size:12px; padding:15px 0;">Aktif oyuncu verisi bulunmuyor.</div>
-            </div>
-        </div>
-    </div>
-
+    <!-- --- GİRİŞ VE ANA MENÜ OVERLAY --- -->
     <div id="launch-menu-overlay">
-        <div class="login-box">
-            <h2>BATTLEZONE LIVE</h2>
-            
-            <div class="menu-btn-group" id="main-menu-buttons">
-                <button class="menu-btn primary" onclick="showConnectionForm()">YENİ OYUN (YAYINA BAĞLAN)</button>
-                <button class="menu-btn" onclick="openLeaderboardModal()">🏆 BAŞARI SIRALAMASI</button>
-            </div>
+        <!-- Ana Tercih Paneli -->
+        <div id="main-menu-panel" class="menu-box">
+            <div class="menu-title">BATTLEZONE LIVE</div>
+            <button class="menu-btn" onclick="showUsernamePanel()">YENI OYUN (YAYINA BAĞLAN)</button>
+            <button class="menu-btn secondary" onclick="openLeaderboard()">🏆 BAŞARI SIRALAMASI</button>
+        </div>
 
-            <div id="connection-form">
-                <div class="input-group">
-                    <label>TikTok Canlı Yayın Kullanıcı Adı</label>
-                    <input type="text" id="initial-username" placeholder="Örn: yayinci_adi" autocomplete="off">
-                </div>
-                <button class="menu-btn primary" id="connect-trigger-btn" onclick="connectToTikTokLive()">YAYINI DOĞRULA & BAŞLAT ⚔️</button>
-                <button class="menu-btn" style="margin-top:10px; font-size:12px; padding:8px;" onclick="hideConnectionForm()">← Geri Dön</button>
+        <!-- Kullanıcı Adı Giriş Paneli -->
+        <div id="username-panel" class="menu-box">
+            <div class="menu-title">BATTLEZONE LIVE</div>
+            <div class="input-group">
+                <label>TIKTOK CANLI YAYIN KULLANICI ADI</label>
+                <input type="text" id="initial-username" placeholder="Örm: yayinci_adi" autocomplete="off">
             </div>
+            <button class="menu-btn" id="connect-trigger-btn" onclick="connectToTikTokLive()">YAYINI DOĞRULA & BAŞLAT ⚔️</button>
+            <button class="menu-btn secondary" style="background: #374151;" onclick="goBackToMainMenu()">← GERI DÖN</button>
         </div>
     </div>
 
-    <header>
-        <div style="display:flex; align-items:center; gap:6px;">
-            <span style="font-weight:900; font-size: 14px;">COOTV</span>
-            <span class="live-badge">CANLI</span>
-        </div>
-        <div class="main-title">TÜM BÖLGELERİ ELE GEÇİR, ZAFERE ULAŞ!</div>
-        <button style="background:#ef4444; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:11px;" onclick="location.reload()">Çıkış</button>
-    </header>
-
+    <!-- --- OYUNUN ASIL ANA EKRANI --- -->
     <div class="game-container">
-        <div class="panel side-panel">
-            <div class="panel-title">💬 CANLI SOHBET AKIŞI</div>
-            <div class="chat-box" id="live-chat-box"></div>
+        <!-- Üst Bilgi Çubuğu -->
+        <div class="top-bar">
+            <div class="brand">COOTV <span style="color:white; font-size:11px; background:#dc2626; padding:2px 6px; border-radius:4px; margin-left:5px;">CANLI</span></div>
+            <div class="status-badge" id="status-text">BAĞLANTI YOK</div>
+            <button class="exit-btn" onclick="window.location.reload();">Çıkış</button>
         </div>
 
-        <div class="panel center-side">
-            <div class="organic-map-container" id="organic-map"></div>
+        <!-- Canlı Sohbet Simülasyon Penceresi -->
+        <div class="chat-section">
+            <div class="chat-title">💬 CANLI SOHBET AKIŞI</div>
+            <div class="chat-messages" id="chat-box-stream">
+                <div class="no-data" id="chat-placeholder" style="padding: 10px 0;">Henüz gelen yorum yok...</div>
+            </div>
+        </div>
+
+        <!-- Savaş Haritası (80 Bölge) -->
+        <div class="map-section">
+            <div class="map-grid" id="map-grid-container">
+                <!-- Butonlar JavaScript ile 1'den 80'e otomatik dolacak -->
+            </div>
         </div>
     </div>
 
-    <footer>
-        <div>Durum: <span id="status-text" style="color:#ef4444; font-weight:bold;">BAĞLANTI YOK</span></div>
-        <div>Cihaz Modu: Hibrit (PC/APK)</div>
-    </footer>
+    <!-- --- BAŞARI SIRALAMASI MODAL --- -->
+    <div class="modal-overlay" id="leaderboard-modal">
+        <div class="modal-box">
+            <button class="close-modal" onclick="closeLeaderboard()">×</button>
+            <div class="modal-header">🏆 BAŞARI SIRALAMASI</div>
+            <ul class="leaderboard-list" id="leaderboard-list-render">
+                <li class="no-data" id="leaderboard-placeholder">Aktif oyuncu verisi bulunmuyor.</li>
+            </ul>
+        </div>
+    </div>
 
+    <!-- --- SİSTEM MOTORU VE MANTIK KODLARI --- -->
     <script>
-        let webSocketBridge = null;
-        const zonesData = {};
+        const mapRegions = {};
+        const leaderboardData = {};
 
-        // 1. GİRİŞ ANİMASYONU TETİKLEYİCİSİ
-        window.addEventListener("DOMContentLoaded", () => {
-            initializeEmptyMap();
-            
-            setTimeout(() => {
-                const splash = document.getElementById("splash-screen");
-                const overlay = document.getElementById("launch-menu-overlay");
-                splash.style.opacity = "0";
-                setTimeout(() => {
-                    splash.style.display = "none";
-                    overlay.style.visibility = "visible";
-                    overlay.style.opacity = "1";
-                }, 800);
-            }, 2300);
-        });
-
-        function showConnectionForm() {
-            document.getElementById("main-menu-buttons").style.display = "none";
-            document.getElementById("connection-form").style.display = "block";
-        }
-
-        function hideConnectionForm() {
-            document.getElementById("connection-form").style.display = "none";
-            document.getElementById("main-menu-buttons").style.display = "flex";
-        }
-
-        function showCustomAlert(msg) {
-            document.getElementById('alert-msg').innerText = msg;
-            document.getElementById('custom-alert').style.display = 'flex';
-        }
-        function closeCustomAlert() {
-            document.getElementById('custom-alert').style.display = 'none';
-        }
-
-        function openLeaderboardModal() {
-            updateRealLeaderboard();
-            document.getElementById('custom-leaderboard-modal').style.display = 'flex';
-        }
-        function closeLeaderboardModal() {
-            document.getElementById('custom-leaderboard-modal').style.display = 'none';
-        }
-
-        // Harita Başlatıcı
-        function initializeEmptyMap() {
-            const mapContainer = document.getElementById("organic-map");
-            mapContainer.innerHTML = "";
-            for(let i = 1; i <= 100; i++) {
-                zonesData[i] = { id: i, owner: "", troops: 0 };
-                const zone = document.createElement("div");
-                zone.className = "map-zone";
-                zone.id = `zone-${i}`;
-                zone.innerHTML = `<div>${i}</div><div class="zone-user" id="zone-user-${i}"></div>`;
-                mapContainer.appendChild(zone);
+        // Sayfa açıldığında 80 bölgeyi oluştur
+        function createMapGrid() {
+            const container = document.getElementById("map-grid-container");
+            container.innerHTML = "";
+            for (let i = 1; i <= 80; i++) {
+                mapRegions[i] = { owner: null, color: null };
+                
+                const btn = document.createElement("button");
+                btn.className = "region-btn";
+                btn.id = `region-${i}`;
+                btn.innerHTML = `<span class="reg-num">${i}</span><span class="reg-user"></span>`;
+                container.appendChild(btn);
             }
         }
 
-        // 🚀 TİKTOK CANLI YAYIN BAĞLANTI MOTORU
+        function showUsernamePanel() {
+            document.getElementById("main-menu-panel").style.display = "none";
+            document.getElementById("username-panel").style.display = "block";
+        }
+
+        function goBackToMainMenu() {
+            document.getElementById("username-panel").style.display = "none";
+            document.getElementById("main-menu-panel").style.display = "block";
+        }
+
+        function openLeaderboard() {
+            document.getElementById("leaderboard-modal").style.display = "flex";
+        }
+
+        function closeLeaderboard() {
+            document.getElementById("leaderboard-modal").style.display = "none";
+        }
+
+        // --- BUTONA BASILDIĞINDA KODULAR'A VERİ FIRLATAN KÖPRÜ ---
         function connectToTikTokLive() {
-            const username = document.getElementById("initial-username").value.trim();
-            if(!username) {
-                showCustomAlert("Lütfen geçerli bir TikTok kullanıcı adı girin!");
+            const inputField = document.getElementById("initial-username");
+            const username = inputField.value.trim();
+
+            if (!username) {
+                alert("Lütfen geçerli bir TikTok kullanıcı adı girin!");
                 return;
             }
 
@@ -404,115 +429,126 @@
             btn.innerText = "YAYIN SORGULANIYOR...";
             btn.disabled = true;
 
-            // Hem PC'de hem telefonda stabil çalışan global köprü adresi
-            const proxyServerUrl = `wss://tiktok-chat-reader.onrender.com?username=${username}`;
+            // Eğer uygulama Kodular WebView içindeyse sistemi tetikle
+            if (window.AppInventor) {
+                // Kodular'daki .WebViewStringChange bloğunu çalıştırır ve ismi oraya yollar
+                window.AppInventor.setWebViewString(username);
+                
+                // Menüyü kapat, oyunu göster
+                document.getElementById("launch-menu-overlay").style.display = "none";
+                
+                // Üst bar durumunu güncelle
+                const statusText = document.getElementById("status-text");
+                statusText.innerText = `BAĞLANDI: @${username.toUpperCase()}`;
+                statusText.style.color = "#10b981";
+            } else {
+                alert("Bu oyunun canlı bağlantı özelliği sadece APK uygulaması içinde çalışır!");
+                btn.innerText = "YAYINI DOĞRULA & BAŞLAT ⚔️";
+                btn.disabled = false;
+            }
+        }
+
+        // --- KODULAR TARAFININ CHAT GELDİKÇE TETİKLEYECEĞİ KÜRESEL FONKSİYONLAR ---
+        
+        // 1. Yeni Yorum Geldiğinde Çalışacak Bölüm
+        window.handleIncomingChat = function(user, comment) {
+            // Ekrana yorum kaydını bas
+            const chatBox = document.getElementById("chat-box-stream");
+            const placeholder = document.getElementById("chat-placeholder");
+            if (placeholder) placeholder.remove();
+
+            const msgDiv = document.createElement("div");
+            msgDiv.className = "chat-msg";
+            msgDiv.innerHTML = `<span class="chat-user">@${user}:</span> <span style="color:white;">${comment}</span>`;
+            chatBox.appendChild(msgDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            // Komut analizi: Örn "join 45"
+            const msg = comment.toLowerCase().trim();
+            if (msg.startsWith("join ")) {
+                const regionId = parseInt(msg.replace("join ", "").trim());
+                if (regionId >= 1 && regionId <= 80) {
+                    processRegionCapture(regionId, user);
+                }
+            }
+        };
+
+        // 2. Yeni Hediye Geldiğinde Çalışacak Bölüm
+        window.handleIncomingGift = function(user, giftName) {
+            const chatBox = document.getElementById("chat-box-stream");
+            const placeholder = document.getElementById("chat-placeholder");
+            if (placeholder) placeholder.remove();
+
+            const msgDiv = document.createElement("div");
+            msgDiv.className = "chat-msg";
+            msgDiv.innerHTML = `<span class="chat-user" style="color:#f59e0b;">🎁 @${user}:</span> <span style="color:#f59e0b; font-weight:bold;">${giftName} gönderdi!</span>`;
+            chatBox.appendChild(msgDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
             
-            try {
-                webSocketBridge = new WebSocket(proxyServerUrl);
-
-                webSocketBridge.onopen = () => {
-                    document.getElementById("launch-menu-overlay").style.display = "none";
-                    document.getElementById("status-text").innerText = `BAĞLANDI: @${username.toUpperCase()}`;
-                    document.getElementById("status-text").style.color = "#10b981";
-                };
-
-                webSocketBridge.onmessage = (event) => {
-                    const data = JSON.parse(event.data);
-                    if (data.type === "chat") {
-                        handleIncomingChat(data.uniqueId, data.comment);
-                    } else if (data.type === "gift") {
-                        handleIncomingGift(data.uniqueId, data.giftName);
-                    }
-                };
-
-                webSocketBridge.onerror = () => {
-                    showCustomAlert("Bağlantı sağlanamadı. Girdiğiniz kullanıcı canlı yayında olmayabilir.");
-                    resetConnectionUi();
-                };
-
-                webSocketBridge.onclose = () => {
-                    resetConnectionUi();
-                };
-
-            } catch(e) {
-                showCustomAlert("Bağlantı motoru başlatılamadı.");
-                resetConnectionUi();
+            // Hediye atana ödül olarak haritada rastgele 3 bölge hediye etme mekanizması
+            for(let k = 0; k < 3; k++) {
+                const randomRegion = Math.floor(Math.random() * 80) + 1;
+                processRegionCapture(randomRegion, user);
             }
-        }
+        };
 
-        function resetConnectionUi() {
-            const btn = document.getElementById("connect-trigger-btn");
-            btn.innerText = "YAYINI DOĞRULA & BAŞLAT ⚔️";
-            btn.disabled = false;
-            document.getElementById("status-text").innerText = "YAYIN KAPALI";
-            document.getElementById("status-text").style.color = "#ef4444";
-        }
+        // --- HARİTA BOYAMA VE LİSTE GÜNCELLEME SİHRİ ---
+        function processRegionCapture(regionId, username) {
+            const regionBtn = document.getElementById(`region-${regionId}`);
+            if (!regionBtn) return;
 
-        // KODULAR KÖPRÜSÜ FONKSİYONLARI (KODULAR EVALUATE JS İÇİN)
-        // Eğer Kodular APK yaparsan, uzantıdan gelen veriler doğrudan bu iki fonksiyonu tetikleyecek!
-        function handleIncomingChat(username, comment) {
-            const chatBox = document.getElementById("live-chat-box");
-            chatBox.innerHTML += `<div class="chat-msg"><span class="chat-user">${username}:</span> ${comment}</div>`;
-            chatBox.scrollTop = chatBox.scrollHeight;
-
-            const message = comment.trim().toLowerCase();
-            if(message.startsWith("join")) {
-                const parts = message.split(" ");
-                const zoneId = parseInt(parts[1]);
-                if(!isNaN(zoneId) && zoneId >= 1 && zoneId <= 100) {
-                    const zone = zonesData[zoneId];
-                    if(zone) {
-                        zone.owner = username;
-                        zone.troops += 20;
-                        document.getElementById(`zone-${zoneId}`).style.backgroundColor = "#2563eb";
-                        document.getElementById(`zone-user-${zoneId}`).innerText = `${username.substring(0,6)} (${zone.troops})`;
-                    }
-                }
-            }
-        }
-
-        function handleIncomingGift(username, giftName) {
-            const chatBox = document.getElementById("live-chat-box");
-            chatBox.innerHTML += `<div class="chat-msg" style="color:#ef4444;"><span class="chat-user">${username}:</span> 🎁 ${giftName} gönderdi!</div>`;
-            chatBox.scrollTop = chatBox.scrollHeight;
-
-            let addedTroops = 0;
-            if(giftName === "Rose" || giftName === "Gül") addedTroops = 50;
-            else if(giftName === "TikTok") addedTroops = 100;
-            else if(giftName === "Lion" || giftName === "Aslan") addedTroops = 500;
-
-            if(addedTroops > 0) {
-                for(let id in zonesData) {
-                    if(zonesData[id].owner === username) {
-                        zonesData[id].troops += addedTroops;
-                        document.getElementById(`zone-user-${id}`).innerText = `${username.substring(0,6)} (${zonesData[id].troops})`;
-                    }
-                }
-            }
-        }
-
-        function updateRealLeaderboard() {
-            const scores = {};
-            for (let id in zonesData) {
-                const owner = zonesData[id].owner;
-                if(owner) {
-                    scores[owner] = (scores[owner] || 0) + zonesData[id].troops;
-                }
+            // Kullanıcıya özel sabit rastgele renk üret
+            let userColor = mapRegions[regionId].color;
+            if (!userColor || mapRegions[regionId].owner !== username) {
+                userColor = '#' + Math.floor(Math.random()*16777215).toString(16);
             }
 
-            const sorted = Object.entries(scores).sort((a,b) => b[1] - a[1]);
-            const popupLbBox = document.getElementById("popup-leaderboard-box");
-            popupLbBox.innerHTML = "";
+            // Önceki sahibinden skoru düş
+            const oldOwner = mapRegions[regionId].owner;
+            if (oldOwner && leaderboardData[oldOwner]) {
+                leaderboardData[oldOwner]--;
+                if (leaderboardData[oldOwner] <= 0) delete leaderboardData[oldOwner];
+            }
 
-            if(sorted.length === 0) {
-                popupLbBox.innerHTML = `<div style="color:#4b5563; text-align:center; font-size:12px; padding:15px 0;">Aktif oyuncu verisi bulunmuyor.</div>`;
+            // Yeni sahibi kaydet ve rengini ata
+            mapRegions[regionId] = { owner: username, color: userColor };
+            regionBtn.style.backgroundColor = userColor;
+            
+            // Buton altındaki yazıyı güncelle
+            const userSpan = regionBtn.querySelector(".reg-user");
+            if (userSpan) userSpan.innerText = username;
+
+            // Yeni sahibine skor ekle
+            if (!leaderboardData[username]) leaderboardData[username] = 0;
+            leaderboardData[username]++;
+
+            renderLeaderboardHtml();
+        }
+
+        function renderLeaderboardHtml() {
+            const listContainer = document.getElementById("leaderboard-list-render");
+            if (!listContainer) return;
+
+            listContainer.innerHTML = "";
+            const sortedPlayers = Object.entries(leaderboardData).sort((a, b) => b[1] - a[1]);
+
+            if (sortedPlayers.length === 0) {
+                listContainer.innerHTML = '<li class="no-data">Aktif oyuncu verisi bulunmuyor.</li>';
                 return;
             }
 
-            sorted.forEach(([user, total], index) => {
-                popupLbBox.innerHTML += `<div style="display:flex; justify-content:space-between; font-size:13px; padding:6px 0; border-bottom: 1px solid #1e293b;"><div>${index+1}. <b>${user}</b></div><div style="color:#fbbf24;">${total} Asker</div></div>`;
+            sortedPlayers.forEach(([player, score], index) => {
+                const li = document.createElement("li");
+                li.className = "leaderboard-item";
+                li.innerHTML = `<span>${index + 1}. @${player}</span> <strong>${score} Bölge</strong>`;
+                listContainer.appendChild(li);
             });
         }
+
+        // Haritayı yükle
+        window.onload = function() {
+            createMapGrid();
+        };
     </script>
 </body>
 </html>
