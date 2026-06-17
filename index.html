@@ -20,7 +20,7 @@
             height: 100vh;
         }
 
-        /* --- GİRİŞ MENÜSÜ OVERLAY --- */
+        /* --- SÜPER GİRİŞ ANİMASYONU VE OVERLAY --- */
         #launch-menu-overlay {
             position: fixed;
             top: 0;
@@ -33,6 +33,7 @@
             justify-content: center;
             align-items: center;
             padding: 20px;
+            animation: fadeInOverlay 0.5s ease-in-out;
         }
 
         .menu-box {
@@ -44,6 +45,7 @@
             max-width: 400px;
             text-align: center;
             box-shadow: 0 0 25px rgba(30, 58, 138, 0.3);
+            animation: slideUpMenu 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         .menu-title {
@@ -53,6 +55,7 @@
             margin-bottom: 25px;
             letter-spacing: 1px;
             text-transform: uppercase;
+            text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
         }
 
         .menu-btn {
@@ -133,6 +136,7 @@
             font-weight: bold;
             color: #ef4444;
             font-size: 14px;
+            text-transform: uppercase;
         }
 
         .status-badge {
@@ -188,7 +192,7 @@
         }
 
         .chat-msg {
-            animation: fadeIn 0.2s ease-out;
+            animation: fadeInMsg 0.2s ease-out;
         }
 
         .chat-user {
@@ -239,14 +243,14 @@
             font-weight: 500;
         }
 
-        /* --- POP-UP MODAL (BAŞARI SIRALAMASI) --- */
+        /* --- ÖZEL POP-UP SİSTEM UYARISI MODAL --- */
         .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.75);
+            background-color: rgba(0,0,0,0.8);
             z-index: 10000;
             display: none;
             justify-content: center;
@@ -256,23 +260,54 @@
 
         .modal-box {
             background-color: #111827;
-            border: 2px solid #d97706;
+            border: 2px solid #ef4444;
             border-radius: 16px;
             width: 100%;
             max-width: 360px;
-            padding: 20px;
+            padding: 25px;
+            text-align: center;
             position: relative;
+            animation: slideUpMenu 0.3s ease-out;
+        }
+
+        .modal-box.leaderboard-style {
+            border-color: #d97706;
         }
 
         .modal-header {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 20px;
             font-size: 18px;
             font-weight: bold;
-            color: #d97706;
+            color: #ef4444;
             text-transform: uppercase;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+        }
+
+        .modal-header.gold-title {
+            color: #d97706;
+        }
+
+        .modal-body-text {
+            font-size: 14px;
+            color: #d1d5db;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .modal-confirm-btn {
+            width: 100%;
+            background-color: #ef4444;
+            color: white;
+            border: none;
+            padding: 12px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .modal-confirm-btn.gold-btn {
+            background-color: #d97706;
         }
 
         .close-modal {
@@ -282,7 +317,7 @@
             background: none;
             border: none;
             color: #9ca3af;
-            font-size: 20px;
+            font-size: 22px;
             cursor: pointer;
         }
 
@@ -293,6 +328,7 @@
             display: flex;
             flex-direction: column;
             gap: 8px;
+            text-align: left;
         }
 
         .leaderboard-item {
@@ -312,7 +348,18 @@
             padding: 20px 0;
         }
 
-        @keyframes fadeIn {
+        /* --- ANİMASYON TANIMLARI --- */
+        @keyframes fadeInOverlay {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUpMenu {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInMsg {
             from { opacity: 0; transform: translateY(3px); }
             to { opacity: 1; transform: translateY(0); }
         }
@@ -320,37 +367,31 @@
 </head>
 <body>
 
-    <!-- --- GİRİŞ VE ANA MENÜ OVERLAY --- -->
     <div id="launch-menu-overlay">
-        <!-- Ana Tercih Paneli -->
         <div id="main-menu-panel" class="menu-box">
             <div class="menu-title">BATTLEZONE LIVE</div>
             <button class="menu-btn" onclick="showUsernamePanel()">YENI OYUN (YAYINA BAĞLAN)</button>
             <button class="menu-btn secondary" onclick="openLeaderboard()">🏆 BAŞARI SIRALAMASI</button>
         </div>
 
-        <!-- Kullanıcı Adı Giriş Paneli -->
         <div id="username-panel" class="menu-box">
             <div class="menu-title">BATTLEZONE LIVE</div>
             <div class="input-group">
                 <label>TIKTOK CANLI YAYIN KULLANICI ADI</label>
-                <input type="text" id="initial-username" placeholder="Örm: yayinci_adi" autocomplete="off">
+                <input type="text" id="initial-username" placeholder="Örn: yayinci_adi" autocomplete="off">
             </div>
-            <button class="menu-btn" id="connect-trigger-btn" onclick="connectToTikTokLive()">YAYINI DOĞRULA & BAŞLAT ⚔️</button>
+            <button class="menu-btn" id="connect-trigger-btn" onclick="requestTikTokLiveConnection()">YAYINI DOĞRULA & BAŞLAT ⚔️</button>
             <button class="menu-btn secondary" style="background: #374151;" onclick="goBackToMainMenu()">← GERI DÖN</button>
         </div>
     </div>
 
-    <!-- --- OYUNUN ASIL ANA EKRANI --- -->
     <div class="game-container">
-        <!-- Üst Bilgi Çubuğu -->
         <div class="top-bar">
-            <div class="brand">COOTV <span style="color:white; font-size:11px; background:#dc2626; padding:2px 6px; border-radius:4px; margin-left:5px;">CANLI</span></div>
+            <div class="brand" id="live-streamer-name">YAYINCI <span style="color:white; font-size:11px; background:#dc2626; padding:2px 6px; border-radius:4px; margin-left:5px;">CANLI</span></div>
             <div class="status-badge" id="status-text">BAĞLANTI YOK</div>
             <button class="exit-btn" onclick="window.location.reload();">Çıkış</button>
         </div>
 
-        <!-- Canlı Sohbet Simülasyon Penceresi -->
         <div class="chat-section">
             <div class="chat-title">💬 CANLI SOHBET AKIŞI</div>
             <div class="chat-messages" id="chat-box-stream">
@@ -358,37 +399,39 @@
             </div>
         </div>
 
-        <!-- Savaş Haritası (80 Bölge) -->
         <div class="map-section">
-            <div class="map-grid" id="map-grid-container">
-                <!-- Butonlar JavaScript ile 1'den 80'e otomatik dolacak -->
-            </div>
+            <div class="map-grid" id="map-grid-container"></div>
         </div>
     </div>
 
-    <!-- --- BAŞARI SIRALAMASI MODAL --- -->
-    <div class="modal-overlay" id="leaderboard-modal">
+    <div class="modal-overlay" id="system-alert-modal">
         <div class="modal-box">
-            <button class="close-modal" onclick="closeLeaderboard()">×</button>
-            <div class="modal-header">🏆 BAŞARI SIRALAMASI</div>
-            <ul class="leaderboard-list" id="leaderboard-list-render">
-                <li class="no-data" id="leaderboard-placeholder">Aktif oyuncu verisi bulunmuyor.</li>
-            </ul>
+            <div class="modal-header">SİSTEM UYARISI</div>
+            <div class="modal-body-text" id="system-alert-text">Bağlantı sağlanamadı. Girdiğiniz kullanıcı canlı yayında olmayabilir.</div>
+            <button class="modal-confirm-btn" onclick="closeSystemAlert()">TAMAM</button>
         </div>
     </div>
 
-    <!-- --- SİSTEM MOTORU VE MANTIK KODLARI --- -->
+    <div class="modal-overlay" id="leaderboard-modal">
+        <div class="modal-box leaderboard-style">
+            <button class="close-modal" onclick="closeLeaderboard()">×</button>
+            <div class="modal-header gold-title">🏆 BAŞARI SIRALAMASI</div>
+            <ul class="leaderboard-list" id="leaderboard-list-render">
+                <li class="no-data">Aktif oyuncu verisi bulunmuyor.</li>
+            </ul>
+            <button class="modal-confirm-btn gold-btn" style="margin-top:15px;" onclick="closeLeaderboard()">KAPAT</button>
+        </div>
+    </div>
+
     <script>
         const mapRegions = {};
         const leaderboardData = {};
 
-        // Sayfa açıldığında 80 bölgeyi oluştur
         function createMapGrid() {
             const container = document.getElementById("map-grid-container");
             container.innerHTML = "";
             for (let i = 1; i <= 80; i++) {
                 mapRegions[i] = { owner: null, color: null };
-                
                 const btn = document.createElement("button");
                 btn.className = "region-btn";
                 btn.id = `region-${i}`;
@@ -415,13 +458,27 @@
             document.getElementById("leaderboard-modal").style.display = "none";
         }
 
-        // --- BUTONA BASILDIĞINDA KODULAR'A VERİ FIRLATAN KÖPRÜ ---
-        function connectToTikTokLive() {
+        // Özel Pop-up Uyarı Tetikleyicileri
+        function showSystemAlert(message) {
+            document.getElementById("system-alert-text").innerText = message;
+            document.getElementById("system-alert-modal").style.display = "flex";
+        }
+
+        function closeSystemAlert() {
+            document.getElementById("system-alert-modal").style.display = "none";
+            const btn = document.getElementById("connect-trigger-btn");
+            btn.innerText = "YAYINI DOĞRULA & BAŞLAT ⚔️";
+            btn.disabled = false;
+        }
+
+        // Butona İlk Basıldığında Çalışan Doğrulama Mantığı
+        function requestTikTokLiveConnection() {
             const inputField = document.getElementById("initial-username");
             const username = inputField.value.trim();
 
+            // 1. Boş kontrolü ve Özel Pop-up uyarısı
             if (!username) {
-                alert("Lütfen geçerli bir TikTok kullanıcı adı girin!");
+                showSystemAlert("Lütfen geçerli bir TikTok kullanıcı adı girin!");
                 return;
             }
 
@@ -429,30 +486,45 @@
             btn.innerText = "YAYIN SORGULANIYOR...";
             btn.disabled = true;
 
-            // Eğer uygulama Kodular WebView içindeyse sistemi tetikle
+            // Kodular köprüsüne ismi fırlat
             if (window.AppInventor) {
-                // Kodular'daki .WebViewStringChange bloğunu çalıştırır ve ismi oraya yollar
                 window.AppInventor.setWebViewString(username);
-                
-                // Menüyü kapat, oyunu göster
-                document.getElementById("launch-menu-overlay").style.display = "none";
-                
-                // Üst bar durumunu güncelle
-                const statusText = document.getElementById("status-text");
-                statusText.innerText = `BAĞLANDI: @${username.toUpperCase()}`;
-                statusText.style.color = "#10b981";
             } else {
-                alert("Bu oyunun canlı bağlantı özelliği sadece APK uygulaması içinde çalışır!");
-                btn.innerText = "YAYINI DOĞRULA & BAŞLAT ⚔️";
-                btn.disabled = false;
+                // Bilgisayarda test ediyorsan direkt simüle etsin diye koruma alanı
+                setTimeout(() => {
+                    executeAppLaunch(username);
+                }, 1000);
             }
         }
 
-        // --- KODULAR TARAFININ CHAT GELDİKÇE TETİKLEYECEĞİ KÜRESEL FONKSİYONLAR ---
-        
-        // 1. Yeni Yorum Geldiğinde Çalışacak Bölüm
+        // KODULAR TARAFINDAN ASIL TETİKLENECEK MOTOR FONKSİYON
+        window.checkAndStartTikTok = function() {
+            if (window.AppInventor) {
+                const username = window.AppInventor.getWebViewString();
+                if (username && username.trim() !== "") {
+                    executeAppLaunch(username.trim());
+                } else {
+                    showSystemAlert("Bağlantı sağlanamadı. Girdiğiniz kullanıcı canlı yayında olmayabilir.");
+                }
+            }
+        };
+
+        // Oyunu Başlatan ve Arayüzü Düzenleyen Kısım
+        function executeAppLaunch(username) {
+            // Giriş ekranını kapat
+            document.getElementById("launch-menu-overlay").style.display = "none";
+            
+            // Sol üstteki COOTV yazısını silip GİRİLEN KULLANICI ADINI yazıyoruz
+            document.getElementById("live-streamer-name").innerHTML = `@${username.toUpperCase()} <span style="color:white; font-size:11px; background:#dc2626; padding:2px 6px; border-radius:4px; margin-left:5px;">CANLI</span>`;
+            
+            // Üst sağ durum rozetini güncelle
+            const statusText = document.getElementById("status-text");
+            statusText.innerText = "YAYINA BAĞLANDI";
+            statusText.style.color = "#10b981";
+        }
+
+        // --- GELEN CHAT VE HEDİYE SİHRİBBAZLIĞI ---
         window.handleIncomingChat = function(user, comment) {
-            // Ekrana yorum kaydını bas
             const chatBox = document.getElementById("chat-box-stream");
             const placeholder = document.getElementById("chat-placeholder");
             if (placeholder) placeholder.remove();
@@ -463,7 +535,6 @@
             chatBox.appendChild(msgDiv);
             chatBox.scrollTop = chatBox.scrollHeight;
 
-            // Komut analizi: Örn "join 45"
             const msg = comment.toLowerCase().trim();
             if (msg.startsWith("join ")) {
                 const regionId = parseInt(msg.replace("join ", "").trim());
@@ -473,7 +544,6 @@
             }
         };
 
-        // 2. Yeni Hediye Geldiğinde Çalışacak Bölüm
         window.handleIncomingGift = function(user, giftName) {
             const chatBox = document.getElementById("chat-box-stream");
             const placeholder = document.getElementById("chat-placeholder");
@@ -485,40 +555,33 @@
             chatBox.appendChild(msgDiv);
             chatBox.scrollTop = chatBox.scrollHeight;
             
-            // Hediye atana ödül olarak haritada rastgele 3 bölge hediye etme mekanizması
             for(let k = 0; k < 3; k++) {
                 const randomRegion = Math.floor(Math.random() * 80) + 1;
                 processRegionCapture(randomRegion, user);
             }
         };
 
-        // --- HARİTA BOYAMA VE LİSTE GÜNCELLEME SİHRİ ---
         function processRegionCapture(regionId, username) {
             const regionBtn = document.getElementById(`region-${regionId}`);
             if (!regionBtn) return;
 
-            // Kullanıcıya özel sabit rastgele renk üret
             let userColor = mapRegions[regionId].color;
             if (!userColor || mapRegions[regionId].owner !== username) {
                 userColor = '#' + Math.floor(Math.random()*16777215).toString(16);
             }
 
-            // Önceki sahibinden skoru düş
             const oldOwner = mapRegions[regionId].owner;
             if (oldOwner && leaderboardData[oldOwner]) {
                 leaderboardData[oldOwner]--;
                 if (leaderboardData[oldOwner] <= 0) delete leaderboardData[oldOwner];
             }
 
-            // Yeni sahibi kaydet ve rengini ata
             mapRegions[regionId] = { owner: username, color: userColor };
             regionBtn.style.backgroundColor = userColor;
             
-            // Buton altındaki yazıyı güncelle
             const userSpan = regionBtn.querySelector(".reg-user");
             if (userSpan) userSpan.innerText = username;
 
-            // Yeni sahibine skor ekle
             if (!leaderboardData[username]) leaderboardData[username] = 0;
             leaderboardData[username]++;
 
@@ -545,7 +608,6 @@
             });
         }
 
-        // Haritayı yükle
         window.onload = function() {
             createMapGrid();
         };
