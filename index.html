@@ -139,7 +139,7 @@
             outline: none;
         }
 
-        /* ÖZEL PENCERELER (SANA ÖZEL MODALLAR) */
+        /* ÖZEL PENCERELER (MODALLAR) */
         .custom-modal {
             display: none;
             position: fixed;
@@ -176,33 +176,68 @@
         /* HARİTA VE PANEL YAPILARI */
         header { background: #111827; padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #1f2937; }
         .live-badge { background: #ef4444; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
-        .main-title { font-size: 20px; font-weight: 800; color: #fbbf24; }
+        .main-title { font-size: 16px; font-weight: 800; color: #fbbf24; }
         
-        .game-container { display: flex; flex: 1; overflow: hidden; padding: 12px; gap: 12px; }
+        .game-container { display: flex; flex-direction: column; flex: 1; overflow: hidden; padding: 12px; gap: 12px; }
         .panel { background: #111827; border: 1px solid #1f2937; border-radius: 12px; display: flex; flex-direction: column; padding: 15px; }
         .panel-title { color: #f59e0b; font-size: 13px; font-weight: bold; margin-bottom: 12px; text-transform: uppercase; }
 
-        .left-side { width: 280px; gap: 12px; }
-        .chat-box { flex: 1; overflow-y: auto; background: #0f172a; border: 1px solid #1e293b; border-radius: 8px; padding: 10px; }
+        .chat-box { height: 140px; overflow-y: auto; background: #0f172a; border: 1px solid #1e293b; border-radius: 8px; padding: 10px; }
         
-        /* 1000192173_2.png Organik Petek Harita Düzeni */
-        .center-side { flex: 1; display: flex; align-items: center; justify-content: center; background: #0f172a; border-radius: 12px; border: 1px solid #1e293b; padding: 20px; }
-        .organic-map-container { display: grid; grid-template-columns: repeat(10, 52px); grid-auto-rows: 46px; gap: 4px; }
+        /* Türkiye Haritası Modeli (8 Genişlikli Komşuluk Izgarası) */
+        .center-side { flex: 1; display: flex; align-items: center; justify-content: center; background: #0f172a; border-radius: 12px; border: 1px solid #1e293b; padding: 10px; overflow-y: auto; }
+        .organic-map-container { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; width: 100%; }
         
         .map-zone {
             background: #1f2937;
             border: 1px solid #374151;
             color: #fff;
-            font-size: 11px;
+            font-size: 12px;
             font-weight: bold;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            border-radius: 6px;
+            justify-content: space-between;
+            border-radius: 8px;
+            padding: 6px 2px;
+            min-height: 58px;
+            position: relative;
+            transition: all 0.3s;
         }
-        .map-zone:nth-child(2n) { transform: translateY(12px); background: #1e293b; }
-        .zone-user { font-size: 8px; color: #fbbf24; text-align: center; width: 100%; overflow: hidden; }
+        .zone-user { font-size: 9px; color: #ffffff; text-align: center; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: bold; }
+        .zone-troops { font-size: 8px; color: #10b981; font-weight: 900; }
+
+        /* --- SAVAŞ SİMÜLASYON EFEKTLERİ --- */
+        .battle-effect-container {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(239, 68, 68, 0.25);
+            border: 2px dashed #ef4444;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            font-size: 14px;
+            animation: battlePulse 0.4s infinite alternate;
+        }
+
+        @keyframes battlePulse {
+            from { opacity: 0.5; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1.02); }
+        }
+
+        /* Yıkılmak Üzere Olan Bölge (Ateş Efekti) */
+        .fire-active {
+            border: 2px solid #f97316 !important;
+            box-shadow: 0 0 15px #ef4444, inset 0 0 12px #f97316 !important;
+            animation: burningArea 0.3s infinite alternate !important;
+        }
+
+        @keyframes burningArea {
+            from { background-color: #240c02; }
+            to { background-color: #571601; }
+        }
 
         .chat-msg { font-size: 12px; margin-bottom: 4px; word-break: break-all; }
         .chat-user { font-weight: bold; color: #3b82f6; }
@@ -220,8 +255,8 @@
     <div id="custom-alert" class="custom-modal">
         <div class="modal-box alert-border">
             <h3>SİSTEM UYARISI</h3>
-            <p id="alert-msg">Mesaj...</p>
-            <button style="background:#ef4444; color:white; border:none; padding:10px 24px; border-radius:6px; font-weight:bold; cursor:pointer; margin-top:15px;" onclick="closeCustomAlert()">TAMAM</button>
+            <p id="alert-msg" style="color:#d1d5db; margin-top:10px;">Mesaj...</p>
+            <button style="background:#ef4444; color:white; border:none; padding:10px 24px; border-radius:6px; font-weight:bold; cursor:pointer; margin-top:15px; width:100%;" onclick="closeCustomAlert()">TAMAM</button>
         </div>
     </div>
 
@@ -257,15 +292,15 @@
 
     <header>
         <div style="display:flex; align-items:center; gap:10px;">
-            <span style="font-weight:900;">COOTV</span>
+            <span style="font-weight:900; text-transform: uppercase;" id="live-streamer-name">YAYINCI</span>
             <span class="live-badge">CANLI</span>
         </div>
-        <div class="main-title">TÜM BÖLGELERİ ELE GEÇİR, ZAFERE ULAŞ!</div>
-        <button style="background:#ef4444; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold;" onclick="location.reload()">Bağlantıyı Kes</button>
+        <div class="main-title">BATTLEZONE SAVAŞ ALANI</div>
+        <button style="background:#ef4444; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold;" onclick="location.reload()">Çıkış</button>
     </header>
 
     <div class="game-container">
-        <div class="panel left-side">
+        <div class="panel">
             <div class="panel-title">💬 CANLI YAYIN SOHBET AKIŞI</div>
             <div class="chat-box" id="live-chat-box"></div>
         </div>
@@ -277,16 +312,25 @@
 
     <footer>
         <div>Durum: <span id="status-text" style="color:#ef4444; font-weight:bold;">BAĞLANTI YOK</span></div>
-        <div>Harita: 100 Bölge (Gerçek Oyuncu Modu)</div>
+        <div style="font-size:10px; color:#9ca3af;">Komşuya: attack [No] | Asker Tazele: asker [No] | Uzak: alliance [No]</div>
     </footer>
 
     <script>
-        let webSocketBridge = null;
         const zonesData = {};
+
+        // Türkiye Enlem Yakınlık Formülü (8'li Izgara Modeli)
+        function getZoneDistance(z1, z2) {
+            const r1 = Math.floor((z1 - 1) / 8);
+            const c1 = (z1 - 1) % 8;
+            const r2 = Math.floor((z2 - 1) / 8);
+            const c2 = (z2 - 1) % 8;
+            return Math.abs(r1 - r2) + Math.abs(c1 - c2);
+        }
 
         window.addEventListener("DOMContentLoaded", () => {
             initializeEmptyMap();
             
+            // Kodundaki Sinematik Giriş Animasyonu Sayacı
             setTimeout(() => {
                 const splash = document.getElementById("splash-screen");
                 const overlay = document.getElementById("launch-menu-overlay");
@@ -303,20 +347,19 @@
             document.getElementById("main-menu-buttons").style.display = "none";
             document.getElementById("connection-form").style.display = "block";
         }
-
         function hideConnectionForm() {
             document.getElementById("connection-form").style.display = "none";
             document.getElementById("main-menu-buttons").style.display = "flex";
         }
-
         function showCustomAlert(msg) {
             document.getElementById('alert-msg').innerText = msg;
             document.getElementById('custom-alert').style.display = 'flex';
         }
         function closeCustomAlert() {
             document.getElementById('custom-alert').style.display = 'none';
+            const btn = document.getElementById("connect-trigger-btn");
+            if(btn) { btn.disabled = false; btn.innerText = "YAYINI DOĞRULA & BAŞLAT ⚔️"; }
         }
-
         function openLeaderboardModal() {
             updateRealLeaderboard();
             document.getElementById('custom-leaderboard-modal').style.display = 'flex';
@@ -328,17 +371,17 @@
         function initializeEmptyMap() {
             const mapContainer = document.getElementById("organic-map");
             mapContainer.innerHTML = "";
-            for(let i = 1; i <= 100; i++) {
-                zonesData[i] = { id: i, owner: "", troops: 0 };
+            for(let i = 1; i <= 80; i++) {
+                zonesData[i] = { id: i, owner: null, color: '#1f2937', troops: 100, isAttacking: false, targetId: null };
                 const zone = document.createElement("div");
                 zone.className = "map-zone";
                 zone.id = `zone-${i}`;
-                zone.innerHTML = `<div>${i}</div><div class="zone-user" id="zone-user-${i}"></div>`;
+                zone.innerHTML = `<div>${i}</div><div class="zone-user" id="zone-user-${i}">Boş</div><div class="zone-troops" id="troops-${i}">HP: 100</div>`;
                 mapContainer.appendChild(zone);
             }
         }
 
-        // 🚀 TARAYICI ENGELİNİ AŞAN GERÇEK WEB BULUT KÖPRÜSÜ
+        // KODULAR KÖPRÜSÜNÜ TETİKLEYEN BAĞLANTI BUTONU
         function connectToTikTokLive() {
             const username = document.getElementById("initial-username").value.trim();
             if(!username) {
@@ -350,103 +393,170 @@
             btn.innerText = "YAYIN SORGULANIYOR...";
             btn.disabled = true;
 
-            // Tarayıcı CORS engelini aşmak için dünya standartlarındaki ücretsiz açık sunucu köprüsüne bağlanıyoruz
-            const proxyServerUrl = `wss://tiktok-chat-reader.onrender.com?username=${username}`;
+            if (window.AppInventor) {
+                window.AppInventor.setWebViewString(username);
+            } else {
+                executeAppLaunch(username); // PC Tarayıcı testi koruması
+            }
+        }
+
+        // KODULAR'IN AGENT OLARAK ÇALIŞTIRACAĞI KÜRESEL DOĞRULAMA FONKSİYONU
+        window.checkAndStartTikTok = function() {
+            if (window.AppInventor) {
+                const username = window.AppInventor.getWebViewString();
+                if (username && username.trim() !== "") {
+                    executeAppLaunch(username.trim());
+                } else {
+                    showCustomAlert("Bağlantı sağlanamadı. Girdiğiniz kullanıcı canlı yayında olmayabilir.");
+                }
+            }
+        };
+
+        function executeAppLaunch(username) {
+            document.getElementById("launch-menu-overlay").style.display = "none";
+            document.getElementById("live-streamer-name").innerText = `@${username.toUpperCase()}`;
+            document.getElementById("status-text").innerText = "YAYINA BAĞLANDI";
+            document.getElementById("status-text").style.color = "#10b981";
+        }
+
+        // CHAT VE STRATEJİK KOMUT İŞLEME MOTORU
+        window.handleIncomingChat = function(user, comment) {
+            const chatBox = document.getElementById("live-chat-box");
+            chatBox.innerHTML += `<div class="chat-msg"><span class="chat-user">@${user}:</span> <span style="color:#fff;">${comment}</span></div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            const msg = comment.toLowerCase().trim();
             
-            try {
-                webSocketBridge = new WebSocket(proxyServerUrl);
-
-                webSocketBridge.onopen = () => {
-                    // Bağlantı kuruldu, ekranı aç
-                    document.getElementById("launch-menu-overlay").style.display = "none";
-                    document.getElementById("status-text").innerText = `BAĞLANDI: @${username.toUpperCase()}`;
-                    document.getElementById("status-text").style.color = "#10b981";
-                };
-
-                webSocketBridge.onmessage = (event) => {
-                    const data = JSON.parse(event.data);
-                    
-                    // Gelen veri türüne göre ayrıştır
-                    if (data.type === "chat") {
-                        handleIncomingChat(data.uniqueId, data.comment);
-                    } else if (data.type === "gift") {
-                        handleIncomingGift(data.uniqueId, data.giftName);
-                    }
-                };
-
-                webSocketBridge.onerror = () => {
-                    showCustomAlert("Girdiğiniz kullanıcı şu an CANLI YAYINDA değil! Lütfen önce yayını açın.");
-                    resetConnectionUi();
-                };
-
-                webSocketBridge.onclose = () => {
-                    resetConnectionUi();
-                };
-
-            } catch(e) {
-                showCustomAlert("Bağlantı köprüsü şu an meşgul, az sonra tekrar deneyin.");
-                resetConnectionUi();
+            if (msg.startsWith("asker ")) {
+                const id = parseInt(msg.replace("asker ", "").trim());
+                if (id >= 1 && id <= 80) handleTroopDeploy(id, user);
             }
-        }
+            else if (msg.startsWith("attack ")) {
+                const id = parseInt(msg.replace("attack ", "").trim());
+                if (id >= 1 && id <= 80) handleAttackCommand(id, user);
+            }
+            else if (msg.startsWith("alliance ")) {
+                const id = parseInt(msg.replace("alliance ", "").trim());
+                if (id >= 1 && id <= 80) handleAllianceCommand(id, user);
+            }
+        };
 
-        function resetConnectionUi() {
-            const btn = document.getElementById("connect-trigger-btn");
-            btn.innerText = "YAYINI DOĞRULA & BAŞLAT ⚔️";
-            btn.disabled = false;
-            document.getElementById("status-text").innerText = "YAYIN KAPALI";
-            document.getElementById("status-text").style.color = "#ef4444";
-        }
-
-        // GERÇEK SOHBETİ HARİTAYA İŞLEME (ASLA BOT BARINDIRMAZ)
-        function handleIncomingChat(username, comment) {
+        // HEDİYE SİSTEMİ ENTEGRASYONU
+        window.handleIncomingGift = function(user, giftName) {
             const chatBox = document.getElementById("live-chat-box");
-            chatBox.innerHTML += `<div class="chat-msg"><span class="chat-user">${username}:</span> ${comment}</div>`;
+            chatBox.innerHTML += `<div class="chat-msg" style="color:#fbbf24;"><span class="chat-user">🎁 @${user}:</span> <b>${giftName} gönderdi!</b></div>`;
             chatBox.scrollTop = chatBox.scrollHeight;
-
-            const message = comment.trim().toLowerCase();
-            if(message.startsWith("join")) {
-                const parts = message.split(" ");
-                const zoneId = parseInt(parts[1]);
-                if(!isNaN(zoneId) && zoneId >= 1 && zoneId <= 100) {
-                    const zone = zonesData[zoneId];
-                    if(zone) {
-                        zone.owner = username;
-                        zone.troops += 20;
-                        document.getElementById(`zone-${zoneId}`).style.backgroundColor = "#2563eb";
-                        document.getElementById(`zone-user-${zoneId}`).innerText = `${username} (${zone.troops})`;
-                    }
+            
+            // Hediye verene rastgele bir bölgesine büyük takviye yap veya boş yeri kapmasını sağla
+            for(let id in zonesData) {
+                if(zonesData[id].owner === user) {
+                    zonesData[id].troops = Math.min(zonesData[id].troops + 50, 100);
+                    document.getElementById(`troops-${id}`).innerText = `HP: ${zonesData[id].troops}`;
+                    document.getElementById(`zone-${id}`).classList.remove("fire-active");
                 }
             }
-        }
+        };
 
-        // GERÇEK HEDİYELERİ HARİTAYA İŞLEME
-        function handleIncomingGift(username, giftName) {
-            const chatBox = document.getElementById("live-chat-box");
-            chatBox.innerHTML += `<div class="chat-msg" style="color:#ef4444;"><span class="chat-user">${username}:</span> 🎁 ${giftName} gönderdi!</div>`;
-            chatBox.scrollTop = chatBox.scrollHeight;
-
-            let addedTroops = 0;
-            if(giftName === "Rose" || giftName === "Gül") addedTroops = 50;
-            else if(giftName === "TikTok") addedTroops = 100;
-            else if(giftName === "Lion" || giftName === "Aslan") addedTroops = 500;
-
-            if(addedTroops > 0) {
-                for(let id in zonesData) {
-                    if(zonesData[id].owner === username) {
-                        zonesData[id].troops += addedTroops;
-                        document.getElementById(`zone-user-${id}`).innerText = `${username} (${zonesData[id].troops})`;
-                    }
-                }
+        // 🛡️ 1. ASKER BASMA VE YENİLEME MANTIĞI
+        function handleTroopDeploy(id, user) {
+            const zone = zonesData[id];
+            const el = document.getElementById(`zone-${id}`);
+            
+            if (zone.owner === null || zone.owner === user) {
+                zone.owner = user;
+                zone.troops = Math.min(zone.troops + 35, 100);
+                
+                el.classList.remove("fire-active"); // Asker basılınca o yangın/alev söner!
+                
+                if (zone.color === '#1f2937') zone.color = '#' + Math.floor(Math.random()*16777215).toString(16);
+                el.style.backgroundColor = zone.color;
+                document.getElementById(`zone-user-${id}`).innerText = user;
+                document.getElementById(`troops-${id}`).innerText = `HP: ${zone.troops}`;
             }
         }
 
+        // ⚔️ 2. STRATEJİK SALDIRI VE OK/KILIÇ SİMÜLASYONU
+        function handleAttackCommand(targetId, attackerUser) {
+            let sourceId = null;
+            for (let i = 1; i <= 80; i++) {
+                if (zonesData[i].owner === attackerUser) { sourceId = i; break; }
+            }
+
+            if (!sourceId || sourceId === targetId) return;
+
+            // Türkiye haritası komşuluk kontrolü (Maksimum 2 birim uzaklıkta olanlar komşu sayılır)
+            const distance = getZoneDistance(sourceId, targetId);
+            if (distance > 2) return; // Çok uzaktaki bölgeye savaş açamaz!
+
+            const sourceZone = zonesData[sourceId];
+            const targetZone = zonesData[targetId];
+
+            if (targetZone.owner === null || targetZone.owner === attackerUser) return;
+            if (sourceZone.troops <= 0) return; // Yangın varken, yıkık durumdayken saldıramaz
+
+            sourceZone.isAttacking = true;
+            sourceZone.targetId = targetId;
+
+            const sourceEl = document.getElementById(`zone-${sourceId}`);
+            const targetEl = document.getElementById(`zone-${targetId}`);
+
+            // Karşılıklı Çift Taraflı Saldırı Kontrolü (11 v 12 senaryosu)
+            if (targetZone.isAttacking && targetZone.targetId === sourceId) {
+                sourceEl.innerHTML += `<div class="battle-effect-container" id="battle-eff-${sourceId}">🏹⚔️🏹</div>`;
+                targetEl.innerHTML += `<div class="battle-effect-container" id="battle-eff-${targetId}">🏹⚔️🏹</div>`;
+                targetZone.troops -= 20;
+                sourceZone.troops -= 20;
+            } else {
+                // Tek taraflı ok fırlatma simülasyonu
+                targetEl.innerHTML += `<div class="battle-effect-container" id="battle-eff-${targetId}">🏹➔</div>`;
+                targetZone.troops -= 25;
+            }
+
+            // Can/Asker Kontrolü Sıfırlanma (Ateş efekti tetikleme)
+            if (targetZone.troops <= 0) {
+                targetZone.troops = 0;
+                targetEl.classList.add("fire-active"); // Asker bitti, bölge alevler içinde!
+            }
+            if (sourceZone.troops <= 0) {
+                sourceZone.troops = 0;
+                sourceEl.classList.add("fire-active");
+            }
+
+            document.getElementById(`troops-${sourceId}`).innerText = `HP: ${sourceZone.troops}`;
+            document.getElementById(`troops-${targetId}`).innerText = `HP: ${targetZone.troops}`;
+
+            // Efektlerin Ekranda Kalma Süresi (1.5 Saniye sonra temizlenir)
+            setTimeout(() => {
+                const effSource = document.getElementById(`battle-eff-${sourceId}`);
+                const effTarget = document.getElementById(`battle-eff-${targetId}`);
+                if (effSource) effSource.remove();
+                if (effTarget) effTarget.remove();
+                sourceZone.isAttacking = false;
+            }, 1500);
+        }
+
+        // 🤝 3. UZAKTAKİLERE İTTİFAK KURMA MANTIĞI
+        function handleAllianceCommand(targetId, user) {
+            let sourceId = null;
+            for (let i = 1; i <= 80; i++) {
+                if (zonesData[i].owner === user) { sourceId = i; break; }
+            }
+            if (!sourceId || sourceId === targetId) return;
+
+            const distance = getZoneDistance(sourceId, targetId);
+            if (distance > 2) {
+                // Uzaktaki bölgeye sadece ittifak atabilir (Yeşil kesikli bağ çizgisi)
+                const sourceEl = document.getElementById(`zone-${sourceId}`);
+                sourceEl.style.border = "2px dashed #10b981";
+            }
+        }
+
+        // SKOR TABLOSU GÜNCELLEME MANTIĞI
         function updateRealLeaderboard() {
             const scores = {};
             for (let id in zonesData) {
                 const owner = zonesData[id].owner;
-                if(owner) {
-                    scores[owner] = (scores[owner] || 0) + zonesData[id].troops;
-                }
+                if(owner) { scores[owner] = (scores[owner] || 0) + zonesData[id].troops; }
             }
 
             const sorted = Object.entries(scores).sort((a,b) => b[1] - a[1]);
@@ -459,7 +569,7 @@
             }
 
             sorted.forEach(([user, total], index) => {
-                popupLbBox.innerHTML += `<div style="display:flex; justify-content:space-between; font-size:13px; padding:6px 0; border-bottom: 1px solid #1e293b;"><div>${index+1}. <b>${user}</b></div><div style="color:#fbbf24;">${total} Asker</div></div>`;
+                popupLbBox.innerHTML += `<div style="display:flex; justify-content:space-between; font-size:13px; padding:6px 0; border-bottom: 1px solid #1e293b;"><div>${index+1}. <b>${user}</b></div><div style="color:#fbbf24;">${total} Ordu</div></div>`;
             });
         }
     </script>
