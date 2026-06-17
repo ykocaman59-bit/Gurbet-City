@@ -139,7 +139,6 @@
             outline: none;
         }
 
-        /* Modern Slider Stili */
         .slider-wrapper { margin-top: 10px; margin-bottom: 20px; }
         .slider-val-display { float: right; color: #fbbf24; font-weight: bold; font-size: 14px; }
         .custom-slider { width: 100%; accent-color: #2563eb; cursor: pointer; margin-top: 8px; }
@@ -190,7 +189,6 @@
         .left-side { width: 280px; gap: 12px; }
         .chat-box { flex: 1; overflow-y: auto; background: #0f172a; border: 1px solid #1e293b; border-radius: 8px; padding: 10px; }
         
-        /* Organik Petek Harita Düzeni */
         .center-side { flex: 1; display: flex; align-items: center; justify-content: center; background: #0f172a; border-radius: 12px; border: 1px solid #1e293b; padding: 20px; overflow: auto; }
         .organic-map-container { display: grid; grid-template-columns: repeat(10, 52px); grid-auto-rows: 46px; gap: 4px; }
         
@@ -256,7 +254,6 @@
                     <input type="text" id="initial-username" placeholder="Örn: yayinci_adi" autocomplete="off">
                 </div>
 
-                <!-- İstediğin Bölge Sayısı Ayarlama Çubuğu (Slider) -->
                 <div class="slider-wrapper">
                     <label style="color: #9ca3af; font-size: 12px; text-transform: uppercase;">
                         Harita Bölge Sayısı: <span class="slider-val-display" id="slider-val">50</span>
@@ -298,7 +295,9 @@
     <script>
         let webSocketBridge = null;
         const zonesData = {};
-        let maxZones = 50; // Varsayılan bölge sayısı
+        let maxZones = 50;
+        let retryCount = 0;
+        const maxRetries = 3;
 
         window.addEventListener("DOMContentLoaded", () => {
             updateSliderDisplay(50);
@@ -350,12 +349,10 @@
             document.getElementById('custom-leaderboard-modal').style.display = 'none';
         }
 
-        // Dinamik Bölge Sayısına Göre Haritayı Çizdirme Fonksiyonu
         function initializeEmptyMap() {
             const mapContainer = document.getElementById("organic-map");
             mapContainer.innerHTML = "";
             
-            // Seçilen bölge sayısına göre grid kolon sayısını dengeli ayarla
             let cols = 10;
             if (maxZones <= 20) cols = 5;
             else if (maxZones <= 40) cols = 8;
@@ -372,7 +369,7 @@
             document.getElementById("footer-zone-count").innerText = maxZones;
         }
 
-        // TEYİT MEKANİZMALI VE CANLI YAYIN KONTROLLÜ DOĞRULAMA KÖPRÜSÜ
+        // AKILLI SORGULAMA VE BAĞLANTI MOTORU
         function connectToTikTokLive() {
             const username = document.getElementById("initial-username").value.trim();
             if(!username) {
@@ -381,19 +378,26 @@
             }
 
             const btn = document.getElementById("connect-trigger-btn");
-            btn.innerText = "YAYIN SORGULANIYOR...";
+            
+            if(retryCount === 0) {
+                btn.innerText = "YAYIN SORGULANIYOR...";
+            } else {
+                btn.innerText = `SAYFA UYANDIRILIYOR (${retryCount}/${maxRetries})...`;
+            }
             btn.disabled = true;
 
-            // Dünya standartlarında çalışan canlı yayın proxy köprüsü
             const proxyServerUrl = `wss://tiktok-chat-reader.onrender.com?username=${username}`;
             
             try {
+                if(webSocketBridge) {
+                    webSocketBridge.close();
+                }
+
                 webSocketBridge = new WebSocket(proxyServerUrl);
 
                 webSocketBridge.onopen = () => {
-                    // Yayın doğrulandı ve bağlandı, haritayı şimdi çiz ve oyunu başlat!
+                    retryCount = 0; // Sıfırla
                     initializeEmptyMap();
-                    
                     document.getElementById("launch-menu-overlay").style.display = "none";
                     document.getElementById("status-text").innerText = `BAĞLANDI: @${username.toUpperCase()}`;
                     document.getElementById("status-text").style.color = "#10b981";
@@ -402,7 +406,6 @@
 
                 webSocketBridge.onmessage = (event) => {
                     const data = JSON.parse(event.data);
-                    
                     if (data.type === "chat") {
                         handleIncomingChat(data.uniqueId, data.comment);
                     } else if (data.type === "gift") {
@@ -411,21 +414,30 @@
                 };
 
                 webSocketBridge.onerror = () => {
-                    showCustomAlert("Girdiğiniz kullanıcı adı bulunamadı veya şu an CANLI YAYINDA değil! Oyun başlatılamaz.");
-                    resetConnectionUi();
+                    // Eğer ilk denemede hata verirse sunucu uykuda olabilir, tekrar dene
+                    if(retryCount < maxRetries) {
+                        retryCount++;
+                        setTimeout(() => {
+                            connectToTikTokLive();
+                        }, 2000); // 2 saniye bekleyip tekrar vurur
+                    } else {
+                        showCustomAlert("Girdiğiniz kullanıcı adı bulunamadı veya yayın henüz yeni açıldığı için sistem senkronize olamadı! Lütfen 1 dakika sonra tekrar deneyin.");
+                        resetConnectionUi();
+                    }
                 };
 
                 webSocketBridge.onclose = () => {
-                    resetConnectionUi();
+                    if(retryCount === 0) resetConnectionUi();
                 };
 
             } catch(e) {
-                showCustomAlert("Bağlantı köprüsü meşgul, lütfen az sonra tekrar deneyin.");
+                showCustomAlert("Bağlantı motorunda geçici bir hata oluştu.");
                 resetConnectionUi();
             }
         }
 
         function resetConnectionUi() {
+            retryCount = 0;
             const btn = document.getElementById("connect-trigger-btn");
             if(btn) {
                 btn.innerText = "YAYINI DOĞRULA & BAŞLAT ⚔️";
@@ -435,7 +447,6 @@
             document.getElementById("status-text").style.color = "#ef4444";
         }
 
-        // GERÇEK SOHBETİ HARİTAYA İŞLEME (TIKTOK YORUMLARI İLE OYUN YÖNETİMİ)
         function handleIncomingChat(username, comment) {
             const chatBox = document.getElementById("live-chat-box");
             chatBox.innerHTML += `<div class="chat-msg"><span class="chat-user">${username}:</span> ${comment}</div>`;
@@ -457,7 +468,6 @@
             }
         }
 
-        // GERÇEK HEDİYELERİ HARİTAYA İŞLEME
         function handleIncomingGift(username, giftName) {
             const chatBox = document.getElementById("live-chat-box");
             chatBox.innerHTML += `<div class="chat-msg" style="color:#ef4444;"><span class="chat-user">${username}:</span> 🎁 ${giftName} gönderdi!</div>`;
@@ -503,4 +513,4 @@
     </script>
 </body>
 </html>
-      
+   
