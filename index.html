@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BATTLEZONE LİVE</title>
+    <title>Battlezone Canlı Savaş - %100 İzleyici Garantili</title>
     <style>
         * {
             box-sizing: border-box; margin: 0; padding: 0;
@@ -29,18 +29,6 @@
         header { background: #111827; padding: 10px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #1f2937; height: 50px; }
         .live-badge { background: #ef4444; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; }
         
-        /* KAZANANLAR SIRALAMA PENCERESİ */
-        #leaderboard-modal {
-            display: none; position: fixed; inset: 0; background: rgba(11, 15, 23, 0.95);
-            z-index: 10000; padding: 20px; display: flex; align-items: center; justify-content: center;
-        }
-        #leaderboard-modal.active { display: flex; }
-        .modal-box { background: #111827; border: 2px solid #f59e0b; border-radius: 16px; padding: 20px; width: 90%; max-width: 340px; display: flex; flex-direction: column; max-height: 80vh; }
-        .modal-box h3 { color: #f59e0b; text-align: center; margin-bottom: 15px; font-size: 18px; }
-        .leaderboard-scroll { flex: 1; overflow-y: auto; margin-bottom: 15px; padding-right: 5px; }
-        .lb-item { display: flex; justify-content: space-between; padding: 8px 10px; background: #1f2937; margin-bottom: 4px; border-radius: 6px; font-size: 13px; font-weight: bold; }
-        .close-modal-btn { background: #ef4444; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; }
-
         /* DIKEY MOBIL DUZEN */
         .game-container { display: flex; flex-direction: column; flex: 1; overflow: hidden; padding: 6px; gap: 6px; height: calc(100vh - 110px); }
         
@@ -65,15 +53,14 @@
             align-content: center;
         }
         
-        /* BÖLGE KUTULARI (Yazı Rengi Siyah/Koyu Yapıldı ki Parlak Renklerde Okunsun) */
+        /* BÖLGE KUTULARI */
         .map-zone { 
-            color: #111827; font-size: 10px; font-weight: bold; 
+            background: #1f2937; border: 1px solid #374151; color: #fff; font-size: 10px; font-weight: bold; 
             display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 3px;
             height: 100%; min-height: 25px; transition: background-color 0.2s; position: relative;
-            border: 1px solid rgba(0, 0, 0, 0.15);
         }
         .zone-number { font-size: 10px; font-weight: 900; }
-        .zone-user { font-size: 7px; color: #000000; font-weight: bold; text-align: center; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .zone-user { font-size: 7px; color: #fbbf24; text-align: center; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         
         .space-block { visibility: hidden; }
 
@@ -87,7 +74,7 @@
 
     <div id="launch-menu-overlay">
         <div class="login-box">
-            <h2>BATTLEZONE LİVE</h2>
+            <h2>BATTLEZONE ULTIMATE</h2>
             <div class="input-group">
                 <label>TikTok @ Kullanıcı Adı (ID)</label>
                 <input type="text" id="initial-username" placeholder="Örn: krasofi" autocomplete="off">
@@ -96,24 +83,12 @@
         </div>
     </div>
 
-    <div id="leaderboard-modal">
-        <div class="modal-box">
-            <h3>🏆 BÖLGE VE ASKER SIRALAMASI</h3>
-            <div class="leaderboard-scroll" id="leaderboard-list">
-                </div>
-            <button class="close-modal-btn" onclick="toggleLeaderboard(false)">PENCEREYİ KAPAT</button>
-        </div>
-    </div>
-
     <header>
         <div style="display:flex; align-items:center; gap:6px;">
-            <span style="font-weight:900; color:#2563eb; font-size: 13px;" id="header-logo-text">BATTLEZONE LİVE</span>
+            <span style="font-weight:900; color:#2563eb; font-size: 13px;" id="header-logo-text">BATTLEZONE</span>
             <span class="live-badge">CANLI</span>
         </div>
-        <div>
-            <button onclick="toggleLeaderboard(true)" style="background: #f59e0b; color: #111827; border: none; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; margin-right: 10px;">🏆 KAZANANLAR</button>
-            <span id="status-text" style="color:#ef4444; font-weight:bold; font-size: 11px;">BAĞLANTI YOK</span>
-        </div>
+        <div id="status-text" style="color:#ef4444; font-weight:bold; font-size: 11px;">BAĞLANTI YOK</div>
     </header>
 
     <div class="game-container">
@@ -131,7 +106,7 @@
             📜 GİRİŞ: join[no] | SALDIRI: saldır[no][no] | DESTEK: destek[no]
         </div>
         <div class="footer-row">
-            <div>Harita: Dinamik Değişken Parlak İl Düzeni</div>
+            <div>Harita: Türkiye Formu (100 Bölge Kesin Çözüm)</div>
             <div style="color: #10b981; font-weight: bold;">Gelişmiş Algılama Motoru Aktif</div>
         </div>
     </footer>
@@ -140,13 +115,6 @@
         const zonesData = {};
         const totalZones = 100;
         let activeHostName = "";
-
-        // Gözü yormayan, koyu olmayan cıvıl cıvıl parlak pastel renk havuzu
-        const brightColors = [
-            "#ffadad", "#ffd6a5", "#fdffb6", "#caffbf", "#9bf6ff", "#a0c4ff", "#bdb2ff", "#ffc6ff",
-            "#ff9f1c", "#2ec4b6", "#ffccd5", "#ffb3c1", "#ff85a1", "#72efdd", "#4ea8de", "#56cfe1",
-            "#bfd200", "#f4a261", "#e9c46a", "#2a9d8f", "#e76f51", "#06d6a0", "#ffd166", "#ff6b6b"
-        ];
 
         // TÜRKİYE ŞERİDİ EN-BOY GRİDİ
         const mapLayout = [
@@ -161,27 +129,9 @@
             [0,0,92,93,94,95,96,97,98,99,100,0]
         ];
 
-        // Sayıları karıştırmak için Fisher-Yates algoritması
-        function shuffle(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-            return array;
-        }
-
         function buildOrganicMap() {
             const mapContainer = document.getElementById("organic-map");
             mapContainer.innerHTML = "";
-
-            // 1'den 100'e kadar olan sayıları bir diziye atıp karıştırıyoruz
-            let numbersList = [];
-            for (let i = 1; i <= 100; i++) {
-                numbersList.push(i);
-            }
-            numbersList = shuffle(numbersList);
-            let numberPointer = 0;
-
             mapLayout.forEach(row => {
                 row.forEach(cell => {
                     if (cell === 0) {
@@ -189,21 +139,12 @@
                         space.className = "space-block";
                         mapContainer.appendChild(space);
                     } else {
-                        // Rastgele karıştırılmış numarayı slottan çekiyoruz
-                        const randomNum = numbersList[numberPointer];
-                        // Rastgele parlak renk seçimi
-                        const randomColor = brightColors[Math.floor(Math.random() * brightColors.length)];
-
-                        zonesData[randomNum] = { id: randomNum, owner: "", troops: 0, defaultColor: randomColor };
-                        
+                        zonesData[cell] = { id: cell, owner: "", troops: 0 };
                         const zone = document.createElement("div");
                         zone.className = "map-zone";
-                        zone.id = `zone-${randomNum}`;
-                        zone.style.backgroundColor = randomColor;
-                        zone.innerHTML = `<div class="zone-number">${randomNum}</div><div class="zone-user" id="zone-user-${randomNum}">-</div>`;
-                        
+                        zone.id = `zone-${cell}`;
+                        zone.innerHTML = `<div class="zone-number">${cell}</div><div class="zone-user" id="zone-user-${cell}">-</div>`;
                         mapContainer.appendChild(zone);
-                        numberPointer++;
                     }
                 });
             });
@@ -214,7 +155,7 @@
             if(!username) return;
 
             activeHostName = username;
-            document.getElementById("header-logo-text").innerText = "BATTLEZONE LİVE";
+            document.getElementById("header-logo-text").innerText = username.toUpperCase();
             buildOrganicMap();
             document.getElementById("launch-menu-overlay").style.display = "none";
             document.getElementById("status-text").innerText = `@${username.toUpperCase()} BAĞLANDI`;
@@ -246,60 +187,20 @@
             return text.match(/\d+/g)?.map(Number) || [];
         }
 
-        // Kazananlar Penceresini Açıp Kapatan ve Puan Durumunu Güncelleyen Fonksiyon
-        function toggleLeaderboard(show) {
-            const modal = document.getElementById("leaderboard-modal");
-            if (show) {
-                modal.classList.add("active");
-                updateLeaderboardData();
-            } else {
-                modal.classList.remove("active");
-            }
-        }
-
-        function updateLeaderboardData() {
-            const listContainer = document.getElementById("leaderboard-list");
-            let userStats = {};
-
-            // Her bölgeyi tara, sahiplerinin toplam asker ve bölge sayısını hesapla
-            for (let id in zonesData) {
-                const zone = zonesData[id];
-                if (zone.owner !== "") {
-                    if (!userStats[zone.owner]) {
-                        userStats[zone.owner] = { name: zone.owner, totalTroops: 0, totalZones: 0 };
-                    }
-                    userStats[zone.owner].totalTroops += zone.troops;
-                    userStats[zone.owner].totalZones += 1;
-                }
-            }
-
-            // Objeyi diziye çevirip en çok askerden en aza doğru sıralıyoruz
-            let sortedUsers = Object.values(userStats).sort((a, b) => b.totalTroops - a.totalTroops);
-
-            if (sortedUsers.length === 0) {
-                listContainer.innerHTML = `<div style="text-align:center;color:#9ca3af;padding:20px;font-size:13px;">Henüz haritada fetih yapan oyuncu yok.</div>`;
-                return;
-            }
-
-            listContainer.innerHTML = sortedUsers.map((user, index) => `
-                <div class="lb-item">
-                    <span>${index + 1}. ${user.name}</span>
-                    <span style="color:#fbbf24;">${user.totalZones} Bölge / ${user.totalTroops} Asker</span>
-                </div>
-            `).join('');
-        }
-
         function handleIncomingChat(senderName, comment) {
+            // Emojileri temizleyip sadece harf ve rakamları bırakan filtre
             let username = senderName.replace(/[^\w\s]/gi, '').trim();
             
-            if(senderName.toLowerCase().trim() === activeHostName || username.toLowerCase() === activeHostName) {
-                username = activeHostName.toUpperCase();
+            // Eğer senin hesabınsa ismi KRALSOFI olarak sabitle
+            if(senderName.toLowerCase().includes("kralsofi") || username.toLowerCase() === activeHostName) {
+                username = "KRALSOFI";
             }
 
             const chatBox = document.getElementById("live-chat-box");
             chatBox.innerHTML += `<div class="chat-msg"><span class="chat-user">${username}:</span> ${comment}</div>`;
             chatBox.scrollTop = chatBox.scrollHeight;
 
+            // Yazıyı tamamen temizle (küçük harfe çevir, Türkçe karakterleri normalize et, boşlukları sil)
             const cleanComment = comment.trim().toLowerCase()
                                         .replace(/ı/g, 'i').replace(/ş/g, 's')
                                         .replace(/ğ/g, 'g').replace(/ç/g, 'c')
@@ -307,23 +208,21 @@
                                         .replace(/\s+/g, '');
             const numbers = extractNumbers(comment);
 
-            // 1. GİRİŞ KOMUTU
+            // 1. GİRİŞ KOMUTU (Esnek Algılama)
             if(cleanComment.startsWith("join") && numbers.length === 1) {
                 const zoneId = numbers[0];
-                if(zonesData[zoneId]) {
+                if(zoneId >= 1 && zoneId <= totalZones && zonesData[zoneId]) {
                     const zone = zonesData[zoneId];
                     if(zone.owner === "") {
                         zone.owner = username;
                         zone.troops = 20;
                         document.getElementById(`zone-${zoneId}`).style.backgroundColor = "#2563eb";
-                        document.getElementById(`zone-${zoneId}`).style.color = "#ffffff";
-                        document.getElementById(`zone-user-${zoneId}`).style.color = "#ffffff";
                         document.getElementById(`zone-user-${zoneId}`).innerText = `${username.substring(0,6)} (${zone.troops})`;
                     }
                 }
             }
             
-            // 2. SALDIRI KOMUTU
+            // 2. SALDIRI KOMUTU (Esnek Algılama)
             if(cleanComment.startsWith("saldir") && numbers.length === 2) {
                 const fromZone = numbers[0];
                 const toZone = numbers[1];
@@ -341,8 +240,6 @@
                             defender.owner = username;
                             defender.troops = attackForce;
                             document.getElementById(`zone-${toZone}`).style.backgroundColor = "#2563eb";
-                            document.getElementById(`zone-${toZone}`).style.color = "#ffffff";
-                            document.getElementById(`zone-user-${toZone}`).style.color = "#ffffff";
                         } else if(defender.owner === username) {
                             defender.troops += attackForce;
                         } else {
@@ -350,8 +247,6 @@
                                 defender.owner = username;
                                 defender.troops = attackForce - defender.troops;
                                 document.getElementById(`zone-${toZone}`).style.backgroundColor = "#2563eb";
-                                document.getElementById(`zone-${toZone}`).style.color = "#ffffff";
-                                document.getElementById(`zone-user-${toZone}`).style.color = "#ffffff";
                             } else {
                                 defender.troops -= attackForce;
                             }
@@ -361,7 +256,7 @@
                 }
             }
 
-            // 3. DESTEK KOMUTU
+            // 3. DESTEK KOMUTU (Esnek Algılama)
             if(cleanComment.startsWith("destek") && numbers.length === 1) {
                 const targetZone = numbers[0];
                 if(zonesData[targetZone]) {
@@ -376,8 +271,8 @@
 
         function handleIncomingGift(senderName, giftName) {
             let username = senderName.replace(/[^\w\s]/gi, '').trim();
-            if(senderName.toLowerCase().trim() === activeHostName || username.toLowerCase() === activeHostName) {
-                username = activeHostName.toUpperCase();
+            if(senderName.toLowerCase().includes("kralsofi") || username.toLowerCase() === activeHostName) {
+                username = "KRALSOFI";
             }
 
             let addedTroops = 0;
