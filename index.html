@@ -2,486 +2,611 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TikTok Canlı Yayın Savaş Motoru - Coğrafi Harita Serisi</title>
-    <script src="https://cdn.jsdelivr.net/npm/@node-it/tiktok-live-connector-browser@1.0.0/dist/tiktok-live-connector.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COOTV - Canlı Yayın Harita Oyunu</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; user-select: none; }
-        body { background: #030712; color: #fff; min-height: 100vh; display: flex; flex-direction: column; padding: 12px; overflow-x: hidden; }
+        /* CSS TASARIMI - ARKA PLAN VE DOĞRUDAN CANLI YAYIN ARAYÜZÜ */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #0b0e14;
+            color: #ffffff;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+            user-select: none;
+        }
 
-        /* AÇILIŞ MENÜSÜ */
-        #start-menu-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(3, 7, 18, 0.97); z-index: 9999; 
-            display: flex; align-items: center; justify-content: center; padding: 20px;
+        .main-container {
+            display: flex;
+            flex: 1;
+            padding: 15px;
+            gap: 15px;
+            height: calc(100vh - 110px);
         }
-        .menu-card {
-            background: #0f172a; border: 2px solid #3b82f6; border-radius: 16px;
-            padding: 30px; width: 100%; max-width: 420px; text-align: center;
-            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.2);
+
+        /* YAN PANELLER */
+        .side-panel {
+            width: 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
         }
-        .menu-card h1 { color: #f43f5e; font-size: 26px; margin-bottom: 8px; font-weight: 800; }
-        .menu-card p { color: #94a3b8; font-size: 14px; margin-bottom: 25px; }
+
+        .panel-box {
+            background: #121824;
+            border: 1px solid #24324d;
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+
+        .panel-box h3 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            color: #ffca28;
+            border-bottom: 2px solid #24324d;
+            padding-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* HEDİYE LİSTESİ */
+        .gift-list { list-style: none; padding: 0; margin: 0; font-size: 13px; }
+        .gift-list li { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #1c263b; }
+        .gift-list li span { color: #4caf50; font-weight: bold; }
+
+        /* CANLI CHAT AKIŞI */
+        .chat-stream { flex: 1; overflow-y: auto; font-size: 13px; margin-bottom: 10px; padding-right: 5px; }
+        .chat-msg { margin-bottom: 8px; line-height: 1.4; }
+        .chat-msg .username { font-weight: bold; color: #64b5f6; }
+        .chat-msg .command-text { color: #e0e0e0; }
+
+        /* SİMÜLATÖR GİRİŞ ALANI */
+        .sim-input-group { display: flex; flex-direction: column; gap: 5px; }
+        .sim-input-group input { background: #1c263b; border: 1px solid #24324d; color: white; padding: 8px; border-radius: 5px; font-size: 12px; }
+        .sim-input-group button { background: #ffca28; border: none; color: #121824; font-weight: bold; padding: 8px; border-radius: 5px; cursor: pointer; }
+
+        /* MERKEZ HARİTA ALANI */
+        .map-area {
+            flex: 1;
+            background: #090d16;
+            border: 2px solid #24324d;
+            border-radius: 15px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.8);
+        }
+
+        .map-title {
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+        .map-title span { color: #ffca28; }
+
+        /* 10x10 TOPLAM 100 BÖLGE IZGARASI */
+        .map-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 6px;
+            flex: 1;
+            position: relative;
+            z-index: 2;
+        }
+
+        .region-slot {
+            background: #1c263b;
+            border: 1px solid #2b3b5c;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            transition: all 0.2s ease;
+            position: relative;
+            min-height: 50px;
+        }
+
+        .region-id { font-size: 11px; opacity: 0.4; position: absolute; top: 3px; left: 5px; }
+        .region-owner { font-size: 11px; color: #ffffff; max-width: 90%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 5px;}
+        .region-army { font-size: 12px; color: #ffca28; font-weight: 800; margin-bottom: 2px; }
+
+        /* SAVAŞ EFEKTLERİ KATMANI (OKLAR VE KILIÇLAR İÇİN) */
+        .battle-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* ÇİFT YÖNLÜ SAVAŞ OKU ÇİZGİSİ */
+        .laser-line {
+            position: absolute;
+            height: 4px;
+            background: linear-gradient(90deg, #ff1744, #ffea00, #ff1744);
+            transform-origin: 0 50%;
+            box-shadow: 0 0 12px #ff1744;
+            border-radius: 2px;
+            animation: pulseLaser 0.4s infinite alternate;
+        }
+
+        @keyframes pulseLaser {
+            from { opacity: 0.7; transform: scaleY(1); }
+            to { opacity: 1; transform: scaleY(1.5); }
+        }
+
+        /* ORTADAKİ SAVAŞ KILIÇLARI */
+        .clash-icon {
+            position: absolute;
+            width: 28px;
+            height: 28px;
+            background: #d50000;
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 15px #ff1744;
+            font-weight: bold;
+            animation: spinSwords 0.6s infinite alternate;
+        }
+
+        @keyframes spinSwords {
+            from { transform: translate(-50%, -50%) scale(1); }
+            to { transform: translate(-50%, -50%) scale(1.25); }
+        }
+
+        /* SAĞ PANEL ELEMANLARI */
+        .leaderboard-list { list-style: none; padding: 0; margin: 0; font-size: 13px; }
+        .leaderboard-list li { display: flex; justify-content: space-between; padding: 8px 5px; border-bottom: 1px solid #1c263b; }
         
-        /* SLIDER */
-        .slider-container { margin-bottom: 30px; background: #1e293b; padding: 20px; border-radius: 12px; border: 1px solid #334155; }
-        .slider-label { font-size: 14px; color: #f59e0b; margin-bottom: 10px; display: block; font-weight: 600; }
-        .region-count-display { font-size: 36px; color: #3b82f6; display: block; margin-bottom: 10px; font-weight: 800; }
-        input[type=range] { width: 100%; -webkit-appearance: none; background: #0f172a; height: 8px; border-radius: 4px; outline: none; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 22px; height: 22px; border-radius: 50%; background: #f43f5e; cursor: pointer; box-shadow: 0 0 10px #f43f5e; }
+        .attack-log-box { flex: 1; font-size: 12px; overflow-y: auto; color: #b0bec5; }
+        .log-row { padding: 4px 0; border-bottom: 1px dotted #24324d; }
 
-        .btn-start-game { width: 100%; background: #10b981; color: white; border: none; padding: 14px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; transition: 0.2s; }
-        .btn-start-game:hover { background: #059669; }
-
-        /* KONTROL PANELİ */
-        #streamer-panel {
-            background: #0f172a; padding: 14px; border-radius: 12px; border: 1px solid #334155;
-            margin-bottom: 12px; display: flex; flex-direction: column; gap: 12px;
+        /* EN ALTTA YENİLENEN PANEL VE ORDU ALANI */
+        .footer-control-panel {
+            height: 90px;
+            background: #121824;
+            border-top: 3px solid #24324d;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 0 20px;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.6);
         }
-        .panel-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-        input[type=text], input[type=number] { background: #1e293b; color: white; border: 1px solid #334155; padding: 8px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; }
-        
-        .btn-connect { background: #ef4444; color: white; border: none; padding: 8px 16px; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 13px; }
-        .btn-menu { background: #f59e0b; border: none; color: #000; padding: 8px 16px; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 13px; margin-left: auto; }
 
-        .gift-settings {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px;
-            background: #1e293b; padding: 12px; border-radius: 8px;
+        .footer-block { display: flex; flex-direction: column; justify-content: center; }
+        .footer-block h4 { margin: 0 0 4px 0; font-size: 13px; color: #90caf9; text-transform: uppercase; }
+        .footer-block p { margin: 0; font-size: 12px; color: #b0bec5; }
+        .footer-block strong { color: #ff8f00; }
+
+        .army-status-highlight {
+            background: #1c263b;
+            border: 2px solid #ffca28;
+            padding: 10px 25px;
+            border-radius: 8px;
+            text-align: center;
         }
-        .gift-input-group { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #94a3b8; }
-        .gift-input-group input { width: 100%; text-align: center; font-weight: bold; color: #10b981; background: #0f172a; border-color: #334155; }
-
-        /* COĞRAFİ HARİTA ALANI */
-        #map-container {
-            width: 100%; background: #1d3557; /* Deniz Rengi */
-            border: 4px solid #0f172a; border-radius: 16px; position: relative;
-            margin-bottom: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-        }
-        canvas { display: block; width: 100%; height: 100%; }
-
-        /* ALT PANEL */
-        #bottom-layout { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
-        .box { background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 12px; }
-        .box h3 { font-size: 14px; color: #f59e0b; border-bottom: 1px solid #334155; padding-bottom: 6px; margin-bottom: 10px; font-weight: 700; }
-        
-        .list-item { display: flex; justify-content: space-between; font-size: 13px; padding: 6px 10px; background: #1e293b; margin-bottom: 5px; border-radius: 6px; }
-        #chat-flow { max-height: 120px; overflow-y: auto; font-size: 12px; min-height: 90px; }
-        .chat-msg { margin-bottom: 5px; padding: 4px 8px; border-radius: 4px; background: rgba(255,255,255,0.03); }
-        .chat-msg.gift-msg { background: rgba(244, 63, 94, 0.15); border-left: 3px solid #f43f5e; }
-        .chat-msg .username { color: #3b82f6; font-weight: bold; }
-
-        #rules-bar {
-            grid-column: 1 / -1; background: #0f172a; border: 1px solid #334155;
-            border-radius: 10px; padding: 10px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; text-align: center;
-        }
-        .rule-card h4 { color: #f59e0b; font-size: 12px; margin-bottom: 2px; }
-        .rule-card p { color: #94a3b8; font-size: 11px; font-weight: 600; }
-
-        @media (max-width: 480px) { #rules-bar { grid-template-columns: repeat(2, 1fr); } }
+        .army-status-highlight h4 { color: #ffca28; margin: 0; font-size: 12px; }
+        .army-status-highlight div { font-size: 20px; font-weight: bold; color: #fff; margin-top: 3px; }
     </style>
 </head>
 <body>
 
-    <!-- GİRİŞ AYAR AYARI -->
-    <div id="start-menu-overlay">
-        <div class="menu-card">
-            <h1>STRATEJİ HARİTASI AYARI</h1>
-            <p>Dünya haritası büyüklüğünü (bölge sayısını) seçin</p>
-            
-            <div class="slider-container">
-                <span class="slider-label">🗺️ Toplam Eyalet/Bölge Sayısı</span>
-                <span id="region-count-val" class="region-count-display">100</span>
-                <input type="range" id="mapSizeSlider" min="10" max="100" step="10" value="100" oninput="updateSliderDisplay(this.value)">
+    <div class="main-container">
+        <div class="side-panel">
+            <div class="panel-box">
+                <h3>HEDİYELER & ASKERLER</h3>
+                <ul class="gift-list">
+                    <li>🌹 Gül <span>+50 Asker</span></li>
+                    <li>🎵 TikTok <span>+100 Asker</span></li>
+                    <li>👑 Taç <span>+300 Asker</span></li>
+                    <li>🦁 Aslan <span>+500 Asker</span></li>
+                    <li>🚀 Roket <span>+1000 Asker</span></li>
+                </ul>
             </div>
+            
+            <div class="panel-box" style="flex: 1;">
+                <h3>CANLI SOHBET (KOMUT DETEKTÖRÜ)</h3>
+                <div id="chat-stream" class="chat-stream"></div>
+                
+                <div class="sim-input-group">
+                    <input type="text" id="sim-username" placeholder="Kullanıcı Adı (Örn: Yusuf)">
+                    <input type="text" id="sim-text" placeholder="Komut (Örn: 50, attack 40, stop, ittifak 11)">
+                    <button onclick="sendSimulatedComment()">Sohbete Gönder & Çalıştır</button>
+                </div>
+            </div>
+        </div>
 
-            <button class="btn-start-game" onclick="startGameEngine()">DÜNYAYI OLUŞTUR & BAŞLAT ⚔></button>
+        <div class="map-area">
+            <div class="map-title">TÜM BÖLGELERİ ELE GEÇİR, <span>ZAFERE ULAŞ!</span></div>
+            
+            <div id="game-map" class="map-grid"></div>
+
+            <div id="battle-overlay" class="battle-overlay"></div>
+        </div>
+
+        <div class="side-panel">
+            <div class="panel-box" style="height: 45%;">
+                <h3>LİDERLİK TABLOSU</h3>
+                <ul id="leaderboard" class="leaderboard-list">
+                    <li style="color:#aaa; text-align:center;">Henüz aktif oyuncu yok</li>
+                </ul>
+            </div>
+            
+            <div class="panel-box" style="flex: 1;">
+                <h3>SON SALDIRILAR VE SAVAŞLAR</h3>
+                <div id="attack-logs" class="attack-log-box"></div>
+            </div>
         </div>
     </div>
 
-    <!-- YAYINCI PANELİ -->
-    <div id="streamer-panel">
-        <div class="panel-row">
-            <input type="text" id="ttAccount" placeholder="@TikTokKullaniciAdi">
-            <button class="btn-connect" onclick="connectTikTokLive()">Yayına Bağlan</button>
-            <span id="status-text" style="color:#ef4444; font-size:12px; font-weight:bold;">BAĞLANTI YOK</span>
-            <button class="btn-menu" onclick="showMenu()">Yeni Harita Üret</button>
+    <footer class="footer-control-panel">
+        <div class="footer-block">
+            <h4>GİRİŞ</h4>
+            <p>Boş alan kapmak için direkt numara yazın. <strong>&lt;1-100&gt;</strong></p>
         </div>
-        
-        <div class="gift-settings">
-            <div class="gift-input-group"><label>🌹 Gül Askeri</label><input type="number" id="g_rose" value="50"></div>
-            <div class="gift-input-group"><label>🎵 TikTok Askeri</label><input type="number" id="g_tiktok" value="100"></div>
-            <div class="gift-input-group"><label>💸 Para Yağmuru</label><input type="number" id="g_money" value="500"></div>
-            <div class="gift-input-group"><label>🦁 Aslan Askeri</label><input type="number" id="g_lion" value="1000"></div>
-            <div class="gift-input-group"><label>🌌 Evren Askeri</label><input type="number" id="g_universe" value="2000"></div>
+        <div class="footer-block">
+            <h4>SALDIRI</h4>
+            <p>Saldırı için: <strong>attack &lt;bölge_no&gt;</strong></p>
+            <p>Durdurmak için: <strong>stop</strong></p>
         </div>
-    </div>
-
-    <!-- HARİTA -->
-    <div id="map-container">
-        <canvas id="gameCanvas"></canvas>
-    </div>
-
-    <!-- ALT BİLGİLER -->
-    <div id="bottom-layout">
-        <div class="box">
-            <h3>🏆 Canlı Skor Sıralaması</h3>
-            <div id="leaderboard"></div>
+        <div class="footer-block">
+            <h4>DESTEK & İTTİFAK</h4>
+            <p>Ortaklık kurmak için: <strong>ittifak &lt;bölge_no&gt;</strong></p>
         </div>
-        <div class="box">
-            <h3>💬 Canlı Yayın ve Hediye Akışı</h3>
-            <div id="chat-flow"></div>
+        <div class="footer-block army-status-highlight">
+            <h4>ORDU DURUMU</h4>
+            <div id="total-global-armies">0</div>
         </div>
-        <div class="box">
-            <h3>🤝 İttifaklar & Diplomasi</h3>
-            <div id="alliances-list" style="font-size: 13px; color: #3b82f6; font-weight: bold;">Aktif ittifak aranıyor...</div>
-        </div>
-        <div id="rules-bar">
-            <div class="rule-card"><h4>GİRİŞ</h4><p>join [bölge_no]</p></div>
-            <div class="rule-card"><h4>SALDIRI</h4><p>attack [bölge_no]</p></div>
-            <div class="rule-card"><h4>DESTEK</h4><p>Ekranı Tıkla (+1 Asker)</p></div>
-            <div class="rule-card"><h4>ORDO</h4><p>Hediye = Dev Ordu</p></div>
-        </div>
-    </div>
+    </footer>
 
     <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-
+        const TOTAL_REGIONS = 100;
         let regions = {};
-        let players = {};
-        let playerLikes = {};
-        let totalRegionsTarget = 100; 
+        
+        // Oyuncu renk havuzu
+        const playerColors = ["#2e7d32", "#c62828", "#1565c0", "#ad1457", "#ef6c00", "#6a1b9a", "#00838f", "#009688", "#f4511e"];
 
-        function updateSliderDisplay(val) {
-            document.getElementById('region-count-val').innerText = val;
-        }
+        // Haritayı Hafızada ve Ekranda Oluşturma Başlangıcı
+        function buildGameMap() {
+            const mapContainer = document.getElementById("game-map");
+            mapContainer.innerHTML = "";
 
-        function showMenu() {
-            document.getElementById('start-menu-overlay').style.display = 'flex';
-        }
-
-        function startGameEngine() {
-            totalRegionsTarget = parseInt(document.getElementById('mapSizeSlider').value);
-            document.getElementById('start-menu-overlay').style.display = 'none';
-            players = {}; playerLikes = {};
-            generateNaturalMap();
-        }
-
-        // COĞRAFİ GERÇEKÇİ HARİTA MOTORU (Voronoi & Sınır Yumuşatma Kombinasyonu)
-        function generateNaturalMap() {
-            regions = {};
-            const w = 900;
-            const h = 500;
-            
-            // Sabit grid karmaşası yerine coğrafi doğal merkez noktaları atıyoruz
-            let points = [];
-            let pad = 40;
-            
-            // Doğal kıta kümeleri algoritmik merkezleri
-            let continents = [
-                {x: w*0.25, y: h*0.35, r: 180}, // 1. Kıta
-                {x: w*0.70, y: h*0.40, r: 200}, // 2. Kıta
-                {x: w*0.45, y: h*0.75, r: 130}  // 3. Kıta (Güney Adası)
-            ];
-
-            let attempts = 0;
-            while(points.length < totalRegionsTarget && attempts < 2000) {
-                let rx = pad + Math.random() * (w - pad*2);
-                let ry = pad + Math.random() * (h - pad*2);
-                
-                // Noktaların deniz yerine kıta formu üzerinde yoğunlaşmasını sağlayan süzgeç
-                let onLand = continents.some(c => {
-                    let dist = Math.hypot(rx - c.x, ry - c.y);
-                    return dist < (c.r + Math.random()*40);
-                });
-
-                if (onLand || Math.random() < 0.12) { // Az da olsa küçük adalar serpiştirir
-                    // Çok bitişik noktaları engelleme
-                    if (!points.some(p => Math.hypot(p.x - rx, p.y - ry) < 32)) {
-                        points.push({x: rx, y: ry});
-                    }
-                }
-                attempts++;
-            }
-
-            // Eksik kalırsa boşlukları güvenli doldur
-            while(points.length < totalRegionsTarget) {
-                points.push({ x: pad + Math.random()*(w-pad*2), y: pad + Math.random()*(h-pad*2) });
-            }
-
-            // Gerçekçi Toprak Renk Skalası (Doğal dünya haritası modifikasyonu)
-            let baseHue = Math.floor(Math.random() * 360);
-
-            points.forEach((p, idx) => {
-                let id = idx + 1;
-                let landHue = (baseHue + (id * 11)) % 360;
-                
-                // Normal kara parçası renkleri (Doğal yeşil, kahve, askeri haki tonları)
-                let defaultColor = `hsl(${landHue}, 45%, ${30 + (id % 15)}%)`;
-                let activeColor = `hsl(${landHue}, 85%, 48%)`;
-
-                regions[id] = {
-                    id: id, x: p.x, y: p.y, owner: null, army: 0, maxArmy: 0, underAttack: false,
-                    defaultColor: defaultColor, activeColor: activeColor,
-                    polygon: generateSmoothLandPolygon(p.x, p.y, 24)
+            for (let i = 1; i <= TOTAL_REGIONS; i++) {
+                regions[i] = {
+                    id: i,
+                    owner: null,
+                    soldiers: 0,
+                    color: "#1c263b",
+                    attackingTo: null,       // Kimi hedef alıyor?
+                    isManualAttack: false,   // Kendi isteğiyle mi bastı?
+                    allianceWith: null       // İttifak yaptığı bölge id
                 };
-            });
 
-            resizeContainer();
-        }
-
-        // Hücreleri "patates" görüntüsünden kurtarıp köşeli askeri sınırlara çeviren çizim fonksiyonu
-        function generateSmoothLandPolygon(cx, cy, avgRadius) {
-            let pts = [];
-            let totalSides = 7; // Gerçek harita eyalet sınırları gibi girintili çıkıntılı 7 köşeli form
-            for(let i=0; i<totalSides; i++) {
-                let angle = (i / totalSides) * Math.PI * 2;
-                let jitter = 0.75 + Math.random() * 0.45; // Girinti derinliği oranı
-                let r = avgRadius * jitter;
-                pts.push({
-                    x: cx + r * Math.cos(angle),
-                    y: cy + r * Math.sin(angle)
-                });
-            }
-            return pts;
-        }
-
-        function resizeContainer() {
-            const container = document.getElementById('map-container');
-            const mapWidth = 900;
-            const mapHeight = 500;
-            const screenWidth = container.clientWidth;
-            const scaleFactor = screenWidth / mapWidth;
-            
-            canvas.width = screenWidth;
-            canvas.height = mapHeight * scaleFactor;
-            container.style.height = canvas.height + "px";
-
-            drawMap(scaleFactor);
-        }
-        window.addEventListener('resize', resizeContainer);
-
-        function drawMap(scale) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.save();
-            ctx.scale(scale, scale);
-
-            // TÜM BÖLGELERİ DOĞAL HARİTA FORMATINDA ÇİZ
-            for (let i = 1; i <= totalRegionsTarget; i++) {
-                let reg = regions[i];
-                if (!reg) continue;
-
-                ctx.beginPath();
-                reg.polygon.forEach((pt, index) => {
-                    if(index === 0) ctx.moveTo(pt.x, pt.y);
-                    else ctx.lineTo(pt.x, pt.y);
-                });
-                ctx.closePath();
-
-                // Boyama Stili
-                if (reg.owner) {
-                    ctx.fillStyle = reg.activeColor;
-                    ctx.fill();
-                    // Sınır parlaması
-                    ctx.strokeStyle = "#ffffff";
-                    ctx.lineWidth = 2;
-                } else {
-                    ctx.fillStyle = reg.defaultColor;
-                    ctx.fill();
-                    ctx.strokeStyle = "rgba(0,0,0,0.35)"; // Sınırlar gerçek harita çizgisi gibi doğal dursun
-                    ctx.lineWidth = 1;
-                }
-                ctx.stroke();
-
-                // Kuşatma Efekti Flashing
-                if (reg.underAttack) {
-                    ctx.fillStyle = "rgba(239, 68, 68, 0.4)";
-                    ctx.fill();
-                }
-
-                // Yazılar ve Etiketler
-                ctx.font = 'bold 11px sans-serif';
-                ctx.textAlign = 'center';
-                ctx.shadowColor = "black"; ctx.shadowBlur = 4;
-                ctx.fillStyle = '#ffffff';
-                ctx.fillText(reg.id, reg.x, reg.y - 4);
-
-                if (reg.owner) {
-                    ctx.font = '800 9px sans-serif';
-                    ctx.fillText(reg.owner.substring(0, 6), reg.x, reg.y + 6);
-                    ctx.font = 'bold 9px sans-serif';
-                    ctx.fillStyle = '#10b981';
-                    ctx.fillText(`⚔️${Math.floor(reg.army)}`, reg.x, reg.y + 16);
-                }
-                ctx.shadowBlur = 0; // Reset
-            }
-            ctx.restore();
-        }
-
-        function checkAndRegisterPlayer(user) {
-            if (!players[user]) {
-                let randHue = Math.floor(Math.random() * 360);
-                players[user] = { color: `hsl(${randHue}, 90%, 50%)` };
+                let slot = document.createElement("div");
+                slot.id = `reg-slot-${i}`;
+                slot.className = "region-slot";
+                slot.innerHTML = `
+                    <div class="region-id">${i}</div>
+                    <div class="region-army" id="reg-army-${i}"></div>
+                    <div class="region-owner" id="reg-owner-${i}"></div>
+                `;
+                mapContainer.appendChild(slot);
             }
         }
 
-        function handleTikTokChat(user, message) {
-            user = user.trim(); message = message.trim();
-            if (!user || !message) return;
+        // CHAT'TEN KOMUT TETKİK ETME MOTORU
+        function parseLiveStreamComment(username, commentText) {
+            let cleanText = commentText.trim().toLowerCase();
+            let segments = cleanText.split(" ");
+            let command = segments[0];
+            let parameter = segments[1];
 
-            let lowerMsg = message.toLowerCase();
-            checkAndRegisterPlayer(user);
+            // Oyuncunun zaten bir bölgesi var mı sorgula?
+            let existingRegionId = Object.keys(regions).find(id => regions[id].owner === username);
 
-            if (lowerMsg.startsWith('join ')) {
-                let id = parseInt(lowerMsg.replace('join ', ''));
-                if (id >= 1 && id <= totalRegionsTarget && !regions[id].owner) {
-                    regions[id].owner = user;
-                    regions[id].army = 60; regions[id].maxArmy = 60;
-                    pushLog(user, `${id} nolu eyalette krallığını ilan etti!`, false);
-                    refreshUI();
-                }
-            }
-            else if (lowerMsg.startsWith('attack ')) {
-                let id = parseInt(lowerMsg.replace('attack ', ''));
-                if (id >= 1 && id <= totalRegionsTarget) startSiegeEngine(user, id);
-            }
-        }
-
-        function handleTikTokGift(user, giftName) {
-            checkAndRegisterPlayer(user);
-            let armyCount = 0;
-            let formattedName = giftName.toLowerCase();
-
-            if (formattedName.includes("rose") || formattedName.includes("gül")) armyCount = parseInt(document.getElementById('g_rose').value) || 50;
-            else if (formattedName.includes("tiktok")) armyCount = parseInt(document.getElementById('g_tiktok').value) || 100;
-            else if (formattedName.includes("money") || formattedName.includes("yağmur")) armyCount = parseInt(document.getElementById('g_money').value) || 500;
-            else if (formattedName.includes("lion") || formattedName.includes("aslan")) armyCount = parseInt(document.getElementById('g_lion').value) || 1000;
-            else if (formattedName.includes("universe") || formattedName.includes("evren")) armyCount = parseInt(document.getElementById('g_universe').value) || 2000;
-            else armyCount = 40;
-
-            pushLog(user, `${giftName} gönderdi! Ordusuna +${armyCount} asker katıldı.`, true);
-
-            let added = false;
-            for (let i = 1; i <= totalRegionsTarget; i++) {
-                if (regions[i] && regions[i].owner === user) {
-                    regions[i].army += armyCount;
-                    if (regions[i].army > regions[i].maxArmy) regions[i].maxArmy = regions[i].army;
-                    added = true;
-                }
-            }
-
-            if (!added) {
-                let emptyRegs = Object.values(regions).filter(r => r.owner === null);
-                if (emptyRegs.length > 0) {
-                    let randomSelected = emptyRegs[Math.floor(Math.random() * emptyRegs.length)];
-                    randomSelected.owner = user;
-                    randomSelected.army = armyCount;
-                    randomSelected.maxArmy = armyCount;
-                }
-            }
-            refreshUI();
-        }
-
-        function handleTikTokLike(user, likeCount) {
-            checkAndRegisterPlayer(user);
-            if (!playerLikes[user]) playerLikes[user] = 0;
-            playerLikes[user] += likeCount;
-
-            if (playerLikes[user] >= 10) {
-                let addedUnits = Math.floor(playerLikes[user] / 10);
-                playerLikes[user] %= 10;
-
-                let hasRegion = false;
-                for (let i = 1; i <= totalRegionsTarget; i++) {
-                    if (regions[i] && regions[i].owner === user) {
-                        regions[i].army += addedUnits;
-                        hasRegion = true;
+            // DURUM 1: OYUNCUNUN BÖLGESİ YOKSA VE SADECE SAYI YAZDIYSA (GİRİŞ)
+            if (!existingRegionId) {
+                let parsedNum = parseInt(cleanText);
+                if (!isNaN(parsedNum) && parsedNum >= 1 && parsedNum <= TOTAL_REGIONS) {
+                    if (regions[parsedNum].owner === null) {
+                        registerNewPlayer(username, parsedNum);
+                    } else {
+                        pushToChatLog("Sistem", `Bölge ${parsedNum} dolu, ${username}!`, "#ff1744");
                     }
                 }
-                if (hasRegion) refreshUI();
+                return;
+            }
+
+            // Eğer bölgesi varsa işlemler bu id üzerinden döner
+            existingRegionId = parseInt(existingRegionId);
+
+            // DURUM 2: SAYI YAZIP ASKER KASMA (ÖRN: 99 yazarsa hızlı asker kasma)
+            if (!isNaN(cleanText)) {
+                let inputNum = parseInt(cleanText);
+                let addedUnits = (inputNum === 99) ? 50 : 15; // 99 yazarsa +50, düz sayıya +15
+                regions[existingRegionId].soldiers += addedUnits;
+                refreshRegionView(existingRegionId);
+                refreshGlobalArmyCounter();
+                return;
+            }
+
+            // DURUM 3: SALDIRI BAŞLATMA (attack <bölge_no>)
+            if (command === "attack" && parameter) {
+                let targetZone = parseInt(parameter);
+                if (targetZone >= 1 && targetZone <= TOTAL_REGIONS && targetZone !== existingRegionId) {
+                    executeAttackOrder(existingRegionId, targetZone, true); // True = Manuel emir
+                }
+            }
+
+            // DURUM 4: SALDIRIYI DURDURMA (stop)
+            if (command === "stop") {
+                executeStopOrder(existingRegionId);
+            }
+
+            // DURUM 5: İTTİFAK KURMA (ittifak <bölge_no>)
+            if (command === "ittifak" && parameter) {
+                let allyZone = parseInt(parameter);
+                if (regions[allyZone] && allyZone !== existingRegionId) {
+                    regions[existingRegionId].allianceWith = allyZone;
+                    pushToChatLog("İttifak", `${username} artık Bölge ${allyZone} ile müttefik!🤝`, "#00e676");
+                }
             }
         }
 
-        function startSiegeEngine(attacker, targetId) {
-            let target = regions[targetId];
-            if (!target || !target.owner || target.owner === attacker) return;
+        // Yeni Oyuncu Kaydetme Girişi
+        function registerNewPlayer(username, targetId) {
+            let pickedColor = playerColors[Math.floor(Math.random() * playerColors.length)];
+            
+            regions[targetId].owner = username;
+            regions[targetId].soldiers = 250; // Başlangıç koruma ordusu
+            regions[targetId].color = pickedColor;
 
-            let attackWavePower = 0;
-            for (let i = 1; i <= totalRegionsTarget; i++) {
-                if (regions[i] && regions[i].owner === attacker && regions[i].army > 20) {
-                    let force = Math.floor(regions[i].army / 2.5);
-                    regions[i].army -= force;
-                    attackWavePower += force;
-                }
-            }
+            let dom = document.getElementById(`reg-slot-${targetId}`);
+            dom.style.backgroundColor = pickedColor;
+            dom.style.border = "2px solid #ffffff";
 
-            if (attackWavePower <= 0) return;
-            target.underAttack = true;
-
-            let siegeInterval = setInterval(() => {
-                if (attackWavePower <= 0 || target.owner === attacker || target.army <= 0) {
-                    clearInterval(siegeInterval);
-                    target.underAttack = false;
-                    refreshUI();
-                    return;
-                }
-
-                let attackDamage = Math.min(8, attackWavePower);
-                attackWavePower -= attackDamage;
-                target.army -= (attackDamage * 0.85);
-
-                if (target.army <= 0) {
-                    clearInterval(siegeInterval);
-                    target.owner = attacker;
-                    target.army = Math.max(10, attackWavePower);
-                    target.underAttack = false;
-                    pushLog(attacker, `${targetId} nolu stratejik bölgeyi işgal etti!`, false);
-                }
-                refreshUI();
-            }, 200);
+            refreshRegionView(targetId);
+            pushToChatLog("Sistem", `${username}, Bölge ${targetId} haritasına yerleşti!🛡️`, "#ffca28");
+            rebuildLeaderboard();
+            refreshGlobalArmyCounter();
         }
 
-        function refreshUI() {
-            resizeContainer();
-            let lb = document.getElementById('leaderboard'); lb.innerHTML = '';
-            let scoreboard = {};
-            for (let i = 1; i <= totalRegionsTarget; i++) {
-                if (regions[i] && regions[i].owner) scoreboard[regions[i].owner] = (scoreboard[regions[i].owner] || 0) + regions[i].army;
+        // SAVAŞI DEVREYE ALMA VE OTOMATİK SAVUNMA
+        function executeAttackOrder(attackerId, defenderId, isManualTrigger) {
+            // Saldırıyı kaydet
+            regions[attackerId].attackingTo = defenderId;
+            if (isManualTrigger) {
+                regions[attackerId].isManualAttack = true;
             }
-            Object.entries(scoreboard).sort((a,b) => b[1] - a[1]).slice(0, 5).forEach(([name, army]) => {
-                let pColor = players[name] ? players[name].color : '#fff';
-                lb.innerHTML += `<div class="list-item"><span><b style="color:${pColor}">■</b> ${name}</span><span style="color:#10b981; font-weight:bold;">${Math.floor(army)} Asker</span></div>`;
+
+            pushToBattleLog(`${regions[attackerId].owner} [Bölge ${attackerId}] ➡️ Bölge ${defenderId} Alanına Saldırıyor! ⚔️`);
+
+            // --- OTOMATİK SAVUNMA MEKANİZMASI ---
+            // Eğer saldırıya uğrayan bölgenin bir sahibi varsa ve o an kimseye SALDIRMIYORSA (boştaysa)
+            // Otomatik olarak kendisini korumak için saldıran tarafa savunma atağı (karşı taarruz) açar.
+            if (regions[defenderId].owner && regions[defenderId].attackingTo === null) {
+                regions[defenderId].attackingTo = attackerId;
+                regions[defenderId].isManualAttack = false; // Otomatik savunma olduğunu belirtiyoruz
+                pushToBattleLog(`⚠️ ${regions[defenderId].owner} [Bölge ${defenderId}] Otomatik Savunmaya Geçti!`);
+            }
+
+            redrawBattleLines();
+        }
+
+        // SALDIRIYI KESME (STOP) MOTORU
+        function executeStopOrder(attackerId) {
+            let currentTarget = regions[attackerId].attackingTo;
+            if (!currentTarget) return;
+
+            regions[attackerId].attackingTo = null;
+            regions[attackerId].isManualAttack = false;
+            pushToChatLog("Savaş", `${regions[attackerId].owner} saldırı emrini iptal etti.`, "#ff9100");
+
+            // Karşı taraf eğer otomatik savunmadaysa onun da durması gerekiyor
+            if (regions[currentTarget] && regions[currentTarget].attackingTo === attackerId) {
+                // Eğer hedef bunu manuel attack yazarak yapmadıysa, sadece otomatik savunmadaysa durdur
+                if (!regions[currentTarget].isManualAttack) {
+                    regions[currentTarget].attackingTo = null;
+                    pushToBattleLog(`🛡️ Bölge ${currentTarget} otomatik savunmayı kapattı (Saldırı bitti).`);
+                }
+            }
+
+            redrawBattleLines();
+        }
+
+        // Tekil Hücre Yazılarını Güncelleme
+        function refreshRegionView(id) {
+            document.getElementById(`reg-owner-${id}`).innerText = regions[id].owner ? regions[id].owner : "";
+            document.getElementById(`reg-army-${id}`).innerText = regions[id].owner ? regions[id].soldiers : "";
+        }
+
+        // SAVAŞ OKLARINI VE KILIÇLARINI DİNAMİK ÇİZME (Görsel Katman)
+        function redrawBattleLines() {
+            const layer = document.getElementById("battle-overlay");
+            layer.innerHTML = ""; // Ekranı sıfırla yeniden temiz çiz
+
+            for (let id in regions) {
+                let cell = regions[id];
+                if (cell.attackingTo && cell.owner) {
+                    let fromBox = document.getElementById(`reg-slot-${id}`);
+                    let toBox = document.getElementById(`reg-slot-${cell.attackingTo}`);
+
+                    if (fromBox && toBox) {
+                        let rFrom = fromBox.getBoundingClientRect();
+                        let rTo = toBox.getBoundingClientRect();
+                        let rLayer = layer.getBoundingClientRect();
+
+                        // Merkez Noktaları Hesaplama
+                        let x1 = rFrom.left + rFrom.width / 2 - rLayer.left;
+                        let y1 = rFrom.top + rFrom.height / 2 - rLayer.top;
+                        let x2 = rTo.left + rTo.width / 2 - rLayer.left;
+                        let y2 = rTo.top + rTo.height / 2 - rLayer.top;
+
+                        let distance = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+                        let angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+
+                        // Dinamik Çizgi Oluşturma
+                        let line = document.createElement("div");
+                        line.className = "laser-line";
+                        line.style.width = distance + "px";
+                        line.style.left = x1 + "px";
+                        line.style.top = y1 + "px";
+                        line.style.transform = `rotate(${angle}deg)`;
+                        layer.appendChild(line);
+
+                        // Tam Ortaya Çarpışma İkonu Yerleştirme
+                        let midX = (x1 + x2) / 2;
+                        let midY = (y1 + y2) / 2;
+                        
+                        // Aynı koordinatta mükerrer kılıç olmasın diye kontrol
+                        if (!document.getElementById(`clash-${midX}-${midY}`)) {
+                            let clash = document.createElement("div");
+                            clash.id = `clash-${midX}-${midY}`;
+                            clash.className = "clash-icon";
+                            clash.innerText = "⚔️";
+                            clash.style.left = midX + "px";
+                            clash.style.top = midY + "px";
+                            layer.appendChild(clash);
+                        }
+                    }
+                }
+            }
+        }
+
+        // ZAMANLAYICI DÖNGÜSÜ - SAVAŞ HASARLARI (Her 1.5 saniyede bir ordu düşer)
+        setInterval(() => {
+            for (let id in regions) {
+                let activeCell = regions[id];
+                if (activeCell.attackingTo && activeCell.owner) {
+                    let enemyCell = regions[activeCell.attackingTo];
+                    if (enemyCell && enemyCell.owner && enemyCell.owner !== activeCell.owner) {
+                        
+                        // İki taraftan da asker eksilt
+                        activeCell.soldiers -= 10;
+                        enemyCell.soldiers -= 10;
+
+                        // Ölen Elenir Kontrolleri
+                        if (activeCell.soldiers <= 0) {
+                            activeCell.soldiers = 0;
+                            clearPlayerLoss(id);
+                        }
+                        if (enemyCell.soldiers <= 0) {
+                            enemyCell.soldiers = 0;
+                            clearPlayerLoss(activeCell.attackingTo);
+                        }
+
+                        refreshRegionView(id);
+                        if(regions[activeCell.attackingTo]) refreshRegionView(activeCell.attackingTo);
+                    }
+                }
+            }
+            refreshGlobalArmyCounter();
+            rebuildLeaderboard();
+        }, 1500);
+
+        // Bir Oyuncu Elendiğinde Sıfırlama Temizliği
+        function clearPlayerLoss(id) {
+            pushToChatLog("Savaş", `Bölge ${id} ordusu tamamen yok oldu! Elendi.☠️`, "#ff1744");
+            
+            let dom = document.getElementById(`reg-slot-${id}`);
+            dom.style.backgroundColor = "#1c263b";
+            dom.style.border = "1px solid #2b3b5c";
+
+            regions[id].owner = null;
+            regions[id].soldiers = 0;
+            regions[id].attackingTo = null;
+            regions[id].isManualAttack = false;
+            regions[id].allianceWith = null;
+
+            refreshRegionView(id);
+            redrawBattleLines();
+        }
+
+        // PANEL EKRAN DEĞERLERİNİ YENİLEME FONKSİYONLARI
+        function refreshGlobalArmyCounter() {
+            let total = 0;
+            for (let id in regions) { total += regions[id].soldiers; }
+            document.getElementById("total-global-armies").innerText = total;
+        }
+
+        function rebuildLeaderboard() {
+            let activeList = Object.values(regions)
+                .filter(r => r.owner !== null)
+                .sort((a, b) => b.soldiers - a.soldiers);
+
+            let boardDom = document.getElementById("leaderboard");
+            boardDom.innerHTML = "";
+
+            if(activeList.length === 0) {
+                boardDom.innerHTML = `<li style="color:#aaa; text-align:center;">Henüz aktif oyuncu yok</li>`;
+                return;
+            }
+
+            activeList.slice(0, 7).forEach((player, index) => {
+                boardDom.innerHTML += `<li><span>${index+1}. ${player.owner}</span><strong>${player.soldiers} Asker</strong></li>`;
             });
         }
 
-        function pushLog(user, text, isGift) {
-            const flow = document.getElementById('chat-flow');
-            let m = document.createElement('div');
-            m.className = isGift ? "chat-msg gift-msg" : "chat-msg";
-            m.innerHTML = isGift ? `<span class="username">🎁 ${user}</span> <span>${text}</span>` : `<span class="username">${user}</span>: <span>${text}</span>`;
-            flow.appendChild(m);
-            if (flow.childNodes.length > 5) flow.removeChild(flow.firstChild);
-            flow.scrollTop = flow.scrollHeight;
+        // EKRAN PANEL LOGLARI YAZICILARI
+        function pushToChatLog(sender, msg, color = "#fff") {
+            let chatBox = document.getElementById("chat-stream");
+            chatBox.innerHTML += `
+                <div class="chat-msg">
+                    <span class="username" style="color:${color}">${sender}:</span> 
+                    <span class="command-text">${msg}</span>
+                </div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        function connectTikTokLive() {
-            let account = document.getElementById('ttAccount').value.trim();
-            if(!account) { alert("Lütfen TikTok kullanıcı adınızı girin!"); return; }
-            let status = document.getElementById('status-text');
-            status.innerText = "BAĞLANILIYOR..."; status.style.color = "#f59e0b";
-
-            let connection = new TikTokLiveConnector(account);
-            connection.on('chat', data => { handleTikTokChat(data.uniqueId, data.comment); });
-            connection.on('gift', data => { handleTikTokGift(data.uniqueId, data.giftName); });
-            connection.on('like', data => { handleTikTokLike(data.uniqueId, data.likeCount); });
-            connection.on('connected', () => { status.innerText = "YAYIN AKTİF ✔"; status.style.color = "#10b981"; });
-            connection.on('disconnected', () => { status.innerText = "BAĞLANTI KOPTU"; status.style.color = "#ef4444"; });
+        function pushToBattleLog(logText) {
+            let logBox = document.getElementById("attack-logs");
+            logBox.innerHTML = `<div class="log-row">${logText}</div>` + logBox.innerHTML;
         }
 
-        // Oyunu otomatik başlatır
-        generateNaturalMap();
+        // SİMÜLASYON BUTONUNA BASILINCA ÇALIŞAN FONKSİYON
+        function sendSimulatedComment() {
+            let userField = document.getElementById("sim-username");
+            let textField = document.getElementById("sim-text");
+
+            let user = userField.value.trim();
+            let comment = textField.value.trim();
+
+            if (!user || !comment) {
+                alert("Lütfen hem Kullanıcı Adı hem de bir Komut yazın!");
+                return;
+            }
+
+            pushToChatLog(user, comment);
+            parseLiveStreamComment(user, comment);
+            
+            // Komut yazılan yeri temizle (Kullanıcı adı kalsın hızlı test için)
+            textField.value = "";
+        }
+
+        // SAYFA YÜKLENİNCE ÇALIŞACAK TETİKLEYİCİLER
+        window.onload = () => {
+            buildGameMap();
+        };
+
+        // Ekran boyutu değiştiğinde çizgiler/oklar kaymasın diye otomatik düzeltme
+        window.onresize = () => {
+            redrawBattleLines();
+        };
     </script>
 </body>
 </html>
-              
+ 
