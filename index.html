@@ -3,206 +3,558 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cootv Real Warzone TR Map</title>
+    <title>Battlezone Canlı Savaş - 100 Bölge Özel Sürüm</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-user-select: none; user-select: none; }
-        body { background-color: #05070c; color: #f1f5f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 5px; }
+        * {
+            box-sizing: border-box; margin: 0; padding: 0;
+            -webkit-user-select: none; user-select: none;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body { background-color: #0b0f17; color: #f1f5f9; overflow-x: hidden; overflow-y: auto; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding-bottom: 20px; }
         
-        .main-frame {
+        .app-container {
             width: 100%;
             max-width: 450px;
-            background: #0f141c;
-            border: 2px solid #1e293b;
-            border-radius: 12px;
-            padding: 8px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 10px;
         }
 
-        /* YAYINDAKİ BÜTÜNÜ ASLA BOZULMAYAN COĞRAFİ HARİTA ALANI */
-        .map-container {
-            width: 100%;
-            position: relative;
-            background: #14112e; /* Yayındaki koyu lacivert/mor gece tonu */
-            border-radius: 10px;
+        /* GİRİŞ ANİMASYONU MAVİ NEON */
+        #splash-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #070a12; z-index: 100000; display: flex; align-items: center; justify-content: center;
+            transition: opacity 0.8s ease-out, visibility 0.8s;
+        }
+        .animated-title {
+            font-size: 36px; font-weight: 900; color: #2563eb; letter-spacing: 4px;
+            text-shadow: 0 0 20px rgba(37, 99, 235, 0.6); animation: introBlast 2.3s ease-in-out forwards;
+            text-transform: uppercase; text-align: center;
+        }
+        @keyframes introBlast {
+            0% { transform: scale(0.7); opacity: 0; filter: blur(10px); }
+            40% { transform: scale(1.05); opacity: 1; filter: blur(0px); }
+            70% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1.2); opacity: 0; filter: blur(5px); }
+        }
+
+        /* GİRİŞ VE ANA MENÜ EKRANI */
+        #launch-menu-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+            z-index: 9999; display: flex; align-items: center; justify-content: center;
+            transition: opacity 0.4s ease-in-out;
+        }
+        .login-box { background: #111827; border: 2px solid #2563eb; border-radius: 16px; padding: 30px; width: 90%; max-width: 380px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.7); }
+        .login-box h2 { color: #2563eb; margin-bottom: 20px; font-size: 24px; text-transform: uppercase; letter-spacing: 1px; }
+        .menu-btn-group { display: flex; flex-direction: column; gap: 12px; }
+        .menu-btn { width: 100%; background: #1f2937; border: 1px solid #4b5563; color: white; border-radius: 8px; padding: 12px; font-size: 14px; font-weight: bold; cursor: pointer; transition: all 0.2s; text-transform: uppercase; }
+        .menu-btn:hover { background: #2563eb; border-color: #3b82f6; transform: translateY(-2px); }
+        .menu-btn.primary { background: #2563eb; border: none; }
+        .menu-btn.primary:hover { background: #1d4ed8; }
+
+        #connection-form { display: none; margin-top: 15px; text-align: left; }
+        .input-group { margin-bottom: 12px; }
+        .input-group label { display: block; color: #9ca3af; font-size: 11px; margin-bottom: 5px; text-transform: uppercase; }
+        .input-group input { width: 100%; background: #1f2937; border: 1px solid #4b5563; border-radius: 8px; padding: 10px 14px; color: #fff; font-size: 15px; outline: none; }
+
+        /* BAŞARI SIRALAMASI MODAL */
+        .custom-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); z-index: 10000; align-items: center; justify-content: center; }
+        .modal-box { background: #111827; padding: 22px; border-radius: 16px; width: 85%; max-width: 360px; position: relative; }
+        .modal-box.leader-border { border: 2px solid #fbbf24; }
+        .modal-close-x { position: absolute; top: 10px; right: 14px; font-size: 22px; color: #9ca3af; cursor: pointer; font-weight: bold; }
+        .modal-box h3 { margin-bottom: 12px; font-size: 18px; color: #fbbf24; text-align: center; text-transform: uppercase; }
+
+        /* ÜST PANEL VE HEDİYE AYARLARI */
+        header { background: #111827; border: 1px solid #1f2937; border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+        .header-top { display: flex; justify-content: space-between; align-items: center; }
+        .live-badge { background: #ef4444; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; }
+        
+        .gift-settings-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; background: #1e293b; padding: 6px; border-radius: 8px; }
+        .gift-setting-card { display: flex; flex-direction: column; align-items: center; font-size: 9px; color: #94a3b8; }
+        .gift-setting-card input { width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 4px; color: #22c55e; text-align: center; font-weight: bold; padding: 2px; margin-top: 3px; font-size: 11px; }
+
+        .score-board-row { display: flex; justify-content: space-between; background: #111827; border: 1px solid #1e293b; border-radius: 10px; padding: 8px; font-size: 11px; }
+
+        /* SOHBET PANELİ */
+        .chat-panel { height: 110px; background: #111827; border: 1px solid #1f2937; border-radius: 12px; display: flex; flex-direction: column; padding: 8px; }
+        .panel-title { color: #f59e0b; font-size: 11px; font-weight: bold; margin-bottom: 4px; text-transform: uppercase; }
+        .chat-box { flex: 1; overflow-y: auto; background: #0f172a; border: 1px solid #1e293b; border-radius: 6px; padding: 6px; }
+        .chat-msg { font-size: 11px; margin-bottom: 2px; }
+        .chat-user { font-weight: bold; color: #3b82f6; }
+
+        /* DOĞRUDAN SENİN GÖNDERDİĞİN RESMİ ARKA PLAN YAPAN 100 BÖLGELİ ALAN */
+        .map-wrapper {
+            background-image: url('1000193060.png'); /* Telefonundaki orijinal harita resmi */
+            background-size: cover;
+            background-position: center;
+            border: 2px solid #1e293b; 
+            border-radius: 14px; 
+            position: relative; 
+            width: 100%; 
+            aspect-ratio: 1000 / 500; 
             overflow: hidden;
-            aspect-ratio: 1000 / 520;
+        }
+        
+        /* 10x10=100 Eşit Parçaya Bölen Görünmez Izgara Sistemi */
+        .grid-map-container {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            grid-template-rows: repeat(10, 1fr);
+            width: 100%;
+            height: 100%;
         }
 
-        svg { width: 100%; height: 100%; display: block; }
-
-        /* Yayındaki her ilin kendi sınır hattı (Asla kopmaz, ayrılmaz) */
-        .tr-sector {
-            stroke: #020617; /* İlleri ayıran net keskin siyah çizgiler */
-            stroke-width: 1.2;
-            cursor: pointer;
-            transition: fill 0.2s, filter 0.2s;
-        }
-        .tr-sector:hover { filter: brightness(1.3); }
-
-        /* Sayıların tam illerin merkezine basıldığı katman */
-        .labels-overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none;
+        /* Bölgelerin Kendisi (Başlangıçta şeffaftır, haritayı kapatmaz) */
+        .map-zone-block {
+            border: 0.5px solid rgba(255, 255, 255, 0.08); /* Hafif sınır çizgileri */
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.4s ease;
+            background-color: rgba(0, 0, 0, 0.15); /* Resmi hafif karartır ki yazılar okunsun */
         }
 
-        .zone-number-tag {
-            position: absolute;
-            transform: translate(-50%, -50%);
-            font-size: 10px;
-            font-weight: 900;
-            color: #ffffff;
-            text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000;
+        /* DAİRE YOK: Sadece Numara ve Oyuncu İsmi */
+        .zone-number { 
+            font-size: 12px; 
+            font-weight: 900; 
+            color: #ffffff; 
+            text-shadow: 1px 1px 3px #000, -1px -1px 3px #000; 
+        }
+        .zone-user { 
+            font-size: 7px; 
+            color: #fbbf24; 
+            background: rgba(11, 15, 23, 0.9); 
+            padding: 1px 3px; 
+            border-radius: 3px; 
+            white-space: nowrap; 
+            margin-top: 1px; 
+            display: none; 
+            text-shadow: none;
         }
 
-        /* Saldırı anındaki patlama efekti */
-        @keyframes sectorFlash {
-            0% { filter: brightness(1); }
-            50% { filter: brightness(2.5); }
-            100% { filter: brightness(1); }
-        }
-        .attacked { animation: sectorFlash 0.4s ease-out; }
+        /* KURALLAR PANELİ */
+        .rules-footer-panel { background: #111827; border: 2px solid #ef4444; border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 6px; }
+        .rules-main-title { color: #ef4444; font-size: 12px; font-weight: bold; text-align: center; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #1e293b; padding-bottom: 4px; }
+        .rules-content-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+        .rule-item-box { background: #0f172a; border: 1px solid #232d3f; border-radius: 6px; padding: 6px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; }
+        .rule-left { color: #94a3b8; font-weight: 500; }
+        .rule-right { color: #22c55e; font-weight: bold; }
+        .command-bar-info { background: #1e293b; color: #fbbf24; font-weight: bold; padding: 5px; border-radius: 6px; text-align: center; font-size: 10px; }
+
+        /* SORGU DASHBOARD */
+        .extra-dashboard-panel { background: #111827; border: 1px solid #1f2937; border-radius: 12px; padding: 10px; display: flex; gap: 10px; align-items: stretch; }
+        .commands-helper-text { flex: 1; font-size: 10px; color: #94a3b8; line-height: 1.4; display: flex; flex-direction: column; justify-content: center; }
+        .commands-helper-text b { color: #3b82f6; text-transform: uppercase; }
+        .query-army-box { width: 170px; background: #0f172a; border: 2px solid #f59e0b; border-radius: 12px; padding: 8px; text-align: center; display: flex; flex-direction: column; justify-content: center; }
+        .query-title { color: #f59e0b; font-size: 10px; font-weight: bold; text-transform: uppercase; margin-bottom: 2px; }
+        .query-count { font-size: 24px; font-weight: 900; color: #ffffff; margin: 2px 0; }
+        .query-desc { color: #64748b; font-size: 8px; }
     </style>
 </head>
 <body>
 
-    <div class="main-frame">
-        <div class="map-container">
-            <svg viewBox="0 0 1000 520" xmlns="http://www.w3.org/2000/svg">
-                <g id="tr-full-map-group"></g>
-            </svg>
-            
-            <div class="labels-overlay" id="labels-layer"></div>
+    <div id="splash-screen">
+        <div class="animated-title">BATTLEZONE LIVE</div>
+    </div>
+
+    <div id="custom-leaderboard-modal" class="custom-modal">
+        <div class="modal-box leader-border">
+            <span class="modal-close-x" onclick="closeLeaderboardModal()">×</span>
+            <h3>🏆 TÜM ZAMANLAR SIRALAMASI</h3>
+            <div id="lb-content" style="background: #0f172a; border: 1px solid #1e293b; border-radius: 8px; max-height: 250px; overflow-y: auto; padding: 10px; font-size:12px;">
+                <div style="color:#64748b; text-align:center; padding:10px;">Aktif oyuncu verisi bulunmuyor.</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="launch-menu-overlay">
+        <div class="login-box">
+            <h2>BATTLEZONE LIVE</h2>
+            <div class="menu-btn-group" id="main-menu-buttons">
+                <button class="menu-btn primary" onclick="showConnectionForm()">YENİ OYUN BAŞLAT (100 BÖLGE)</button>
+                <button class="menu-btn" onclick="openLeaderboardModal()">🏆 BAŞARI SIRALAMASI</button>
+            </div>
+            <div id="connection-form">
+                <div class="input-group">
+                    <label>TikTok Canlı Yayın Kullanıcı Adı (ID)</label>
+                    <input type="text" id="initial-username" placeholder="Örn: canliyayinid" autocomplete="off">
+                </div>
+                <button class="menu-btn primary" onclick="connectToTikTokPlayStore()">SAVAŞI BAŞLAT ⚔️</button>
+                <button class="menu-btn" style="margin-top:10px; font-size:11px; padding:6px;" onclick="hideConnectionForm()">← Geri Dön</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <header>
+            <div class="header-top">
+                <div style="display:flex; align-items:center; gap:6px;">
+                    <span style="font-weight:900; color:#2563eb; font-size: 14px;" id="header-logo-text">BATTLEZONE</span>
+                    <span class="live-badge">CANLI</span>
+                </div>
+                <div id="status-text" style="color:#ef4444; font-weight:bold; font-size: 11px;">BAĞLANTI YOK</div>
+            </div>
+            <div class="gift-settings-grid">
+                <div class="gift-setting-card">🌹 Gül <input type="number" id="val-rose" value="50"></div>
+                <div class="gift-setting-card">🎵 TikTok <input type="number" id="val-tiktok" value="150"></div>
+                <div class="gift-setting-card">💸 Para Yağ. <input type="number" id="val-money" value="500"></div>
+                <div class="gift-setting-card">🦁 Aslan <input type="number" id="val-lion" value="1000"></div>
+            </div>
+        </header>
+
+        <div class="score-board-row">
+            <div>Toplam Bölge: <span style="color:#fbbf24; font-weight:bold;">100 / 100</span></div>
+            <button onclick="openLeaderboardModal()" style="background:none; border:none; color:#3b82f6; font-size:11px; font-weight:bold; cursor:pointer;">Sıralamayı Gör 🏆</button>
+        </div>
+
+        <div class="map-wrapper">
+            <div class="grid-map-container" id="game-grid-layer">
+                </div>
+        </div>
+
+        <div class="chat-panel">
+            <div class="panel-title">💬 CANLI SOHBET AKIŞI</div>
+            <div class="chat-box" id="live-chat-box"></div>
+        </div>
+
+        <div class="rules-footer-panel">
+            <div class="rules-main-title">⚔️ BATTLEZONE OYUN KURALLARI ⚔️</div>
+            <div class="rules-content-grid">
+                <div class="rule-item-box"><span class="rule-left">🌹 Gül Göndermek</span><span class="rule-right" id="lbl-rose">+50 Ordu</span></div>
+                <div class="rule-item-box"><span class="rule-left">🎵 TikTok Logosu</span><span class="rule-right" id="lbl-tiktok">+150 Ordu</span></div>
+                <div class="rule-item-box"><span class="rule-left">💸 Para Yağmuru</span><span class="rule-right" id="lbl-money">+500 Ordu</span></div>
+                <div class="rule-item-box"><span class="rule-left">🦁 Görkemli Aslan</span><span class="rule-right" id="lbl-lion">+1000 Ordu</span></div>
+            </div>
+            <div class="command-bar-info">
+                Giriş: join [no] | Saldırı: saldir [no] [no] | Destek: destek [no]
+            </div>
+        </div>
+
+        <div class="extra-dashboard-panel">
+            <div class="commands-helper-text">
+                <span><b>GİRİŞ:</b> Boş alanları kapmak için: <span style="color:#fff; font-weight:bold;">join &lt;bölge_no&gt;</span> (Örn: join75)</span><br>
+                <span><b>SALDIRI Tekli:</b> <span style="color:#fff; font-weight:bold;">saldir &lt;no&gt; &lt;no&gt;</span> | Tüm harita için: <span style="color:#fff; font-weight:bold;">all attack</span></span><br>
+                <span><b>DESTEK & İTTİFAK:</b> Müttefiklik için sohbete yazın: <span style="color:#fff; font-weight:bold;">destek &lt;bölge_no&gt;</span></span>
+            </div>
+            <div class="query-army-box">
+                <div class="query-title">ANLIK ORDU SORGUNUZ</div>
+                <div class="query-count" id="last-army-query-val">0</div>
+                <div class="query-desc">Yazılan son oyuncu ordusu</div>
+            </div>
         </div>
     </div>
 
     <script>
-        // Yayındaki o parlak, canlı renk kombinasyonları
-        const cootvRenkleri = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#f43f5e', '#10b981', '#6366f1', '#a855f7'];
+        const zonesData = {};
+        let activeHostName = "";
+        const globalLeaderboard = {};
 
-        // Cootv haritasındaki tüm illerin eksiksiz sınır yolları (path) ve merkez koordinat listesi
-        const fullTrData = [
-            { id: 1, ad: "Adana", d: "M 520 370 L 560 360 L 580 390 L 570 420 L 530 420 L 510 390 Z", cx: 545, cy: 390 },
-            { id: 2, ad: "Adıyaman", d: "M 670 340 L 710 330 L 730 360 L 690 380 L 660 360 Z", cx: 690, cy: 355 },
-            { id: 3, ad: "Afyonkarahisar", d: "M 270 270 L 330 260 L 340 310 L 290 330 L 260 300 Z", cx: 300, cy: 295 },
-            { id: 4, ad: "Ağrı", d: "M 890 220 L 950 210 L 960 250 L 920 270 L 880 250 Z", cx: 920, cy: 240 },
-            { id: 5, ad: "Amasya", d: "M 540 160 L 580 160 L 590 190 L 550 200 Z", cx: 565, cy: 180 },
-            { id: 6, ad: "Ankara", d: "M 380 200 L 460 210 L 480 250 L 450 290 L 390 270 L 370 230 Z", cx: 425, cy: 245 },
-            { id: 7, ad: "Antalya", d: "M 280 370 L 350 370 L 370 440 L 310 440 L 270 410 Z", cx: 315, cy: 405 },
-            { id: 8, ad: "Artvin", d: "M 790 130 L 840 120 L 850 160 L 800 160 Z", cx: 820, cy: 145 },
-            { id: 9, ad: "Aydın", d: "M 900 240 L 940 230 L 950 270 L 910 280 Z", cx: 925, cy: 255 },
-            { id: 10, ad: "Balıkesir", d: "M 110 180 L 160 170 L 180 220 L 130 240 L 100 210 Z", cx: 135, cy: 205 },
-            { id: 11, ad: "Bilecik", d: "M 220 200 L 250 200 L 260 230 L 230 230 Z", cx: 240, cy: 215 },
-            { id: 12, ad: "Bingöl", d: "M 770 240 L 810 240 L 820 280 L 780 280 Z", cx: 795, cy: 260 },
-            { id: 13, ad: "Bitlis", d: "M 830 270 L 870 270 L 880 310 L 840 310 Z", cx: 855, cy: 290 },
-            { id: 14, ad: "Bolu", d: "M 320 170 L 370 170 L 380 210 L 330 210 Z", cx: 350, cy: 190 },
-            { id: 15, ad: "Burdur", d: "M 250 340 L 290 340 L 300 380 L 260 380 Z", cx: 275, cy: 360 },
-            { id: 16, ad: "Bursa", d: "M 170 190 L 220 190 L 230 230 L 180 230 Z", cx: 195, cy: 210 },
-            { id: 17, ad: "Çanakkale", d: "M 50 170 L 100 160 L 110 200 L 60 210 Z", cx: 80, cy: 185 },
-            { id: 18, ad: "Çankırı", d: "M 410 160 L 450 160 L 460 200 L 420 200 Z", cx: 435, cy: 180 },
-            { id: 19, ad: "Çorum", d: "M 470 160 L 530 160 L 540 210 L 480 210 Z", cx: 500, cy: 185 },
-            { id: 20, ad: "Denizli", d: "M 190 310 L 240 300 L 250 350 L 200 360 Z", cx: 215, cy: 330 },
-            { id: 21, ad: "Diyarbakır", d: "M 730 300 L 800 290 L 810 340 L 740 350 Z", cx: 770, cy: 320 },
-            { id: 22, ad: "Edirne", d: "M 90 100 L 130 100 L 120 140 L 80 140 Z", cx: 105, cy: 120 },
-            { id: 23, ad: "Elazığ", d: "M 690 270 L 750 270 L 760 310 L 700 310 Z", cx: 725, cy: 290 },
-            { id: 24, ad: "Erzincan", d: "M 670 210 L 740 210 L 750 250 L 680 250 Z", cx: 710, cy: 230 },
-            { id: 25, ad: "Erzurum", d: "M 760 180 L 850 180 L 860 240 L 770 240 Z", cx: 805, cy: 210 },
-            { id: 26, ad: "Eskişehir", d: "M 270 210 L 330 210 L 350 260 L 290 260 Z", cx: 310, cy: 235 },
-            { id: 27, ad: "Gaziantep", d: "M 590 390 L 640 390 L 650 430 L 600 430 Z", cx: 615, cy: 410 },
-            { id: 28, ad: "Giresun", d: "M 650 160 L 690 160 L 700 200 L 660 200 Z", cx: 670, cy: 180 },
-            { id: 29, ad: "Gümüşhane", d: "M 700 170 L 740 170 L 750 200 L 710 200 Z", cx: 725, cy: 185 },
-            { id: 30, ad: "Hakkari", d: "M 920 340 L 970 340 L 980 390 L 930 390 Z", cx: 945, cy: 365 },
-            { id: 31, ad: "Hatay", d: "M 540 430 L 570 420 L 580 470 L 550 470 Z", cx: 560, cy: 445 },
-            { id: 32, ad: "Isparta", d: "M 300 320 L 340 320 L 350 360 L 310 360 Z", cx: 325, cy: 340 },
-            { id: 33, ad: "Mersin", d: "M 420 400 L 500 390 L 490 450 L 410 440 Z", cx: 455, cy: 420 },
-            { id: 34, ad: "İstanbul", d: "M 160 130 L 220 130 L 210 160 L 150 160 Z", cx: 185, cy: 145 },
-            { id: 35, ad: "İzmir", d: "M 70 250 L 110 240 L 120 300 L 80 300 Z", cx: 95, cy: 270 },
-            { id: 36, ad: "Kars", d: "M 860 140 L 920 140 L 930 180 L 870 180 Z", cx: 895, cy: 160 },
-            { id: 37, ad: "Kastamonu", d: "M 400 110 L 460 110 L 470 150 L 410 150 Z", cx: 435, cy: 130 },
-            { id: 38, ad: "Kayseri", d: "M 530 270 L 590 270 L 600 330 L 540 330 Z", cx: 565, cy: 300 },
-            { id: 39, ad: "Kırklareli", d: "M 110 70 L 160 75 L 150 110 L 100 115 Z", cx: 130, cy: 95 },
-            { id: 40, ad: "Kırşehir", d: "M 460 250 L 500 250 L 510 290 L 470 290 Z", cx: 485, cy: 270 },
-            { id: 41, ad: "Kocaeli", d: "M 220 140 L 250 140 L 260 170 L 230 170 Z", cx: 240, cy: 155 },
-            { id: 42, ad: "Konya", d: "M 360 300 L 440 300 L 460 380 L 380 380 L 340 340 Z", cx: 400, cy: 340 },
-            { id: 43, ad: "Kütahya", d: "M 200 230 L 260 230 L 250 280 L 190 280 Z", cx: 225, cy: 255 },
-            { id: 44, ad: "Malatya", d: "M 610 300 L 670 290 L 680 340 L 620 340 Z", cx: 645, cy: 315 },
-            { id: 45, ad: "Manisa", d: "M 110 240 L 170 230 L 180 280 L 120 290 Z", cx: 145, cy: 260 },
-            { id: 46, ad: "Kahramanmaraş", d: "M 580 330 L 630 330 L 640 380 L 590 380 Z", cx: 605, cy: 355 },
-            { id: 47, ad: "Mardin", d: "M 760 360 L 830 350 L 840 390 L 770 400 Z", cx: 795, cy: 375 },
-            { id: 48, ad: "Muğla", d: "M 130 340 L 190 340 L 180 400 L 120 390 Z", cx: 155, cy: 365 },
-            { id: 49, ad: "Muş", d: "M 810 240 L 860 240 L 870 280 L 820 280 Z", cx: 835, cy: 260 },
-            { id: 50, ad: "Nevşehir", d: "M 480 280 L 520 280 L 530 310 L 490 310 Z", cx: 505, cy: 295 },
-            { id: 51, ad: "Niğde", d: "M 470 320 L 510 320 L 520 360 L 480 360 Z", cx: 495, cy: 340 },
-            { id: 52, ad: "Ordu", d: "M 590 150 L 640 150 L 650 180 L 600 190 Z", cx: 615, cy: 165 },
-            { id: 53, ad: "Rize", d: "M 740 150 L 780 150 L 790 180 L 750 185 Z", cx: 765, cy: 165 },
-            { id: 54, ad: "Sakarya", d: "M 250 150 L 290 150 L 300 180 L 260 180 Z", cx: 270, cy: 165 },
-            { id: 55, ad: "Samsun", d: "M 510 120 L 570 120 L 560 160 L 500 160 Z", cx: 535, cy: 140 },
-            { id: 56, ad: "Siirt", d: "M 840 320 L 880 320 L 890 350 L 850 350 Z", cx: 865, cy: 335 },
-            { id: 57, ad: "Sinop", d: "M 460 100 L 500 100 L 490 130 L 450 130 Z", cx: 475, cy: 115 },
-            { id: 58, ad: "Sivas", d: "M 560 210 L 650 220 L 660 280 L 570 270 Z", cx: 605, cy: 245 },
-            { id: 59, ad: "Tekirdağ", d: "M 110 130 L 150 130 L 140 160 L 100 160 Z", cx: 125, cy: 145 },
-            { id: 60, ad: "Tokat", d: "M 550 180 L 600 180 L 610 220 L 560 220 Z", cx: 575, cy: 200 },
-            { id: 61, ad: "Trabzon", d: "M 690 150 L 730 150 L 740 180 L 700 180 Z", cx: 710, cy: 165 },
-            { id: 62, ad: "Tunceli", d: "M 710 240 L 750 240 L 760 270 L 720 270 Z", cx: 735, cy: 255 },
-            { id: 63, ad: "Şanlıurfa", d: "M 650 370 L 730 360 L 740 420 L 660 420 Z", cx: 695, cy: 395 },
-            { id: 64, ad: "Uşak", d: "M 200 280 L 250 280 L 240 310 L 190 310 Z", cx: 215, cy: 295 },
-            { id: 65, ad: "Van", d: "M 880 270 L 960 260 L 970 330 L 890 330 Z", cx: 925, cy: 295 },
-            { id: 66, ad: "Yozgat", d: "M 480 210 L 550 210 L 560 260 L 490 260 Z", cx: 515, cy: 235 },
-            { id: 67, ad: "Zonguldak", d: "M 310 130 L 350 130 L 340 160 L 300 160 Z", cx: 325, cy: 145 },
-            { id: 68, ad: "Aksaray", d: "M 440 290 L 480 290 L 470 330 L 430 330 Z", cx: 455, cy: 310 },
-            { id: 69, ad: "Bayburt", d: "M 740 180 L 770 180 L 780 210 L 750 210 Z", cx: 760, cy: 195 },
-            { id: 70, ad: "Karaman", d: "M 410 390 L 460 390 L 450 430 L 400 430 Z", cx: 430, cy: 410 },
-            { id: 71, ad: "Kırıkkale", d: "M 440 210 L 470 210 L 460 240 L 430 240 Z", cx: 450, cy: 225 },
-            { id: 72, ad: "Batman", d: "M 800 310 L 830 310 L 840 350 L 810 350 Z", cx: 820, cy: 330 },
-            { id: 73, ad: "Şırnak", d: "M 860 350 L 910 350 L 920 390 L 870 390 Z", cx: 885, cy: 370 },
-            { id: 74, ad: "Bartın", d: "M 350 120 L 380 120 L 370 140 L 340 140 Z", cx: 360, cy: 130 },
-            { id: 75, ad: "Ardahan", d: "M 840 110 L 880 110 L 870 140 L 830 140 Z", cx: 855, cy: 125 },
-            { id: 76, ad: "Iğdır", d: "M 940 190 L 980 190 L 970 210 L 930 210 Z", cx: 955, cy: 200 },
-            { id: 77, ad: "Yalova", d: "M 190 165 L 220 165 L 210 180 L 180 180 Z", cx: 200, cy: 172 },
-            { id: 78, ad: "Karabük", d: "M 360 140 L 390 140 L 380 170 L 350 170 Z", cx: 370, cy: 155 },
-            { id: 79, ad: "Kilis", d: "M 620 430 L 650 430 L 640 450 L 610 450 Z", cx: 630, cy: 440 },
-            { id: 80, ad: "Osmaniye", d: "M 560 380 L 590 380 L 580 410 L 550 410 Z", cx: 570, cy: 395 },
-            { id: 81, ad: "Düzce", d: "M 290 160 L 320 160 L 310 185 L 280 185 Z", cx: 300, cy: 172 }
+        // Bölgeler fethedildikçe haritanın o karesinin bürüneceği opak renk tonları
+        const playerColorsPool = [
+            'rgba(239, 68, 68, 0.65)',  // Kırmızı
+            'rgba(34, 197, 94, 0.65)',  // Yeşil
+            'rgba(59, 130, 246, 0.65)', // Mavi
+            'rgba(245, 158, 11, 0.65)', // Turuncu
+            'rgba(168, 85, 247, 0.65)', // Mor
+            'rgba(236, 72, 153, 0.65)', // Pembe
+            'rgba(6, 182, 212, 0.65)',  // Turkuaz
+            'rgba(234, 179, 8, 0.65)'   // Sarı
         ];
 
-        document.addEventListener("DOMContentLoaded", () => {
-            const anaGövde = document.getElementById("tr-full-map-group");
-            const etiketKatmanı = document.getElementById("labels-layer");
-
-            // Numaraları 1'den başlayıp 81'e kadar karıştırarak dağıtma
-            let karisikSayilar = Array.from({length: fullTrData.length}, (_, i) => i + 1);
-            karisikSayilar.sort(() => Math.random() - 0.5);
-
-            fullTrData.forEach((il, sira) => {
-                let degisenNumara = karisikSayilar[sira];
-                let rastgeleRenk = cootvRenkleri[Math.floor(Math.random() * cootvRenkleri.length)];
-
-                // Sektör Çizgisi (Path) Ekleme
-                const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                path.setAttribute("d", il.d);
-                path.setAttribute("class", "tr-sector");
-                path.setAttribute("id", `sec-${degisenNumara}`);
-                path.style.fill = rastgeleRenk;
-
-                // Tıklayınca parlayıp renk değiştirme simülasyonu
-                path.addEventListener("click", () => {
-                    path.classList.add("attacked");
-                    setTimeout(() => path.classList.remove("attacked"), 400);
-                    path.style.fill = cootvRenkleri[Math.floor(Math.random() * cootvRenkleri.length)];
+        window.addEventListener("DOMContentLoaded", () => {
+            ["rose", "tiktok", "money", "lion"].forEach(id => {
+                document.getElementById(`val-${id}`).addEventListener("input", function() {
+                    document.getElementById(`lbl-${id}`).innerText = `+${this.value} Ordu`;
                 });
-
-                anaGövde.appendChild(path);
-
-                // Numarayı tam o ilin coğrafi merkez koordinatına yerleştirme
-                const etiket = document.createElement("div");
-                etiket.className = "zone-number-tag";
-                etiket.style.left = `${(il.cx / 1000) * 100}%`;
-                etiket.style.top = `${(il.cy / 520) * 100}%`;
-                etiket.innerHTML = degisenNumara;
-
-                etiketKatmanı.appendChild(etiket);
             });
+
+            setTimeout(() => {
+                const splash = document.getElementById("splash-screen");
+                splash.style.opacity = "0";
+                setTimeout(() => splash.style.display = "none", 800);
+            }, 2300);
         });
+
+        function showConnectionForm() {
+            document.getElementById("main-menu-buttons").style.display = "none";
+            document.getElementById("connection-form").style.display = "block";
+        }
+        function hideConnectionForm() {
+            document.getElementById("connection-form").style.display = "none";
+            document.getElementById("main-menu-buttons").style.display = "flex";
+        }
+        function openLeaderboardModal() {
+            buildLeaderboardUi();
+            document.getElementById('custom-leaderboard-modal').style.display = 'flex';
+        }
+        function closeLeaderboardModal() {
+            document.getElementById('custom-leaderboard-modal').style.display = 'none';
+        }
+
+        // 1'DEN 100'E KADAR RAKAMLARI RASTGELE SIRAYLA 100 KAREYE DİZEN SİSTEM
+        function build100GridMap() {
+            const gridContainer = document.getElementById("game-grid-layer");
+            gridContainer.innerHTML = "";
+
+            // 1'den 100'e kadar olan sayıları oluştur
+            let numbersArray = Array.from({length: 100}, (_, i) => i + 1);
+
+            // Fisher-Yates Karıştırma Algoritması ile numaraları tamamen rastgele sırala
+            for (let i = numbersArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [numbersArray[i], numbersArray[j]] = [numbersArray[j], numbersArray[i]];
+            }
+
+            // Karışmış numaraları ızgaraya yerleştir
+            numbersArray.forEach((bölgeNo) => {
+                zonesData[bölgeNo] = { id: bölgeNo, owner: "", troops: 0, currentBg: "" };
+
+                const zoneBlock = document.createElement("div");
+                zoneBlock.className = "map-zone-block";
+                zoneBlock.id = `zone-block-${bölgeNo}`;
+                
+                // Sadece Rakam ve Altında Oyuncu Bilgisi (İl ismi kesinlikle yok, daire yok)
+                zoneBlock.innerHTML = `
+                    <div class="zone-number">${bölgeNo}</div>
+                    <div class="zone-user" id="zone-user-${bölgeNo}">-</div>
+                `;
+                
+                gridContainer.appendChild(zoneBlock);
+            });
+        }
+
+        function connectToTikTokPlayStore() {
+            const username = document.getElementById("initial-username").value.trim().toLowerCase();
+            if(!username) return;
+
+            activeHostName = username;
+            document.getElementById("header-logo-text").innerText = username.toUpperCase();
+            
+            build100GridMap(); // Harita kurulumu
+            
+            document.getElementById("launch-menu-overlay").style.display = "none";
+            document.getElementById("status-text").innerText = `@${username.toUpperCase()} BAĞLANDI`;
+            document.getElementById("status-text").style.color = "#10b981";
+            
+            startDataPolling(username);
+        }
+
+        function startDataPolling(username) {
+            const eventSourceUrl = `https://tiktok-chat-reader.onrender.com/api/stream/events?username=${username}`;
+            try {
+                const eventSource = new EventSource(eventSourceUrl);
+                eventSource.onmessage = function(event) {
+                    const data = JSON.parse(event.data);
+                    if(data.type === "chat") {
+                        handleIncomingChat(data.uniqueId, data.comment);
+                    } else if (data.type === "gift") {
+                        handleIncomingGift(data.uniqueId, data.giftName);
+                    }
+                };
+                eventSource.onerror = function() {
+                    eventSource.close();
+                    setTimeout(() => startDataPolling(username), 4000);
+                };
+            } catch(e) {}
+        }
+
+        function extractNumbers(text) { return text.match(/\d+/g)?.map(Number) || []; }
+
+        function handleIncomingChat(senderName, comment) {
+            let username = senderName.replace(/[^\w\s]/gi, '').trim();
+            if(username.toLowerCase() === activeHostName) {
+                username = activeHostName.toUpperCase();
+            }
+
+            const chatBox = document.getElementById("live-chat-box");
+            chatBox.innerHTML += `<div class="chat-msg"><span class="chat-user">${username}:</span> ${comment}</div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            const cleanComment = comment.trim().toLowerCase()
+                                        .replace(/ı/g, 'i').replace(/ş/g, 's')
+                                        .replace(/ğ/g, 'g').replace(/ç/g, 'c')
+                                        .replace(/ü/g, 'u').replace(/ö/g, 'o')
+                                        .replace(/\s+/g, '');
+            const numbers = extractNumbers(comment);
+
+            // GİRİŞ: join 75
+            if(cleanComment.startsWith("join") && numbers.length === 1) {
+                const zoneId = numbers[0];
+                if(zonesData[zoneId]) {
+                    const zone = zonesData[zoneId];
+                    if(zone.owner === "") {
+                        zone.owner = username;
+                        zone.troops = 20;
+                        globalLeaderboard[username] = (globalLeaderboard[username] || 0) + 20;
+                        
+                        const el = document.getElementById(`zone-user-${zoneId}`);
+                        el.style.display = "block";
+                        el.innerText = `${username.substring(0,5)} (${zone.troops})`;
+                        
+                        // Bölgeyi fethedenin şans rengine boya (Resmin üzeri şeffaf renk kaplanır)
+                        const randomColor = playerColorsPool[Math.floor(Math.random() * playerColorsPool.length)];
+                        zone.currentBg = randomColor;
+                        document.getElementById(`zone-block-${zoneId}`).style.backgroundColor = randomColor;
+                        
+                        document.getElementById("last-army-query-val").innerText = zone.troops;
+                    }
+                }
+            }
+            
+            // SALDIRI: saldir 12 45
+            if((cleanComment.startsWith("saldir") || cleanComment.startsWith("attack")) && numbers.length === 2) {
+                const fromZone = numbers[0];
+                const toZone = numbers[1];
+                
+                if(zonesData[fromZone] && zonesData[toZone]) {
+                    const attacker = zonesData[fromZone];
+                    const defender = zonesData[toZone];
+                    
+                    if(attacker.owner === username && attacker.troops > 5) {
+                        const attackForce = attacker.troops - 1;
+                        attacker.troops = 1;
+                        document.getElementById(`zone-user-${fromZone}`).innerText = `${username.substring(0,5)} (1)`;
+                        
+                        if(defender.owner === "") {
+                            defender.owner = username;
+                            defender.troops = attackForce;
+                            defender.currentBg = attacker.currentBg;
+                            document.getElementById(`zone-block-${toZone}`).style.backgroundColor = attacker.currentBg;
+                        } else if(defender.owner === username) {
+                            defender.troops += attackForce;
+                        } else {
+                            if(attackForce > defender.troops) {
+                                defender.owner = username;
+                                defender.troops = attackForce - defender.troops;
+                                
+                                // Yeni fethedilen kareyi saldırganın rengine çevir
+                                defender.currentBg = attacker.currentBg;
+                                document.getElementById(`zone-block-${toZone}`).style.backgroundColor = attacker.currentBg;
+                            } else {
+                                defender.troops -= attackForce;
+                            }
+                        }
+                        const defEl = document.getElementById(`zone-user-${toZone}`);
+                        defEl.style.display = "block";
+                        defEl.innerText = `${defender.owner.substring(0,5)} (${defender.troops})`;
+                        document.getElementById("last-army-query-val").innerText = defender.troops;
+                        updateLeaderboardScore(username, attackForce);
+                    }
+                }
+            }
+
+            // DESTEK: destek 55
+            if((cleanComment.startsWith("destek") || cleanComment.startsWith("ittifak")) && numbers.length === 1) {
+                const targetZone = numbers[0];
+                if(zonesData[targetZone]) {
+                    const zone = zonesData[targetZone];
+                    if(zone.owner !== "" && zone.owner !== username) {
+                        zone.troops += 15;
+                        document.getElementById(`zone-user-${targetZone}`).innerText = `${zone.owner.substring(0,5)} (${zone.troops})`;
+                        document.getElementById("last-army-query-val").innerText = zone.troops;
+                        updateLeaderboardScore(zone.owner, 15);
+                    }
+                }
+            }
+        }
+
+        function handleIncomingGift(senderName, giftName) {
+            let username = senderName.replace(/[^\w\s]/gi, '').trim();
+            if(username.toLowerCase() === activeHostName) {
+                username = activeHostName.toUpperCase();
+            }
+
+            let addedTroops = 0;
+            const cleanGift = giftName.toLowerCase();
+            
+            if(cleanGift.includes("rose") || cleanGift.includes("gul")) {
+                addedTroops = parseInt(document.getElementById("val-rose").value) || 50;
+            } else if(cleanGift.includes("tiktok")) {
+                addedTroops = parseInt(document.getElementById("val-tiktok").value) || 150;
+            } else if(cleanGift.includes("money") || cleanGift.includes("para")) {
+                addedTroops = parseInt(document.getElementById("val-money").value) || 500;
+                handleSpecialSpawn(username, addedTroops);
+                return;
+            } else if(cleanGift.includes("lion") || cleanGift.includes("aslan")) {
+                addedTroops = parseInt(document.getElementById("val-lion").value) || 1000;
+                handleSpecialSpawn(username, addedTroops);
+                return;
+            }
+
+            if(addedTroops > 0) {
+                let lastUpdatedTroops = 0;
+                for(let id in zonesData) {
+                    if(zonesData[id].owner === username) {
+                        zonesData[id].troops += addedTroops;
+                        document.getElementById(`zone-user-${id}`).innerText = `${username.substring(0,5)} (${zonesData[id].troops})`;
+                        lastUpdatedTroops = zonesData[id].troops;
+                    }
+                }
+                if(lastUpdatedTroops > 0) {
+                    document.getElementById("last-army-query-val").innerText = lastUpdatedTroops;
+                }
+                updateLeaderboardScore(username, addedTroops);
+            }
+        }
+
+        function handleSpecialSpawn(username, troopsCount) {
+            let targetId = null;
+            const freeZones = Object.values(zonesData).filter(z => z.owner === "");
+            
+            if(freeZones.length > 0) {
+                const randomPick = freeZones[Math.floor(Math.random() * freeZones.length)];
+                targetId = randomPick.id;
+            } else {
+                const allKeys = Object.keys(zonesData);
+                targetId = allKeys[Math.floor(Math.random() * allKeys.length)];
+            }
+
+            if(targetId) {
+                const zone = zonesData[targetId];
+                zone.owner = username;
+                zone.troops += troopsCount;
+                
+                const el = document.getElementById(`zone-user-${targetId}`);
+                el.style.display = "block";
+                el.innerText = `${username.substring(0,5)} (${zone.troops})`;
+                
+                const randomColor = playerColorsPool[Math.floor(Math.random() * playerColorsPool.length)];
+                zone.currentBg = randomColor;
+                document.getElementById(`zone-block-${targetId}`).style.backgroundColor = randomColor;
+
+                document.getElementById("last-army-query-val").innerText = zone.troops;
+                updateLeaderboardScore(username, troopsCount);
+            }
+        }
+
+        function updateLeaderboardScore(username, amt) {
+            globalLeaderboard[username] = (globalLeaderboard[username] || 0) + amt;
+        }
+
+        function buildLeaderboardUi() {
+            const lbBox = document.getElementById("lb-content");
+            lbBox.innerHTML = "";
+            const sorted = Object.entries(globalLeaderboard).sort((a,b) => b[1] - a[1]);
+            
+            if(sorted.length === 0) {
+                lbBox.innerHTML = `<div style="color:#64748b; text-align:center; padding:10px;">Aktif oyuncu verisi bulunmuyor.</div>`;
+                return;
+            }
+            
+            sorted.forEach(([user, score], idx) => {
+                lbBox.innerHTML += `<div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #1e293b;">
+                    <div><b>${idx + 1}.</b> ${user}</div>
+                    <div style="color:#22c55e; font-weight:bold;">${score} Puan</div>
+                </div>`;
+            });
+        }
     </script>
 </body>
 </html>
+
+     
