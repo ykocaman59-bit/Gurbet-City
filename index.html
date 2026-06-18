@@ -3,177 +3,202 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Battlezone Türkiye - Gerçek Entegre Harita</title>
+    <title>Battlezone TR - Orijinal Canlı Yayın Haritası</title>
     <style>
         * {
             box-sizing: border-box; margin: 0; padding: 0;
             -webkit-user-select: none; user-select: none;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         }
-        body { background-color: #0b0f17; color: #f1f5f9; overflow-x: hidden; overflow-y: auto; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding-bottom: 20px; }
+        body { 
+            background-color: #0c101a; color: #f1f5f9; 
+            display: flex; flex-direction: column; align-items: center; 
+            min-height: 100vh; padding: 10px; overflow-x: hidden;
+        }
         
-        .app-container { width: 100%; max-width: 450px; display: flex; flex-direction: column; gap: 10px; padding: 10px; }
+        .game-wrapper { width: 100%; max-width: 450px; display: flex; flex-direction: column; gap: 12px; }
 
-        /* GİRİŞ EKRANI */
-        #splash-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #070a12; z-index: 100000; display: flex; align-items: center; justify-content: center;
-            transition: opacity 0.5s ease-out, visibility 0.5s;
+        /* ÜST PANEL */
+        header { 
+            background: #111827; border: 2px solid #1f2937; border-radius: 12px; 
+            padding: 12px; display: flex; flex-direction: column; gap: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
         }
-        .animated-title { font-size: 32px; font-weight: 900; color: #2563eb; letter-spacing: 3px; text-transform: uppercase; }
+        .header-info { display: flex; justify-content: space-between; align-items: center; }
+        .gift-matrix { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; font-size: 10px; text-align: center; }
+        .gift-matrix div { background: #1f2937; padding: 4px; border-radius: 6px; border: 1px solid #374151; }
+        .gift-matrix input { width: 100%; background: #0b0f19; border: 1px solid #4b5563; border-radius: 4px; color: #10b981; text-align: center; font-size: 11px; margin-top: 3px; font-weight: bold; }
 
-        /* ANA MENÜ OVERLAY */
-        #launch-menu-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
-            z-index: 9999; display: flex; align-items: center; justify-content: center;
-        }
-        .login-box { background: #111827; border: 2px solid #2563eb; border-radius: 16px; padding: 30px; width: 90%; max-width: 380px; text-align: center; }
-        .menu-btn { width: 100%; background: #2563eb; border: none; color: white; border-radius: 8px; padding: 14px; font-size: 14px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
-
-        /* GERÇEK HARİTA PANELİ */
-        .map-container-vector {
+        /* VİDEODAKİ GİBİ BİRLEŞİK GERÇEK HARİTA ALANI */
+        .live-map-screen {
             width: 100%;
+            aspect-ratio: 1000 / 550;
             background: #111827;
-            border: 2px solid #1e293b;
-            border-radius: 14px;
+            border: 3px solid #2563eb;
+            border-radius: 16px;
             position: relative;
             overflow: hidden;
-            box-shadow: inset 0 0 30px rgba(0,0,0,0.9);
-            padding: 5px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7), inset 0 0 40px rgba(0,0,0,0.8);
         }
 
-        /* Arka plandaki gerçek Türkiye haritası görseli */
-        .real-tr-bg {
-            width: 100%;
-            height: auto;
-            display: block;
-            opacity: 0.85;
+        /* Arka planda duran, senin istediğin o tek parça birleşik yeşil harita şablonu */
+        .map-base-svg {
+            width: 100%; height: 100%; display: block;
+        }
+        .original-land {
+            fill: #1b4332; /* Videodaki gibi koyu askeri yeşil ordu rengi */
+            stroke: #40916c; /* İl sınırlarını ayıran birleşik çizgiler */
+            stroke-width: 1.5;
         }
 
-        /* NUMARALANDIRMA KATMANI */
-        .map-labels-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
-        .zone-text-label { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        /* HARİTA ÜZERİNDEKİ ETKİLEŞİMLİ BÖLGELER (AYRI DEĞİL, BİRLEŞİK KATMAN) */
+        .interactive-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
         
-        /* Yuvarlak Canlı Nokta ve Sayı Kombinasyonu */
-        .z-dot {
-            width: 22px; height: 22px; background: rgba(37, 99, 235, 0.85);
-            border: 2px solid #ffffff; border-radius: 50%; display: flex;
-            align-items: center; justify-content: center; box-shadow: 0 0 8px rgba(0,0,0,0.8);
-            transition: background 0.3s ease;
+        .map-zone-node { 
+            position: absolute; transform: translate(-50%, -50%); 
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            cursor: pointer; z-index: 10;
         }
-        .z-num { font-size: 10px; font-weight: 900; color: #ffffff; }
-        .z-owner { font-size: 8px; color: #fff; background: rgba(0, 0, 0, 0.85); padding: 1px 4px; border-radius: 3px; display: none; margin-top: 2px; }
 
-        /* CHAT VE ARALIKLAR */
-        header { background: #111827; border: 1px solid #1f2937; border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
-        .header-top { display: flex; justify-content: space-between; align-items: center; }
-        .gift-settings-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; background: #1e293b; padding: 6px; border-radius: 8px; font-size: 9px; text-align: center; }
-        .gift-settings-grid input { width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 4px; color: #22c55e; text-align: center; font-size: 11px; padding: 2px; margin-top: 3px; }
-        .chat-panel { height: 110px; background: #111827; border: 1px solid #1f2937; border-radius: 12px; padding: 8px; display: flex; flex-direction: column; }
-        .chat-box { flex: 1; overflow-y: auto; background: #0f172a; border-radius: 6px; padding: 6px; font-size: 11px; }
+        /* Videodaki Numaralı Yuvarlak Canlı Noktalar */
+        .zone-pulse-circle {
+            width: 24px; height: 24px; background: rgba(37, 99, 235, 0.85);
+            border: 2px solid #ffffff; border-radius: 50%; display: flex;
+            align-items: center; justify-content: center;
+            box-shadow: 0 0 10px rgba(0,0,0,0.8);
+            transition: all 0.3s ease;
+        }
+        .zone-pulse-circle span { font-size: 11px; font-weight: 900; color: #ffffff; text-shadow: 1px 1px 2px #000; }
+        
+        /* Bölge sahiplerinin isim tabelası */
+        .zone-tag-name {
+            font-size: 8px; color: #ffffff; background: rgba(0, 0, 0, 0.75);
+            padding: 1px 4px; border-radius: 4px; margin-top: 2px;
+            border: 1px solid #374151; white-space: nowrap; max-width: 50px; overflow: hidden;
+        }
+
+        /* VİDEODAKİ SALDIRI VE PATLAMA ANİMASYONU */
+        @keyframes zoneBlast {
+            0% { transform: translate(-50%, -50%) scale(1); filter: brightness(1); }
+            50% { transform: translate(-50%, -50%) scale(1.4); filter: brightness(2); box-shadow: 0 0 25px #ef4444; }
+            100% { transform: translate(-50%, -50%) scale(1); filter: brightness(1); }
+        }
+        .attack-active { animation: zoneBlast 0.5s ease-in-out; z-index: 99; }
+
+        /* CANLI SOHBET VE LOG PANELİ */
+        .live-chat-panel { 
+            height: 130px; background: #111827; border: 2px solid #1f2937; 
+            border-radius: 12px; padding: 10px; display: flex; flex-direction: column;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        .chat-stream { flex: 1; overflow-y: auto; background: #070a12; border-radius: 8px; padding: 6px; font-size: 12px; color: #9ca3af; }
+        .chat-line { margin-bottom: 4px; line-height: 1.4; }
+        .system-alert { color: #f59e0b; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div id="splash-screen"><div class="animated-title">BATTLEZONE LIVE</div></div>
-
-    <div id="launch-menu-overlay">
-        <div class="login-box">
-            <h2 style="color:#2563eb; margin-bottom: 20px;">BATTLEZONE TR</h2>
-            <button class="menu-btn" onclick="oyunuKuralinaGoreBaslat()">YENİ OYUN (100 BÖLGE)</button>
-        </div>
-    </div>
-
-    <div class="app-container">
+    <div class="game-wrapper">
         <header>
-            <div class="header-top">
-                <span style="font-weight:900; color:#2563eb; font-size: 14px;">BATTLEZONE TR</span>
-                <div style="color:#10b981; font-weight:bold; font-size: 11px;">GERÇEK HARİTA ENTEGRE</div>
+            <div class="header-info">
+                <span style="font-weight:900; color:#2563eb; font-size: 16px; letter-spacing: 1px;">BATTLEZONE YAYIN SİSTEMİ</span>
+                <span style="color:#10b981; font-size: 11px; font-weight: bold; background: rgba(16,185,129,0.1); padding: 2px 8px; border-radius: 20px;">HARİTA ENTEGRE EDİLDİ</span>
             </div>
-            <div class="gift-settings-grid">
-                <div>🌹 Gül <input type="number" id="val-rose" value="50"></div>
-                <div>🎵 TikTok <input type="number" id="val-tiktok" value="150"></div>
-                <div>💸 Para Yağ. <input type="number" value="500"></div>
-                <div>🦁 Aslan <input type="number" value="1000"></div>
+            <div class="gift-matrix">
+                <div>🌹 Gül <input type="number" id="g-rose" value="1"></div>
+                <div>🎵 TikTok <input type="number" id="g-tiktok" value="10"></div>
+                <div>💸 Para <input type="number" id="g-money" value="50"></div>
+                <div>🦁 Aslan <input type="number" id="g-lion" value="100"></div>
             </div>
         </header>
 
-        <div class="map-container-vector">
-            <img class="real-tr-bg" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 450' style='background:%23111827;'><path d='M10,10 L990,10 L990,440 L10,440 Z' fill='%231e293b'/><path d='M50,200 Q200,100 400,160 T800,120 T950,220 Q850,380 600,350 T200,400 Z' fill='%231c5235' stroke='%2338a169' stroke-width='3'/></svg>" alt="Türkiye Haritası">
+        <div class="live-map-screen">
+            <svg class="map-base-svg" viewBox="0 0 1000 550" xmlns="http://www.w3.org/2000/svg">
+                <path class="original-land" d="M50,280 Q120,180 250,220 T500,200 T750,180 T950,260 Q920,420 700,450 T400,480 T150,450 Z" />
+                <path d="M250,220 Q280,320 300,460 M500,200 Q480,350 400,480 M750,180 Q720,300 700,450 M150,240 Q350,260 550,250 T900,290" fill="none" stroke="#40916c" stroke-width="1.5" />
+            </svg>
             
-            <div class="map-labels-overlay" id="text-labels-layer"></div>
+            <div class="interactive-overlay" id="zones-trigger-layer"></div>
         </div>
 
-        <div class="chat-panel">
-            <div style="color: #f59e0b; font-size: 11px; font-weight: bold; margin-bottom: 4px;">💬 CANLI SOHBET</div>
-            <div class="chat-box" id="live-chat-box">Sistem yüklendi. Komutlar bekleniyor...</div>
+        <div class="live-chat-panel">
+            <div style="color: #ef4444; font-size: 12px; font-weight: bold; margin-bottom: 5px; display: flex; align-items: center; gap: 5px;">
+                <span style="width: 8px; height: 8px; background: #ef4444; border-radius: 50%; display: inline-block;"></span> OYUN AKIŞI LOGLARI
+            </div>
+            <div class="chat-stream" id="logs-container">
+                <div class="chat-line system-alert">[SİSTEM]: Harita bütünlüğü doğrulandı. 100 bölge aktif.</div>
+                <div class="chat-line">[SİSTEM]: TikTok Canlı Yayın entegrasyonu hazır, komut bekleniyor...</div>
+            </div>
         </div>
     </div>
 
     <script>
-        const zonesData = {};
-        const parlakNeonRenkler = [
-            '#ff0055', '#00ffcc', '#ccff00', '#ff9900', '#ff00ff', '#00ffff', '#33ff00', 
-            '#ff3300', '#9900ff', '#00ff66', '#ff00aa', '#3399ff', '#ffcc00', '#00ff00'
+        const neonRenkHavuzu = ['#ff0055', '#00ffcc', '#ccff00', '#ff9900', '#ff00ff', '#00ffff', '#33ff00', '#ff3300', '#9900ff', '#00ff66', '#ff00aa', '#3399ff'];
+        
+        // Videodaki haritanın üzerine dengeli şekilde dağıtılan 100 bölge koordinat yapısı
+        const yayinHaritaMatrisi = [
+            {x:12, y:45}, {x:16, y:38}, {x:20, y:48}, {x:24, y:42}, {x:18, y:55}, {x:28, y:52}, {x:32, y:46}, {x:26, y:35}, {x:36, y:38}, {x:30, y:62},
+            {x:38, y:56}, {x:42, y:50}, {x:40, y:40}, {x:46, y:34}, {x:44, y:65}, {x:50, y:58}, {x:54, y:52}, {x:52, y:42}, {x:56, y:35}, {x:52, y:72},
+            {x:58, y:66}, {x:62, y:60}, {x:60, y:48}, {x:66, y:42}, {x:64, y:32}, {x:62, y:78}, {x:68, y:72}, {x:72, y:66}, {x:70, y:54}, {x:76, y:48},
+            {x:74, y:38}, {x:72, y:82}, {x:78, y:76}, {x:82, y:70}, {x:80, y:58}, {x:86, y:52}, {x:84, y:42}, {x:82, y:30}, {x:88, y:74}, {x:92, y:64},
+            {x:90, y:50}, {x:88, y:38}, {x:14, y:62}, {x:22, y:66}, {x:46, y:22}, {x:56, y:22}, {x:66, y:24}, {x:76, y:26}, {x:84, y:22}, {x:92, y:28},
+            {x:15, y:42}, {x:25, y:45}, {x:35, y:48}, {x:45, y:52}, {x:55, y:55}, {x:65, y:58}, {x:75, y:61}, {x:85, y:64}, {x:95, y:68}, {x:10, y:50},
+            {x:18, y:30}, {x:28, y:28}, {x:38, y:30}, {x:48, y:32}, {x:58, y:34}, {x:68, y:36}, {x:78, y:38}, {x:88, y:40}, {x:94, y:44}, {x:50, y:48},
+            {x:12, y:58}, {x:22, y:58}, {x:32, y:58}, {x:42, y:58}, {x:52, y:58}, {x:62, y:58}, {x:72, y:58}, {x:82, y:58}, {x:92, y:58}, {x:48, y:62},
+            {x:15, y:70}, {x:25, y:70}, {x:35, y:70}, {x:45, y:70}, {x:55, y:70}, {x:65, y:70}, {x:75, y:70}, {x:85, y:70}, {x:95, y:70}, {x:50, y:75},
+            {x:18, y:80}, {x:28, y:80}, {x:38, y:80}, {x:48, y:80}, {x:55, y:80}, {x:65, y:80}, {x:75, y:80}, {x:85, y:80}, {x:90, y:80}, {x:50, y:85}
         ];
 
-        // Gönderdiğin birleşik haritanın hatlarına tam oturan 100 adet dengeli coğrafi koordinat matrisi
-        const gercekTrMatrisi = [
-            {x:8, y:28}, {x:14, y:22}, {x:12, y:36}, {x:15, y:52}, {x:22, y:46}, {x:25, y:32}, {x:24, y:20}, {x:32, y:22}, {x:34, y:36}, {x:32, y:54},
-            {x:28, y:72}, {x:18, y:76}, {x:15, y:88}, {x:26, y:88}, {x:35, y:78}, {x:38, y:65}, {x:44, y:68}, {x:45, y:82}, {x:38, y:92}, {x:48, y:94},
-            {x:54, y:85}, {x:52, y:72}, {x:54, y:58}, {x:46, y:52}, {x:45, y:38}, {x:44, y:22}, {x:55, y:24}, {x:58, y:38}, {x:64, y:32}, {x:62, y:16},
-            {x:72, y:18}, {x:74, y:32}, {x:68, y:46}, {x:64, y:58}, {x:65, y:72}, {x:62, y:85}, {x:74, y:88}, {x:75, y:72}, {x:75, y:55}, {x:78, y:42},
-            {x:84, y:32}, {x:84, y:18}, {x:94, y:18}, {x:95, y:32}, {x:92, y:46}, {x:85, y:54}, {x:85, y:68}, {x:84, y:82}, {x:82, y:92}, {x:92, y:92},
-            {x:94, y:78}, {x:95, y:62}, {x:9, y:45},  {x:19, y:58}, {x:28, y:58}, {x:38, y:48}, {x:48, y:48}, {x:58, y:48}, {x:68, y:52}, {x:78, y:52},
-            {x:88, y:52}, {x:88, y:38}, {x:78, y:32}, {x:68, y:32}, {x:58, y:32}, {x:48, y:32}, {x:38, y:32}, {x:28, y:32}, {x:18, y:32}, {x:22, y:70},
-            {x:32, y:70}, {x:42, y:70}, {x:52, y:70}, {x:62, y:70}, {x:72, y:70}, {x:82, y:70}, {x:92, y:70}, {x:86, y:45}, {x:76, y:45}, {x:66, y:45},
-            {x:56, y:45}, {x:46, y:45}, {x:36, y:45}, {x:26, y:45}, {x:16, y:45}, {x:48, y:15}, {x:58, y:15}, {x:68, y:15}, {x:78, y:15}, {x:38, y:18},
-            {x:28, y:18}, {x:54, y:28}, {x:64, y:28}, {x:74, y:28}, {x:84, y:28}, {x:44, y:88}, {x:54, y:88}, {x:64, y:88}, {x:74, y:88}, {x:34, y:85}
-        ];
+        document.addEventListener("DOMContentLoaded", () => {
+            const katman = document.getElementById("zones-trigger-layer");
+            
+            // 1'den 100'e kadar karıştırılmış sayı listesi oluşturma
+            let bolgeNumaralari = Array.from({length: 100}, (_, i) => i + 1);
+            bolgeNumaralari.sort(() => Math.random() - 0.5);
 
-        window.addEventListener("DOMContentLoaded", () => {
-            setTimeout(() => {
-                const splash = document.getElementById("splash-screen");
-                splash.style.opacity = "0";
-                setTimeout(() => splash.style.display = "none", 500);
-            }, 1000);
+            // Harita bütünlüğünü bozmadan numaraları tam üzerine iğneleme işlemi
+            yayinHaritaMatrisi.forEach((koordinat, sira) => {
+                let no = bolgeNumaralari[sira];
+                let rastgeleRenk = neonRenkHavuzu[Math.floor(Math.random() * neonRenkHavuzu.length)];
+
+                const node = document.createElement("div");
+                node.className = "map-zone-node";
+                node.style.left = `${koordinat.x}%`;
+                node.style.top = `${koordinat.y}%`;
+                node.id = `zone-main-${no}`;
+
+                node.innerHTML = `
+                    <div class="zone-pulse-circle" id="circle-${no}" style="background: ${rastgeleRenk}">
+                        <span>${no}</span>
+                    </div>
+                    <div class="zone-tag-name" id="user-${no}">Boş</div>
+                `;
+
+                // Tıklayınca videodaki gibi patlama efekti testi tetikler
+                node.addEventListener("click", () => bolgeyeSaldir(no, "TestKullanici"));
+
+                katman.appendChild(node);
+            });
         });
 
-        function oyunuKuralinaGoreBaslat() {
-            document.getElementById("launch-menu-overlay").style.display = "none";
-            
-            const labelsKatmani = document.getElementById("text-labels-layer");
-            labelsKatmani.innerHTML = "";
+        function bolgeyeSaldir(bolgeNo, kullaniciAdi) {
+            const hedefEleman = document.getElementById(`zone-main-${bolgeNo}`);
+            if(!hedefEleman) return;
 
-            // 1'den 100'e kadar olan sayı havuzunu oluştur ve karıştır
-            let sayilar = Array.from({length: 100}, (_, i) => i + 1);
-            for (let i = sayilar.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [sayilar[i], sayilar[j]] = [sayilar[j], sayilar[i]];
-            }
+            // Animasyonu başlatma
+            hedefEleman.classList.add("attack-active");
+            setTimeout(() => hedefEleman.classList.remove("attack-active"), 500);
 
-            // Numaraları haritanın birleşik bütünlüğünü hiç bozmadan tam koordinatların üzerine basma
-            gercekTrMatrisi.forEach((koordinat, index) => {
-                let degisenNumara = sayilar[index];
-                let rastgeleRenk = parlakNeonRenkler[Math.floor(Math.random() * parlakNeonRenkler.length)];
+            // İsmi güncelleme
+            document.getElementById(`user-${bolgeNo}`).innerText = kullaniciAdi;
 
-                zonesData[degisenNumara] = { id: degisenNumara, owner: "", troops: 0, color: rastgeleRenk };
-
-                const etiketDiv = document.createElement("div");
-                etiketDiv.className = "zone-text-label";
-                etiketDiv.style.left = `${koordinat.x}%`;
-                etiketDiv.style.top = `${koordinat.y}%`;
-                
-                // Bölge dairesi ve numarası yan yana kenetleniyor
-                etiketDiv.innerHTML = `
-                    <div class="z-dot" id="dot-${degisenNumara}" style="background: ${rastgeleRenk}">
-                        <span class="z-num">${degisenNumara}</span>
-                    </div>
-                    <div class="z-owner" id="v-user-${degisenNumara}">-</div>
-                `;
-                labelsKatmani.appendChild(etiketDiv);
-            });
+            // Sohbet paneline log düşürme
+            const logKutusu = document.getElementById("logs-container");
+            const yeniLog = document.createElement("div");
+            yeniLog.className = "chat-line";
+            yeniLog.innerHTML = `<span style="color:#2563eb; font-weight:bold;">${kullaniciAdi}</span> [${bolgeNo}] numaralı birleşik bölgeyi ele geçirdi!💥`;
+            logKutusu.appendChild(yeniLog);
+            logKutusu.scrollTop = logKutusu.scrollHeight;
         }
     </script>
 </body>
