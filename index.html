@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Battlezone Canlı Savaş - 100 Bölge Özel Sürüm</title>
+    <title>Battlezone Canlı Savaş - 100 Organik Bölge</title>
     <style>
         * {
             box-sizing: border-box; margin: 0; padding: 0;
@@ -71,7 +71,6 @@
         .header-top { display: flex; justify-content: space-between; align-items: center; }
         .live-badge { background: #ef4444; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; }
         
-        /* CANLI SAVAŞ SKORU (Mavi vs Kırmızı Takım Gücü) */
         .warzone-versus-bar {
             display: flex; width: 100%; height: 26px; border-radius: 6px; overflow: hidden; font-weight: 900; font-size: 12px; text-align: center; line-height: 26px; box-shadow: 0 4px 10px rgba(0,0,0,0.4);
         }
@@ -84,7 +83,7 @@
 
         .score-board-row { display: flex; justify-content: space-between; background: #111827; border: 1px solid #1e293b; border-radius: 10px; padding: 8px; font-size: 11px; align-items: center; }
 
-        /* BATTLEZONE DOĞAL HARİTA ALANI (CANVAS TABANLI) */
+        /* BATTLEZONE SHAPED HARİTA ALANI */
         .map-wrapper {
             position: relative; 
             width: 100%; 
@@ -103,7 +102,6 @@
             z-index: 2;
         }
 
-        /* SAĞ ALT GERİ SAYIM SAYACI */
         .warzone-countdown-overlay {
             position: absolute; bottom: 10px; right: 10px; background: rgba(0, 0, 0, 0.85); border: 2px solid #3b82f6; border-radius: 8px; padding: 6px 12px; text-align: center; z-index: 10; pointer-events: none;
         }
@@ -156,7 +154,7 @@
         <div class="login-box">
             <h2>BATTLEZONE LIVE</h2>
             <div class="menu-btn-group" id="main-menu-buttons">
-                <button class="menu-btn primary" onclick="showConnectionForm()">YENİ OYUN BAŞLAT (100 BÖLGE)</button>
+                <button class="menu-btn primary" onclick="showConnectionForm()">YENİ OYUN BAŞLAT (100 ORGANİK BÖLGE)</button>
                 <button class="menu-btn" onclick="openLeaderboardModal()">🏆 BAŞARI SIRALAMASI</button>
             </div>
             <div id="connection-form">
@@ -164,7 +162,7 @@
                     <label>TikTok Canlı Yayın Kullanıcı Adı (ID)</label>
                     <input type="text" id="initial-username" placeholder="Örn: canliyayinid" autocomplete="off">
                 </div>
-                <button class="menu-btn primary" onclick="connectToTikTokPlayStore()">SAVAŞI BAŞLAT ⚔️</button>
+                <button class="menu-btn primary" id="start-battle-btn" onclick="connectToTikTokPlayStore()">SAVAŞI BAŞLAT ⚔️</button>
                 <button class="menu-btn" style="margin-top:10px; font-size:11px; padding:6px;" onclick="hideConnectionForm()">← Geri Dön</button>
             </div>
         </div>
@@ -181,8 +179,8 @@
             </div>
             
             <div class="warzone-versus-bar">
-                <div class="vs-blue" id="vs-blue-bar" style="width: 50%;">1000</div>
-                <div class="vs-red" id="vs-red-bar" style="width: 50%;">1000</div>
+                <div class="vs-blue" id="vs-blue-bar" style="width: 50%;">0</div>
+                <div class="vs-red" id="vs-red-bar" style="width: 50%;">0</div>
             </div>
 
             <div class="gift-settings-grid">
@@ -199,11 +197,12 @@
         </div>
 
         <div class="map-wrapper">
-            <canvas id="warzoneCanvas" width="800" height="800"></canvas>
+            <!-- Çözünürlüğü organik hatlar için yüksek tuttuk -->
+            <canvas id="warzoneCanvas" width="1000" height="1000"></canvas>
             
             <div class="warzone-countdown-overlay">
-                <div class="countdown-title">SAVAŞ BAŞLIYOR</div>
-                <div class="countdown-timer" id="warzone-timer">01:00</div>
+                <div class="countdown-title" id="countdown-status-lbl">SAVAŞ SÜRESİ</div>
+                <div class="countdown-timer" id="warzone-timer">05:00</div>
             </div>
         </div>
 
@@ -227,9 +226,9 @@
 
         <div class="extra-dashboard-panel">
             <div class="commands-helper-text">
-                <span><b>GİRİŞ:</b> Boş alanları kapmak için: <span style="color:#fff; font-weight:bold;">join &lt;bölge_no&gt;</span> (Örn: join75)</span><br>
-                <span><b>SALDIRI Tekli:</b> <span style="color:#fff; font-weight:bold;">saldir &lt;no&gt; &lt;no&gt;</span> | Tüm harita için: <span style="color:#fff; font-weight:bold;">all attack</span></span><br>
-                <span><b>DESTEK & İTTİFAK:</b> Müttefiklik için sohbete yazın: <span style="color:#fff; font-weight:bold;">destek &lt;bölge_no&gt;</span></span>
+                <span><b>GİRİŞ:</b> Boş alanları kapmak için: <span style="color:#fff; font-weight:bold;">join &lt;bölge_no&gt;</span></span><br>
+                <span><b>SALDIRI:</b> <span style="color:#fff; font-weight:bold;">saldir &lt;no&gt; &lt;no&gt;</span></span><br>
+                <span><b>DESTEK:</b> Müttefiklik için: <span style="color:#fff; font-weight:bold;">destek &lt;bölge_no&gt;</span></span>
             </div>
             <div class="query-army-box">
                 <div class="query-title">ANLIK ORDU SORGUNUZ</div>
@@ -241,6 +240,7 @@
 
     <script>
         let isMapLoaded = false;
+        let isWaitingForStart = false;
         const mapImage = new Image();
         mapImage.src = '1000193060.png'; 
         
@@ -250,17 +250,20 @@
         const zonesData = {};
         let activeHostName = "";
         const globalLeaderboard = {};
-        let roundTimeLeft = 60; 
+        
+        let roundTimeLeft = 300; 
+        let isGameOver = false;
 
+        // Oyuncu bölge şeffaf dolgu renk havuzu
         const playerColorsPool = [
-            'rgba(239, 68, 68, 0.5)',  
-            'rgba(34, 197, 94, 0.5)',  
-            'rgba(59, 130, 246, 0.5)', 
-            'rgba(245, 158, 11, 0.5)', 
-            'rgba(168, 85, 247, 0.5)', 
-            'rgba(236, 72, 153, 0.5)', 
-            'rgba(6, 182, 212, 0.5)',  
-            'rgba(234, 179, 8, 0.5)'   
+            'rgba(239, 68, 68, 0.38)',  
+            'rgba(34, 197, 94, 0.38)',  
+            'rgba(59, 130, 246, 0.38)', 
+            'rgba(245, 158, 11, 0.38)', 
+            'rgba(168, 85, 247, 0.38)', 
+            'rgba(236, 72, 153, 0.38)', 
+            'rgba(6, 182, 212, 0.38)',  
+            'rgba(234, 179, 8, 0.38)'   
         ];
 
         window.addEventListener("DOMContentLoaded", () => {
@@ -278,12 +281,11 @@
 
             mapImage.onload = () => { 
                 isMapLoaded = true; 
-                drawWarzoneCanvas(); 
+                if (isWaitingForStart) proceedToGameStart();
             };
             mapImage.onerror = () => {
-                console.log("Harita resmi yüklenemedi, varsayılan arka plan kullanılacak.");
+                alert("HATA: '1000193060.png' bulunamadı! Harita olmadan oyun başlatılamaz.");
                 isMapLoaded = false;
-                drawWarzoneCanvas();
             };
         });
 
@@ -303,34 +305,89 @@
             document.getElementById('custom-leaderboard-modal').style.display = 'none';
         }
 
-        // BAŞLAMA HATASI GİDERİLEN HARİTA KURULUMU
-        function build100GridMap() {
-            let idCounter = 1;
+        function connectToTikTokPlayStore() {
+            const username = document.getElementById("initial-username").value.trim().toLowerCase();
+            if(!username) return;
+
+            activeHostName = username;
+            
+            if (!isMapLoaded) {
+                isWaitingForStart = true;
+                const btn = document.getElementById("start-battle-btn");
+                btn.innerText = "Harita Yükleniyor... Lütfen Bekleyin";
+                btn.style.background = "#f59e0b";
+                return;
+            }
+            proceedToGameStart();
+        }
+
+        function proceedToGameStart() {
+            document.getElementById("header-logo-text").innerText = activeHostName.toUpperCase();
+            build100OrganikMap(); 
+            
+            document.getElementById("launch-menu-overlay").style.display = "none";
+            document.getElementById("status-text").innerText = `@${activeHostName.toUpperCase()} BAĞLANDI`;
+            document.getElementById("status-text").style.color = "#10b981";
+            
+            startDataPolling(activeHostName);
+        }
+
+        // GÖRSELDEKİ GİBİ ŞEKİLLİ (VORONOI) HARİTA ÜRETİMİ
+        // 100 Tane bölgeyi koordinat bulutuna göre estetik kıvrımlarla ayırır
+        function build100OrganikMap() {
+            const count = 100;
+            const w = canvas.width;
+            const h = canvas.height;
+            
+            // 1. Adım: Haritaya dengeli dağılan 100 adet merkez nokta yerleştir
+            let points = [];
             const cols = 10;
             const rows = 10;
-            const cellW = canvas.width / cols;
-            const cellH = canvas.height / rows;
+            const stepX = w / cols;
+            const stepY = h / rows;
 
-            for (let r = 0; r < rows; r++) {
-                for (let c = 0; c < cols; c++) {
-                    let centerX = (c * cellW) + (cellW / 2);
-                    let centerY = (r * cellH) + (cellH / 2);
-
+            let idCounter = 1;
+            for(let r=0; r<rows; r++) {
+                for(let c=0; c<cols; c++) {
+                    // Sınırların düz çizgi olmaması için hafif rastgele sapmalar ekle
+                    let px = (c * stepX) + (stepX / 2) + (Math.random() * stepX * 0.4 - stepX * 0.2);
+                    let py = (r * stepY) + (stepY / 2) + (Math.random() * stepY * 0.4 - stepY * 0.2);
+                    
                     zonesData[idCounter] = {
                         id: idCounter,
-                        x: centerX,
-                        y: centerY,
-                        w: cellW,
-                        h: cellH,
-                        rectX: c * cellW,
-                        rectY: r * cellH,
+                        x: px,
+                        y: py,
                         owner: "",
                         troops: 0,
-                        currentBg: "rgba(0,0,0,0.15)"
+                        currentBg: "rgba(0, 0, 0, 0.05)", // Harita ön planda dursun diye ultra şeffaf
+                        pixels: [] // Hücre pikselleri
                     };
                     idCounter++;
                 }
             }
+
+            // 2. Adım: Her pikseli en yakın merkeze bağlayarak organik hücre yapısını (harita sınırlarını) hesapla
+            // Performans için haritayı daha düşük çözünürlüklü bir matrisle tarayıp pikselleri eşleştiriyoruz
+            const scale = 4; 
+            for (let y = 0; y < h; y += scale) {
+                for (let x = 0; x < w; x += scale) {
+                    let minDist = Infinity;
+                    let closestId = 1;
+                    
+                    for(let id in zonesData) {
+                        let z = zonesData[id];
+                        let dx = x - z.x;
+                        let dy = y - z.y;
+                        let dist = dx*dx + dy*dy; // Kare kök almaya gerek yok, performans için hızlı mesafe
+                        if(dist < minDist) {
+                            minDist = dist;
+                            closestId = id;
+                        }
+                    }
+                    zonesData[closestId].pixels.push({x: x, y: y});
+                }
+            }
+
             drawWarzoneCanvas();
             startWarzoneLoop();
         }
@@ -338,46 +395,50 @@
         function drawWarzoneCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Resim yüklenmemiş olsa dahi canvas alanını çizerek siyah kalmasını önler
-            if (isMapLoaded && mapImage.complete) {
+            // KATMAN 1: Arka plana ana oyun haritası basılır
+            if (isMapLoaded) {
                 ctx.drawImage(mapImage, 0, 0, canvas.width, canvas.height);
-            } else {
-                ctx.fillStyle = "#111c2e";
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                
-                // Teknolojik grid çizgileri ekleyelim ki resim yoksa bile güzel dursun
-                ctx.strokeStyle = "rgba(37, 99, 235, 0.15)";
-                ctx.lineWidth = 1;
-                for(let i=0; i<canvas.width; i+=80) {
-                    ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
-                    ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); ctx.stroke();
-                }
             }
 
+            // KATMAN 2: Şekilli (Organik) bölge renklerini piksellerine göre boya
             Object.values(zonesData).forEach(zone => {
                 ctx.fillStyle = zone.currentBg;
-                ctx.fillRect(zone.rectX, zone.rectY, zone.w, zone.h);
+                zone.pixels.forEach(p => {
+                    ctx.fillRect(p.x, p.y, 4, 4);
+                });
+            });
 
-                ctx.strokeStyle = "rgba(255,255,255,0.08)";
-                ctx.lineWidth = 1;
-                ctx.strokeRect(zone.rectX, zone.rectY, zone.w, zone.h);
-
+            // KATMAN 3: Görseldeki gibi her bölgenin kıvrımlı sınır çizgilerini (Border) çek ve Numaralandır
+            Object.values(zonesData).forEach(zone => {
+                // Şekilli bölgenin merkezine numara ve asker bilgisini yaz
                 ctx.fillStyle = "#ffffff";
-                ctx.font = "900 15px sans-serif";
+                ctx.font = "900 18px sans-serif";
                 ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
                 ctx.shadowColor = "black";
-                ctx.shadowBlur = 3;
-                ctx.fillText(zone.id, zone.x, zone.y - 4);
-                ctx.shadowBlur = 0; 
+                ctx.shadowBlur = 5;
+                ctx.fillText(zone.id, zone.x, zone.y - 6);
+                ctx.shadowBlur = 0;
 
+                // Eğer bir sahibi varsa, altına isim şeridini yerleştir (Tıpkı görseldeki gibi)
                 if(zone.owner !== "") {
                     let displayName = `${zone.owner.substring(0,5)}(${zone.troops})`;
                     ctx.fillStyle = "rgba(11, 15, 23, 0.85)";
-                    ctx.fillRect(zone.x - 28, zone.y + 8, 56, 14);
+                    ctx.fillRect(zone.x - 35, zone.y + 8, 70, 16);
+                    ctx.strokeStyle = "#fbbf24";
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(zone.x - 35, zone.y + 8, 70, 16);
+
                     ctx.fillStyle = "#fbbf24";
-                    ctx.font = "bold 9px sans-serif";
-                    ctx.fillText(displayName, zone.x, zone.y + 18);
+                    ctx.font = "bold 11px sans-serif";
+                    ctx.fillText(displayName, zone.x, zone.y + 16);
                 }
+
+                // Sınır çizgilerini belirginleştirmek için merkezlerin etrafına hafif noktalar çekilir (Estetik Sınır)
+                ctx.fillStyle = "rgba(255, 255, 255, 0.12)";
+                ctx.beginPath();
+                ctx.arc(zone.x, zone.y, 2, 0, Math.PI * 2);
+                ctx.fill();
             });
 
             updateVersusBar();
@@ -394,10 +455,10 @@
                 }
             });
 
-            if(blueForce === 0 && redForce === 0) { blueForce = 1000; redForce = 1000; }
+            if(blueForce === 0 && redForce === 0) { blueForce = 0; redForce = 0; }
 
             const total = blueForce + redForce;
-            const bluePct = (blueForce / total) * 100;
+            const bluePct = total > 0 ? (blueForce / total) * 100 : 50;
             const redPct = 100 - bluePct;
 
             document.getElementById("vs-blue-bar").style.width = `${bluePct}%`;
@@ -407,18 +468,24 @@
         }
 
         function startWarzoneLoop() {
-            // Varsa eski döngüleri temizle
             if(window.gameInterval) clearInterval(window.gameInterval);
             
             window.gameInterval = setInterval(() => {
-                if(roundTimeLeft > 0) {
+                if(roundTimeLeft > 0 && !isGameOver) {
                     roundTimeLeft--;
                     let min = Math.floor(roundTimeLeft / 60).toString().padStart(2, '0');
                     let sec = (roundTimeLeft % 60).toString().padStart(2, '0');
                     document.getElementById("warzone-timer").innerText = `${min}:${sec}`;
-                } else {
-                    executeAutomatedWarzoneBattle();
-                    roundTimeLeft = 60; 
+                    
+                    // Canlılık için her 8 saniyede bir komşu hücreler arası ufak çatışmalar dönsün
+                    if (roundTimeLeft % 8 === 0) {
+                        executeAutomatedWarzoneBattle();
+                    }
+                } else if (!isGameOver) {
+                    isGameOver = true;
+                    document.getElementById("countdown-status-lbl").innerText = "SAVAŞ TAMAMLANDI";
+                    document.getElementById("warzone-timer").innerText = "00:00";
+                    document.getElementById("warzone-timer").style.color = "#ef4444";
                 }
             }, 1000);
         }
@@ -447,28 +514,12 @@
             drawWarzoneCanvas();
         }
 
-        function connectToTikTokPlayStore() {
-            const username = document.getElementById("initial-username").value.trim().toLowerCase();
-            if(!username) return;
-
-            activeHostName = username;
-            document.getElementById("header-logo-text").innerText = username.toUpperCase();
-            
-            // Mekanizmayı doğrudan tetikler
-            build100GridMap(); 
-            
-            document.getElementById("launch-menu-overlay").style.display = "none";
-            document.getElementById("status-text").innerText = `@${username.toUpperCase()} BAĞLANDI`;
-            document.getElementById("status-text").style.color = "#10b981";
-            
-            startDataPolling(username);
-        }
-
         function startDataPolling(username) {
             const eventSourceUrl = `https://tiktok-chat-reader.onrender.com/api/stream/events?username=${username}`;
             try {
                 const eventSource = new EventSource(eventSourceUrl);
                 eventSource.onmessage = function(event) {
+                    if (isGameOver) return;
                     const data = JSON.parse(event.data);
                     if(data.type === "chat") {
                         handleIncomingChat(data.uniqueId, data.comment);
@@ -478,7 +529,9 @@
                 };
                 eventSource.onerror = function() {
                     eventSource.close();
-                    setTimeout(() => startDataPolling(username), 4000);
+                    if (!isGameOver) {
+                        setTimeout(() => startDataPolling(username), 4000);
+                    }
                 };
             } catch(e) {}
         }
@@ -486,6 +539,7 @@
         function extractNumbers(text) { return text.match(/\d+/g)?.map(Number) || []; }
 
         function handleIncomingChat(senderName, comment) {
+            if (isGameOver) return;
             let username = senderName.replace(/[^\w\s]/gi, '').trim();
             if(username.toLowerCase() === activeHostName) {
                 username = activeHostName.toUpperCase();
@@ -569,6 +623,7 @@
         }
 
         function handleIncomingGift(senderName, giftName) {
+            if (isGameOver) return;
             let username = senderName.replace(/[^\w\s]/gi, '').trim();
             if(username.toLowerCase() === activeHostName) {
                 username = activeHostName.toUpperCase();
