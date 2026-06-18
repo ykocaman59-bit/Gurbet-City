@@ -3,201 +3,170 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Battlezone TR - Orijinal Canlı Yayın Haritası</title>
+    <title>Warzone Live Map</title>
     <style>
         * {
             box-sizing: border-box; margin: 0; padding: 0;
             -webkit-user-select: none; user-select: none;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Courier New', Courier, monospace; /* Askeri tema için */
         }
         body { 
-            background-color: #0c101a; color: #f1f5f9; 
+            background-color: #070a0f; color: #00ffcc; 
             display: flex; flex-direction: column; align-items: center; 
-            min-height: 100vh; padding: 10px; overflow-x: hidden;
+            min-height: 100vh; padding: 10px; overflow: hidden;
         }
         
-        .game-wrapper { width: 100%; max-width: 450px; display: flex; flex-direction: column; gap: 12px; }
+        .warzone-container { width: 100%; max-width: 450px; display: flex; flex-direction: column; gap: 10px; }
 
-        /* ÜST PANEL */
         header { 
-            background: #111827; border: 2px solid #1f2937; border-radius: 12px; 
-            padding: 12px; display: flex; flex-direction: column; gap: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            background: #0f141c; border: 1px solid #00ffcc; border-radius: 8px; 
+            padding: 10px; text-align: center; box-shadow: 0 0 10px rgba(0,255,204,0.2);
         }
-        .header-info { display: flex; justify-content: space-between; align-items: center; }
-        .gift-matrix { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; font-size: 10px; text-align: center; }
-        .gift-matrix div { background: #1f2937; padding: 4px; border-radius: 6px; border: 1px solid #374151; }
-        .gift-matrix input { width: 100%; background: #0b0f19; border: 1px solid #4b5563; border-radius: 4px; color: #10b981; text-align: center; font-size: 11px; margin-top: 3px; font-weight: bold; }
 
-        /* VİDEODAKİ GİBİ BİRLEŞİK GERÇEK HARİTA ALANI */
-        .live-map-screen {
+        /* TAM SENİN İSTEDİĞİN SÜREKLİ BÜTÜN DURAN WARZONE HARİTA PANELİ */
+        .warzone-map-frame {
             width: 100%;
-            aspect-ratio: 1000 / 550;
-            background: #111827;
-            border: 3px solid #2563eb;
-            border-radius: 16px;
+            aspect-ratio: 16 / 10;
+            border: 2px solid #00ffcc;
+            border-radius: 12px;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7), inset 0 0 40px rgba(0,0,0,0.8);
+            /* Fotoğraftaki askeri strateji odası ambiyansını veren arka plan rengi */
+            background-color: #121a24;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8), inset 0 0 30px rgba(0,255,204,0.3);
         }
 
-        /* Arka planda duran, senin istediğin o tek parça birleşik yeşil harita şablonu */
-        .map-base-svg {
+        /* Haritayı bütün halinde tutan, parçalamayan orijinal vektörel ana kıta tasarımı */
+        .tactical-canvas {
             width: 100%; height: 100%; display: block;
         }
-        .original-land {
-            fill: #1b4332; /* Videodaki gibi koyu askeri yeşil ordu rengi */
-            stroke: #40916c; /* İl sınırlarını ayıran birleşik çizgiler */
-            stroke-width: 1.5;
+        .land-mass {
+            fill: #1a2634; /* Askeri koyu gri/mavi ton */
+            stroke: #2a3c54; /* Sektör çizgileri */
+            stroke-width: 1;
         }
 
-        /* HARİTA ÜZERİNDEKİ ETKİLEŞİMLİ BÖLGELER (AYRI DEĞİL, BİRLEŞİK KATMAN) */
-        .interactive-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        /* SAYILARIN VE RENKLERİN HARİTAYI BOZMADAN GÖMÜLDÜĞÜ KATMAN */
+        .overlay-grid { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
         
-        .map-zone-node { 
+        .zone-node { 
             position: absolute; transform: translate(-50%, -50%); 
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            cursor: pointer; z-index: 10;
+            display: flex; align-items: center; justify-content: center; z-index: 10;
         }
 
-        /* Videodaki Numaralı Yuvarlak Canlı Noktalar */
-        .zone-pulse-circle {
-            width: 24px; height: 24px; background: rgba(37, 99, 235, 0.85);
-            border: 2px solid #ffffff; border-radius: 50%; display: flex;
+        /* Fotoğraftaki gibi sadece renkli daire ve içindeki sayı */
+        .zone-badge {
+            width: 22px; height: 22px; 
+            border-radius: 50%; display: flex;
             align-items: center; justify-content: center;
-            box-shadow: 0 0 10px rgba(0,0,0,0.8);
-            transition: all 0.3s ease;
+            box-shadow: 0 0 8px rgba(0,0,0,0.9);
+            border: 1px solid #ffffff;
+            transition: all 0.2s ease;
+            cursor: pointer;
         }
-        .zone-pulse-circle span { font-size: 11px; font-weight: 900; color: #ffffff; text-shadow: 1px 1px 2px #000; }
-        
-        /* Bölge sahiplerinin isim tabelası */
-        .zone-tag-name {
-            font-size: 8px; color: #ffffff; background: rgba(0, 0, 0, 0.75);
-            padding: 1px 4px; border-radius: 4px; margin-top: 2px;
-            border: 1px solid #374151; white-space: nowrap; max-width: 50px; overflow: hidden;
-        }
+        .zone-badge span { font-size: 10px; font-weight: 900; color: #ffffff; text-shadow: 1px 1px 1px #000; }
 
-        /* VİDEODAKİ SALDIRI VE PATLAMA ANİMASYONU */
-        @keyframes zoneBlast {
-            0% { transform: translate(-50%, -50%) scale(1); filter: brightness(1); }
-            50% { transform: translate(-50%, -50%) scale(1.4); filter: brightness(2); box-shadow: 0 0 25px #ef4444; }
-            100% { transform: translate(-50%, -50%) scale(1); filter: brightness(1); }
+        /* Savaş/Saldırı Anındaki Efekt */
+        @keyframes radarPing {
+            0% { transform: scale(1); filter: brightness(1); }
+            50% { transform: scale(1.3); filter: brightness(1.8); box-shadow: 0 0 15px #ff0055; }
+            100% { transform: scale(1); filter: brightness(1); }
         }
-        .attack-active { animation: zoneBlast 0.5s ease-in-out; z-index: 99; }
+        .under-attack { animation: radarPing 0.4s ease-in-out; z-index: 99; }
 
-        /* CANLI SOHBET VE LOG PANELİ */
-        .live-chat-panel { 
-            height: 130px; background: #111827; border: 2px solid #1f2937; 
-            border-radius: 12px; padding: 10px; display: flex; flex-direction: column;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        /* ALT LOG PANELİ */
+        .log-panel { 
+            height: 100px; background: #0f141c; border: 1px solid #334155; 
+            border-radius: 8px; padding: 8px; display: flex; flex-direction: column;
         }
-        .chat-stream { flex: 1; overflow-y: auto; background: #070a12; border-radius: 8px; padding: 6px; font-size: 12px; color: #9ca3af; }
-        .chat-line { margin-bottom: 4px; line-height: 1.4; }
-        .system-alert { color: #f59e0b; font-weight: bold; }
+        .log-box { flex: 1; overflow-y: auto; font-size: 11px; color: #88a0c0; }
     </style>
 </head>
 <body>
 
-    <div class="game-wrapper">
+    <div class="warzone-container">
         <header>
-            <div class="header-info">
-                <span style="font-weight:900; color:#2563eb; font-size: 16px; letter-spacing: 1px;">BATTLEZONE YAYIN SİSTEMİ</span>
-                <span style="color:#10b981; font-size: 11px; font-weight: bold; background: rgba(16,185,129,0.1); padding: 2px 8px; border-radius: 20px;">HARİTA ENTEGRE EDİLDİ</span>
-            </div>
-            <div class="gift-matrix">
-                <div>🌹 Gül <input type="number" id="g-rose" value="1"></div>
-                <div>🎵 TikTok <input type="number" id="g-tiktok" value="10"></div>
-                <div>💸 Para <input type="number" id="g-money" value="50"></div>
-                <div>🦁 Aslan <input type="number" id="g-lion" value="100"></div>
-            </div>
+            <span style="font-weight:900; letter-spacing: 2px;">WARZONE TACTICAL SYSTEM</span>
         </header>
 
-        <div class="live-map-screen">
-            <svg class="map-base-svg" viewBox="0 0 1000 550" xmlns="http://www.w3.org/2000/svg">
-                <path class="original-land" d="M50,280 Q120,180 250,220 T500,200 T750,180 T950,260 Q920,420 700,450 T400,480 T150,450 Z" />
-                <path d="M250,220 Q280,320 300,460 M500,200 Q480,350 400,480 M750,180 Q720,300 700,450 M150,240 Q350,260 550,250 T900,290" fill="none" stroke="#40916c" stroke-width="1.5" />
+        <div class="warzone-map-frame">
+            <svg class="tactical-canvas" viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg">
+                <path class="land-mass" d="M100,200 Q200,100 400,150 T700,120 Q780,250 720,380 Q550,450 400,400 T150,420 Z" />
+                <path d="M250,170 Q300,280 350,410 M500,150 Q450,300 420,400 M150,280 Q400,250 680,310" fill="none" stroke="#233348" stroke-width="1.5" />
             </svg>
             
-            <div class="interactive-overlay" id="zones-trigger-layer"></div>
+            <div class="overlay-grid" id="numbers-layer"></div>
         </div>
 
-        <div class="live-chat-panel">
-            <div style="color: #ef4444; font-size: 12px; font-weight: bold; margin-bottom: 5px; display: flex; align-items: center; gap: 5px;">
-                <span style="width: 8px; height: 8px; background: #ef4444; border-radius: 50%; display: inline-block;"></span> OYUN AKIŞI LOGLARI
-            </div>
-            <div class="chat-stream" id="logs-container">
-                <div class="chat-line system-alert">[SİSTEM]: Harita bütünlüğü doğrulandı. 100 bölge aktif.</div>
-                <div class="chat-line">[SİSTEM]: TikTok Canlı Yayın entegrasyonu hazır, komut bekleniyor...</div>
-            </div>
+        <div class="log-panel">
+            <div style="color: #ff0055; font-size: 11px; font-weight: bold; margin-bottom: 4px;">📡 RADAR LOGS</div>
+            <div class="log-box" id="radar-logs">Warzone haritası yüklendi. 100 sektör aktif.</div>
         </div>
     </div>
 
     <script>
-        const neonRenkHavuzu = ['#ff0055', '#00ffcc', '#ccff00', '#ff9900', '#ff00ff', '#00ffff', '#33ff00', '#ff3300', '#9900ff', '#00ff66', '#ff00aa', '#3399ff'];
+        const askeriRenkler = ['#ff0055', '#00ffcc', '#ffcc00', '#ff00ff', '#00ffff', '#33ff00', '#ff6600', '#9900ff', '#00ff66', '#3399ff'];
         
-        // Videodaki haritanın üzerine dengeli şekilde dağıtılan 100 bölge koordinat yapısı
-        const yayinHaritaMatrisi = [
-            {x:12, y:45}, {x:16, y:38}, {x:20, y:48}, {x:24, y:42}, {x:18, y:55}, {x:28, y:52}, {x:32, y:46}, {x:26, y:35}, {x:36, y:38}, {x:30, y:62},
-            {x:38, y:56}, {x:42, y:50}, {x:40, y:40}, {x:46, y:34}, {x:44, y:65}, {x:50, y:58}, {x:54, y:52}, {x:52, y:42}, {x:56, y:35}, {x:52, y:72},
-            {x:58, y:66}, {x:62, y:60}, {x:60, y:48}, {x:66, y:42}, {x:64, y:32}, {x:62, y:78}, {x:68, y:72}, {x:72, y:66}, {x:70, y:54}, {x:76, y:48},
-            {x:74, y:38}, {x:72, y:82}, {x:78, y:76}, {x:82, y:70}, {x:80, y:58}, {x:86, y:52}, {x:84, y:42}, {x:82, y:30}, {x:88, y:74}, {x:92, y:64},
-            {x:90, y:50}, {x:88, y:38}, {x:14, y:62}, {x:22, y:66}, {x:46, y:22}, {x:56, y:22}, {x:66, y:24}, {x:76, y:26}, {x:84, y:22}, {x:92, y:28},
-            {x:15, y:42}, {x:25, y:45}, {x:35, y:48}, {x:45, y:52}, {x:55, y:55}, {x:65, y:58}, {x:75, y:61}, {x:85, y:64}, {x:95, y:68}, {x:10, y:50},
-            {x:18, y:30}, {x:28, y:28}, {x:38, y:30}, {x:48, y:32}, {x:58, y:34}, {x:68, y:36}, {x:78, y:38}, {x:88, y:40}, {x:94, y:44}, {x:50, y:48},
-            {x:12, y:58}, {x:22, y:58}, {x:32, y:58}, {x:42, y:58}, {x:52, y:58}, {x:62, y:58}, {x:72, y:58}, {x:82, y:58}, {x:92, y:58}, {x:48, y:62},
-            {x:15, y:70}, {x:25, y:70}, {x:35, y:70}, {x:45, y:70}, {x:55, y:70}, {x:65, y:70}, {x:75, y:70}, {x:85, y:70}, {x:95, y:70}, {x:50, y:75},
-            {x:18, y:80}, {x:28, y:80}, {x:38, y:80}, {x:48, y:80}, {x:55, y:80}, {x:65, y:80}, {x:75, y:80}, {x:85, y:80}, {x:90, y:80}, {x:50, y:85}
+        // Harita üzerine milimetrik nizamda dağıtılan 100 adet hazır koordinat şablonu
+        const warzoneGrid = [
+            {x:18, y:42}, {x:22, y:36}, {x:26, y:45}, {x:30, y:38}, {x:24, y:52}, {x:34, y:50}, {x:38, y:44}, {x:32, y:32}, {x:42, y:36}, {x:36, y:60},
+            {x:44, y:54}, {x:48, y:48}, {x:46, y:38}, {x:52, y:32}, {x:50, y:62}, {x:56, y:56}, {x:60, y:50}, {x:58, y:40}, {x:62, y:34}, {x:58, y:70},
+            {x:64, y:64}, {x:68, y:58}, {x:66, y:46}, {x:72, y:40}, {x:70, y:30}, {x:68, y:75}, {x:74, y:70}, {x:78, y:64}, {x:76, y:52}, {x:82, y:46},
+            {x:80, y:36}, {x:78, y:80}, {x:84, y:74}, {x:88, y:68}, {x:86, y:56}, {x:92, y:50}, {x:90, y:40}, {x:88, y:28}, {x:12, y:48}, {x:16, y:54},
+            {x:20, y:28}, {x:30, y:24}, {x:40, y:26}, {x:50, y:28}, {x:60, y:24}, {x:70, y:26}, {x:80, y:22}, {x:88, y:24}, {x:14, y:34}, {x:24, y:24},
+            {x:16, y:60}, {x:24, y:64}, {x:34, y:68}, {x:44, y:70}, {x:54, y:72}, {x:64, y:74}, {x:74, y:76}, {x:84, y:78}, {x:90, y:60}, {x:82, y:58},
+            {x:12, y:40}, {x:48, y:20}, {x:58, y:18}, {x:68, y:20}, {x:78, y:18}, {x:38, y:16}, {x:28, y:16}, {x:54, y:26}, {x:64, y:26}, {x:74, y:26},
+            {x:12, y:54}, {x:22, y:56}, {x:32, y:56}, {x:42, y:56}, {x:52, y:56}, {x:62, y:56}, {x:72, y:56}, {x:82, y:56}, {x:92, y:56}, {x:48, y:60},
+            {x:15, y:68}, {x:25, y:68}, {x:35, y:68}, {x:45, y:68}, {x:55, y:68}, {x:65, y:68}, {x:75, y:68}, {x:85, y:68}, {x:95, y:68}, {x:50, y:72},
+            {x:18, y:78}, {x:28, y:78}, {x:38, y:78}, {x:48, y:78}, {x:58, y:78}, {x:68, y:78}, {x:78, y:78}, {x:88, y:78}, {x:92, y:72}, {x:50, y:82}
         ];
 
         document.addEventListener("DOMContentLoaded", () => {
-            const katman = document.getElementById("zones-trigger-layer");
+            const anaKatman = document.getElementById("numbers-layer");
             
-            // 1'den 100'e kadar karıştırılmış sayı listesi oluşturma
-            let bolgeNumaralari = Array.from({length: 100}, (_, i) => i + 1);
-            bolgeNumaralari.sort(() => Math.random() - 0.5);
+            // 1'den 100'e kadar olan sayıları oluştur ve karıştır
+            let sayiListesi = Array.from({length: 100}, (_, i) => i + 1);
+            sayiListesi.sort(() => Math.random() - 0.5);
 
-            // Harita bütünlüğünü bozmadan numaraları tam üzerine iğneleme işlemi
-            yayinHaritaMatrisi.forEach((koordinat, sira) => {
-                let no = bolgeNumaralari[sira];
-                let rastgeleRenk = neonRenkHavuzu[Math.floor(Math.random() * neonRenkHavuzu.length)];
+            // Sayıları ve renkli daireleri haritaya yerleştirme
+            warzoneGrid.forEach((koordinat, index) => {
+                let sektorNo = sayiListesi[index];
+                let sektorRengi = askeriRenkler[Math.floor(Math.random() * askeriRenkler.length)];
 
-                const node = document.createElement("div");
-                node.className = "map-zone-node";
-                node.style.left = `${koordinat.x}%`;
-                node.style.top = `${koordinat.y}%`;
-                node.id = `zone-main-${no}`;
+                const dugum = document.createElement("div");
+                dugum.className = "zone-node";
+                dugum.style.left = `${koordinat.x}%`;
+                dugum.style.top = `${koordinat.y}%`;
+                dugum.id = `node-${sektorNo}`;
 
-                node.innerHTML = `
-                    <div class="zone-pulse-circle" id="circle-${no}" style="background: ${rastgeleRenk}">
-                        <span>${no}</span>
+                dugum.innerHTML = `
+                    <div class="zone-badge" id="badge-${sektorNo}" style="background: ${sektorRengi}">
+                        <span>${sektorNo}</span>
                     </div>
-                    <div class="zone-tag-name" id="user-${no}">Boş</div>
                 `;
 
-                // Tıklayınca videodaki gibi patlama efekti testi tetikler
-                node.addEventListener("click", () => bolgeyeSaldir(no, "TestKullanici"));
-
-                katman.appendChild(node);
+                // Tıklandığında renk değiştirme ve patlama efekti testi
+                dugum.addEventListener("click", () => sektorEleGecir(sektorNo));
+                anaKatman.appendChild(dugum);
             });
         });
 
-        function bolgeyeSaldir(bolgeNo, kullaniciAdi) {
-            const hedefEleman = document.getElementById(`zone-main-${bolgeNo}`);
-            if(!hedefEleman) return;
+        function sektorEleGecir(no) {
+            const eleman = document.getElementById(`node-${no}`);
+            const icDaire = document.getElementById(`badge-${no}`);
+            if(!eleman) return;
 
-            // Animasyonu başlatma
-            hedefEleman.classList.add("attack-active");
-            setTimeout(() => hedefEleman.classList.remove("attack-active"), 500);
+            // Fotoğraftaki gibi parlayıp sönme animasyonu tetikle
+            eleman.classList.add("under-attack");
+            setTimeout(() => eleman.classList.remove("under-attack"), 400);
 
-            // İsmi güncelleme
-            document.getElementById(`user-${bolgeNo}`).innerText = kullaniciAdi;
+            // Rengini rastgele yeni bir askeri renge çevir
+            let yeniRenk = askeriRenkler[Math.floor(Math.random() * askeriRenkler.length)];
+            icDaire.style.background = yeniRenk;
 
-            // Sohbet paneline log düşürme
-            const logKutusu = document.getElementById("logs-container");
-            const yeniLog = document.createElement("div");
-            yeniLog.className = "chat-line";
-            yeniLog.innerHTML = `<span style="color:#2563eb; font-weight:bold;">${kullaniciAdi}</span> [${bolgeNo}] numaralı birleşik bölgeyi ele geçirdi!💥`;
-            logKutusu.appendChild(yeniLog);
+            // Log paneline yaz
+            const logKutusu = document.getElementById("radar-logs");
+            logKutusu.innerHTML += `<br>[ALERT]: Sektör ${no} ele geçirildi!`;
             logKutusu.scrollTop = logKutusu.scrollHeight;
         }
     </script>
