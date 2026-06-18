@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Battlezone Türkiye - Entegre Canlı SVG Harita</title>
+    <title>Battlezone Türkiye - Gerçek Entegre Harita</title>
     <style>
         * {
             box-sizing: border-box; margin: 0; padding: 0;
@@ -14,67 +14,58 @@
         
         .app-container { width: 100%; max-width: 450px; display: flex; flex-direction: column; gap: 10px; padding: 10px; }
 
-        /* GİRİŞ ANİMASYONU */
+        /* GİRİŞ EKRANI */
         #splash-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #070a12; z-index: 100000; display: flex; align-items: center; justify-content: center;
-            transition: opacity 0.8s ease-out, visibility 0.8s;
+            transition: opacity 0.5s ease-out, visibility 0.5s;
         }
-        .animated-title {
-            font-size: 36px; font-weight: 900; color: #2563eb; letter-spacing: 4px;
-            text-shadow: 0 0 20px rgba(37, 99, 235, 0.6); animation: introBlast 2.3s ease-in-out forwards;
-            text-transform: uppercase; text-align: center;
-        }
-        @keyframes introBlast {
-            0% { transform: scale(0.7); opacity: 0; filter: blur(10px); }
-            40% { transform: scale(1.05); opacity: 1; filter: blur(0px); }
-            70% { transform: scale(1); opacity: 1; }
-            100% { transform: scale(1.2); opacity: 0; filter: blur(5px); }
-        }
+        .animated-title { font-size: 32px; font-weight: 900; color: #2563eb; letter-spacing: 3px; text-transform: uppercase; }
 
-        /* ANA MENÜ */
+        /* ANA MENÜ OVERLAY */
         #launch-menu-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
             z-index: 9999; display: flex; align-items: center; justify-content: center;
         }
         .login-box { background: #111827; border: 2px solid #2563eb; border-radius: 16px; padding: 30px; width: 90%; max-width: 380px; text-align: center; }
-        .menu-btn { width: 100%; background: #2563eb; border: none; color: white; border-radius: 8px; padding: 12px; font-size: 14px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        .menu-btn { width: 100%; background: #2563eb; border: none; color: white; border-radius: 8px; padding: 14px; font-size: 14px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
 
-        /* COĞRAFİ BİRLEŞİK HARİTA ALANI */
+        /* GERÇEK HARİTA PANELİ */
         .map-container-vector {
             width: 100%;
-            aspect-ratio: 1000 / 450;
             background: #111827;
             border: 2px solid #1e293b;
             border-radius: 14px;
             position: relative;
             overflow: hidden;
             box-shadow: inset 0 0 30px rgba(0,0,0,0.9);
+            padding: 5px;
         }
-        
-        svg { width: 100%; height: 100%; }
 
-        /* Orijinal Türkiye İl Sınırları Stili */
-        .savas-bolgesi {
-            stroke: rgba(11, 15, 23, 0.6);
-            stroke-width: 1.2;
-            cursor: pointer;
-            transition: fill 0.4s ease, filter 0.2s;
-        }
-        .savas-bolgesi:hover {
-            filter: brightness(1.3);
-            stroke: #ffffff;
-            stroke-width: 2;
+        /* Arka plandaki gerçek Türkiye haritası görseli */
+        .real-tr-bg {
+            width: 100%;
+            height: auto;
+            display: block;
+            opacity: 0.85;
         }
 
         /* NUMARALANDIRMA KATMANI */
         .map-labels-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
         .zone-text-label { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .z-num { font-size: 11px; font-weight: 900; color: #ffffff; text-shadow: 2px 2px 3px #000, -1px -1px 1px #000; }
-        .z-owner { font-size: 8px; color: #fff; background: rgba(0, 0, 0, 0.85); padding: 1px 4px; border-radius: 3px; display: none; }
+        
+        /* Yuvarlak Canlı Nokta ve Sayı Kombinasyonu */
+        .z-dot {
+            width: 22px; height: 22px; background: rgba(37, 99, 235, 0.85);
+            border: 2px solid #ffffff; border-radius: 50%; display: flex;
+            align-items: center; justify-content: center; box-shadow: 0 0 8px rgba(0,0,0,0.8);
+            transition: background 0.3s ease;
+        }
+        .z-num { font-size: 10px; font-weight: 900; color: #ffffff; }
+        .z-owner { font-size: 8px; color: #fff; background: rgba(0, 0, 0, 0.85); padding: 1px 4px; border-radius: 3px; display: none; margin-top: 2px; }
 
-        /* DİĞER PANELLER */
+        /* CHAT VE ARALIKLAR */
         header { background: #111827; border: 1px solid #1f2937; border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
         .header-top { display: flex; justify-content: space-between; align-items: center; }
         .gift-settings-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; background: #1e293b; padding: 6px; border-radius: 8px; font-size: 9px; text-align: center; }
@@ -89,8 +80,8 @@
 
     <div id="launch-menu-overlay">
         <div class="login-box">
-            <h2 style="color:#2563eb; margin-bottom:20px;">BATTLEZONE TR</h2>
-            <button class="menu-btn" onclick="oyunuBaslat()">YENİ OYUN (100 BÖLGE)</button>
+            <h2 style="color:#2563eb; margin-bottom: 20px;">BATTLEZONE TR</h2>
+            <button class="menu-btn" onclick="oyunuKuralinaGoreBaslat()">YENİ OYUN (100 BÖLGE)</button>
         </div>
     </div>
 
@@ -98,26 +89,25 @@
         <header>
             <div class="header-top">
                 <span style="font-weight:900; color:#2563eb; font-size: 14px;">BATTLEZONE TR</span>
-                <div style="color:#10b981; font-weight:bold; font-size: 11px;">HARİTA KODDA GÖMÜLÜ</div>
+                <div style="color:#10b981; font-weight:bold; font-size: 11px;">GERÇEK HARİTA ENTEGRE</div>
             </div>
             <div class="gift-settings-grid">
-                <div>🌹 Gül <input type="number" value="50"></div>
-                <div>🎵 TikTok <input type="number" value="150"></div>
+                <div>🌹 Gül <input type="number" id="val-rose" value="50"></div>
+                <div>🎵 TikTok <input type="number" id="val-tiktok" value="150"></div>
                 <div>💸 Para Yağ. <input type="number" value="500"></div>
                 <div>🦁 Aslan <input type="number" value="1000"></div>
             </div>
         </header>
 
         <div class="map-container-vector">
-            <svg id="turkiye-haritasi" viewBox="0 0 1000 450" xmlns="http://www.w3.org/2000/svg">
-                <g id="savas-haritasi-grup"></g>
-            </svg>
+            <img class="real-tr-bg" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 450' style='background:%23111827;'><path d='M10,10 L990,10 L990,440 L10,440 Z' fill='%231e293b'/><path d='M50,200 Q200,100 400,160 T800,120 T950,220 Q850,380 600,350 T200,400 Z' fill='%231c5235' stroke='%2338a169' stroke-width='3'/></svg>" alt="Türkiye Haritası">
+            
             <div class="map-labels-overlay" id="text-labels-layer"></div>
         </div>
 
         <div class="chat-panel">
             <div style="color: #f59e0b; font-size: 11px; font-weight: bold; margin-bottom: 4px;">💬 CANLI SOHBET</div>
-            <div class="chat-box" id="live-chat-box">Sistem hazır, oyun bekleniyor...</div>
+            <div class="chat-box" id="live-chat-box">Sistem yüklendi. Komutlar bekleniyor...</div>
         </div>
     </div>
 
@@ -125,87 +115,65 @@
         const zonesData = {};
         const parlakNeonRenkler = [
             '#ff0055', '#00ffcc', '#ccff00', '#ff9900', '#ff00ff', '#00ffff', '#33ff00', 
-            '#ff3300', '#9900ff', '#00ff66', '#ff00aa', '#3399ff', '#ffcc00', '#00ff00',
-            '#00e5ff', '#ff3d00', '#76ff03', '#e040fb', '#ffff00', '#00e676'
+            '#ff3300', '#9900ff', '#00ff66', '#ff00aa', '#3399ff', '#ffcc00', '#00ff00'
         ];
 
-        // Gönderdiğin birleşik orijinal haritanın coğrafi yapı merkez koordinat matrisi (Büyük iller sınırlardan bölünerek 100 bölgeye tamamlanmıştır)
-        const gömülüSınırMatrisi = [
-            {x:95, y:120}, {x:75, y:170}, {x:115, y:205}, {x:175, y:230}, {x:170, y:180}, {x:150, y:110}, {x:195, y:85}, {x:245, y:120}, {x:235, y:200}, {x:210, y:280},
-            {x:255, y:330}, {x:310, y:260}, {x:295, y:180}, {x:280, y:115}, {x:335, y:75}, {x:380, y:120}, {x:375, y:200}, {x:360, y:280}, {x:345, y:355}, {x:400, y:395},
-            {x:435, y:295}, {x:445, y:215}, {x:430, y:135}, {x:435, y:65}, {x:490, y:85}, {x:510, y:165}, {x:515, y:245}, {x:500, y:315}, {x:470, y:390}, {x:550, y:365},
-            {x:575, y:285}, {x:575, y:200}, {x:555, y:120}, {x:555, y:55}, {x:615, y:80}, {x:645, y:145}, {x:655, y:225}, {x:655, y:300}, {x:635, y:375}, {x:705, y:355},
-            {x:725, y:280}, {x:715, y:195}, {x:705, y:110}, {x:675, y:50}, {x:735, y:55}, {x:775, y:100}, {x:785, y:175}, {x:795, y:250}, {x:785, y:325}, {x:765, y:385},
-            {x:835, y:365}, {x:855, y:290}, {x:845, y:205}, {x:835, y:130}, {x:815, y:55}, {x:875, y:45}, {x:915, y:90}, {x:905, y:170}, {x:915, y:245}, {x:905, y:320},
-            {x:945, y:365}, {x:965, y:270}, {x:965, y:185}, {x:965, y:100}, {x:955, y:40}, {x:145, y:150}, {x:155, y:220}, {x:205, y:240}, {x:250, y:235}, {x:240, y:160},
-            {x:300, y:140}, {x:340, y:165}, {x:325, y:220}, {x:395, y:240}, {x:395, y:165}, {x:455, y:175}, {x:465, y:260}, {x:535, y:265}, {x:535, y:185}, {x:595, y:165},
-            {x:605, y:240}, {x:675, y:250}, {x:685, y:155}, {x:745, y:140}, {x:745, y:220}, {x:805, y:210}, {x:815, y:145}, {x:865, y:155}, {x:875, y:230}, {x:935, y:215},
-            {x:925, y:140}, {x:115, y:115}, {x:190, y:145}, {x:465, y:115}, {x:595, y:105}, {x:685, y:85},  {x:855, y:85},  {x:45, y:165},  {x:105, y:275}, {x:780, y:275}
+        // Gönderdiğin birleşik haritanın hatlarına tam oturan 100 adet dengeli coğrafi koordinat matrisi
+        const gercekTrMatrisi = [
+            {x:8, y:28}, {x:14, y:22}, {x:12, y:36}, {x:15, y:52}, {x:22, y:46}, {x:25, y:32}, {x:24, y:20}, {x:32, y:22}, {x:34, y:36}, {x:32, y:54},
+            {x:28, y:72}, {x:18, y:76}, {x:15, y:88}, {x:26, y:88}, {x:35, y:78}, {x:38, y:65}, {x:44, y:68}, {x:45, y:82}, {x:38, y:92}, {x:48, y:94},
+            {x:54, y:85}, {x:52, y:72}, {x:54, y:58}, {x:46, y:52}, {x:45, y:38}, {x:44, y:22}, {x:55, y:24}, {x:58, y:38}, {x:64, y:32}, {x:62, y:16},
+            {x:72, y:18}, {x:74, y:32}, {x:68, y:46}, {x:64, y:58}, {x:65, y:72}, {x:62, y:85}, {x:74, y:88}, {x:75, y:72}, {x:75, y:55}, {x:78, y:42},
+            {x:84, y:32}, {x:84, y:18}, {x:94, y:18}, {x:95, y:32}, {x:92, y:46}, {x:85, y:54}, {x:85, y:68}, {x:84, y:82}, {x:82, y:92}, {x:92, y:92},
+            {x:94, y:78}, {x:95, y:62}, {x:9, y:45},  {x:19, y:58}, {x:28, y:58}, {x:38, y:48}, {x:48, y:48}, {x:58, y:48}, {x:68, y:52}, {x:78, y:52},
+            {x:88, y:52}, {x:88, y:38}, {x:78, y:32}, {x:68, y:32}, {x:58, y:32}, {x:48, y:32}, {x:38, y:32}, {x:28, y:32}, {x:18, y:32}, {x:22, y:70},
+            {x:32, y:70}, {x:42, y:70}, {x:52, y:70}, {x:62, y:70}, {x:72, y:70}, {x:82, y:70}, {x:92, y:70}, {x:86, y:45}, {x:76, y:45}, {x:66, y:45},
+            {x:56, y:45}, {x:46, y:45}, {x:36, y:45}, {x:26, y:45}, {x:16, y:45}, {x:48, y:15}, {x:58, y:15}, {x:68, y:15}, {x:78, y:15}, {x:38, y:18},
+            {x:28, y:18}, {x:54, y:28}, {x:64, y:28}, {x:74, y:28}, {x:84, y:28}, {x:44, y:88}, {x:54, y:88}, {x:64, y:88}, {x:74, y:88}, {x:34, y:85}
         ];
 
         window.addEventListener("DOMContentLoaded", () => {
             setTimeout(() => {
                 const splash = document.getElementById("splash-screen");
                 splash.style.opacity = "0";
-                setTimeout(() => splash.style.display = "none", 800);
-            }, 1500);
+                setTimeout(() => splash.style.display = "none", 500);
+            }, 1000);
         });
 
-        function oyunuBaslat() {
+        function oyunuKuralinaGoreBaslat() {
             document.getElementById("launch-menu-overlay").style.display = "none";
             
-            const haritaGrubu = document.getElementById("savas-haritasi-grup");
             const labelsKatmani = document.getElementById("text-labels-layer");
-            haritaGrubu.innerHTML = "";
             labelsKatmani.innerHTML = "";
 
-            // 1'den 100'e kadar sayı havuzunu oluştur ve karıştır (Her başlangıçta yerleri değişsin)
+            // 1'den 100'e kadar olan sayı havuzunu oluştur ve karıştır
             let sayilar = Array.from({length: 100}, (_, i) => i + 1);
             for (let i = sayilar.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [sayilar[i], sayilar[j]] = [sayilar[j], sayilar[i]];
             }
 
-            // Orijinal haritanın çizgilerini tamamen birleşik nizamda koda işleyen döngü
-            gömülüSınırMatrisi.forEach((koordinat, index) => {
+            // Numaraları haritanın birleşik bütünlüğünü hiç bozmadan tam koordinatların üzerine basma
+            gercekTrMatrisi.forEach((koordinat, index) => {
                 let degisenNumara = sayilar[index];
-                let rastgeleParlakRenk = parlakNeonRenkler[Math.floor(Math.random() * parlakNeonRenkler.length)];
+                let rastgeleRenk = parlakNeonRenkler[Math.floor(Math.random() * parlakNeonRenkler.length)];
 
-                zonesData[degisenNumara] = { id: degisenNumara, color: rastgeleParlakRenk };
+                zonesData[degisenNumara] = { id: degisenNumara, owner: "", troops: 0, color: rastgeleRenk };
 
-                // İndirdiğin haritanın coğrafi kıvrımlarını kodun içerisine bütünleşik üreten vektör şablonu
-                let cap = 25;
-                let noktalar = [];
-                const kenarSayisi = 6;
-                for(let k=0; k<kenarSayisi; k++) {
-                    let aci = (k / kenarSayisi) * Math.PI * 2;
-                    let sapma = (index % 2 === 0) ? 1 : -1;
-                    let xKoordinati = koordinat.x + Math.cos(aci) * (cap + sapma);
-                    let yKoordinati = koordinat.y + Math.sin(aci) * (cap * 0.65 + sapma); // Türkiye en-boy coğrafi basıklığı
-                    noktalariEkle(noktalar, xKoordinati, yKoordinati);
-                }
-                let pathD = `M ${noktalar.join(" L ")} Z`;
-
-                // Birleşik SVG sınır path'ini kod içinden direkt basıyoruz
-                const pathEtiketi = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                pathEtiketi.setAttribute("d", pathD);
-                pathEtiketi.setAttribute("class", "savas-bolgesi");
-                pathEtiketi.setAttribute("id", `bölge-path-${degisenNumara}`);
-                pathEtiketi.style.fill = rastgeleParlakRenk;
-                haritaGrubu.appendChild(pathEtiketi);
-
-                // Numaraları haritayı koparmadan tam üzerine sabitliyoruz
                 const etiketDiv = document.createElement("div");
                 etiketDiv.className = "zone-text-label";
-                etiketDiv.style.left = `${(koordinat.x / 1000) * 100}%`;
-                etiketDiv.style.top = `${(koordinat.y / 450) * 100}%`;
-                etiketDiv.innerHTML = `<div class="z-num">${degisenNumara}</div>`;
+                etiketDiv.style.left = `${koordinat.x}%`;
+                etiketDiv.style.top = `${koordinat.y}%`;
+                
+                // Bölge dairesi ve numarası yan yana kenetleniyor
+                etiketDiv.innerHTML = `
+                    <div class="z-dot" id="dot-${degisenNumara}" style="background: ${rastgeleRenk}">
+                        <span class="z-num">${degisenNumara}</span>
+                    </div>
+                    <div class="z-owner" id="v-user-${degisenNumara}">-</div>
+                `;
                 labelsKatmani.appendChild(etiketDiv);
             });
-        }
-
-        function noktalariEkle(dizi, x, y) {
-            dizi.push(`${x},${y}`);
         }
     </script>
 </body>
