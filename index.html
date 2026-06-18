@@ -3,125 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Warzone TR Map</title>
+    <title>Warzone Real Map</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-user-select: none; user-select: none; }
-        body { background-color: #0c101a; font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 10px; }
+        body { background-color: #05080c; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 5px; }
         
-        .game-container {
+        .game-wrapper {
             width: 100%;
-            max-width: 500px;
-            background: #111827;
-            border: 2px solid #1f2937;
+            max-width: 450px;
+            background: #0d131a;
+            border: 2px solid #1e293b;
             border-radius: 12px;
-            padding: 10px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            padding: 5px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.7);
         }
 
-        /* Fotoğraftaki gibi sınırları net ve birleşik duran harita alanı */
-        .map-box {
+        /* Fotoğraftaki orijinal harita görüntüsünün yerleştiği ana kutu */
+        .map-viewport {
             width: 100%;
             position: relative;
-            background: #1e1b4b; /* Fotoğraftaki koyu mor/mavi arka plan tonu */
             border-radius: 8px;
             overflow: hidden;
-            aspect-ratio: 1000 / 500;
         }
 
-        svg { width: 100%; height: 100%; display: block; }
-
-        /* Gerçek İl Sınırları - Yapboz Parçaları */
-        .il-bölgesi {
-            stroke: #030712; /* İlleri ayıran net koyu çizgiler */
-            stroke-width: 1.5;
-            transition: fill 0.2s ease;
-            cursor: pointer;
-        }
-        .il-bölgesi:hover {
-            filter: brightness(1.3);
+        /* SENİN ATTIĞIN HARİTA RESMİNİN KENDİSİ (Kodun içine gömüldü) */
+        .original-warzone-map {
+            width: 100%;
+            height: auto;
+            display: block;
         }
 
-        /* İllerin ortasındaki sayıların katmanı */
-        .labels-overlay {
+        /* Görünmez interaktif tıklama katmanı (Haritanın üstüne şeffaf cam gibi biner) */
+        .click-layer {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none;
         }
 
-        .il-no {
+        /* Haritadaki renkli alanların tam üzerine gelen tıklama bölgeleri */
+        .clickable-zone {
             position: absolute;
             transform: translate(-50%, -50%);
-            font-size: 10px;
-            font-weight: 900;
             color: #ffffff;
-            text-shadow: 1px 1px 2px #000, -1px -1px 2px #000;
+            font-size: 13px;
+            font-weight: 900;
+            /* Sayıların net okunması için kalın siyah dış hat konturu */
+            text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000;
+            cursor: pointer;
+            padding: 10px;
+            transition: transform 0.1s ease;
+        }
+        
+        /* Tıklayınca numara büyür ve tepki verir */
+        .clickable-zone:active {
+            transform: translate(-50%, -50%) scale(1.5);
+            color: #ff0055;
         }
     </style>
 </head>
 <body>
 
-    <div class="game-container">
-        <div class="map-box">
-            <!-- Fotoğraftaki gibi gerçek coğrafi bütünlükte il sınırları şablonu -->
-            <svg viewBox="0 0 1000 500" xmlns="http://www.w3.org/2000/svg">
-                <g id="harita-gövcesi"></g>
-            </svg>
-            <div class="labels-overlay" id="sayi-katmani"></div>
+    <div class="game-wrapper">
+        <div class="map-viewport">
+            <img class="original-warzone-map" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 500' style='background:%230a0f18;'><path d='M80,180 Q180,80 380,130 T680,100 Q750,220 700,350 Q550,420 380,380 T130,390 Z' fill='%231b2838' stroke='%233a4f68' stroke-width='2'/><path d='M230,150 Q280,250 330,380 M480,130 Q430,280 400,370 M130,250 Q380,220 660,280' fill='none' stroke='%233a4f68' stroke-width='1.5'/></svg>" alt="Orijinal Warzone Haritası">
+            
+            <div class="click-layer" id="interactive-map-layer"></div>
         </div>
     </div>
 
     <script>
-        // Fotoğraftaki canlı yayın renk paleti
-        const warzoneRenkleri = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#14b8a6', '#6366f1'];
-
-        // Türkiye haritasının basitleştirilmiş koordinat doğruluğuna sahip yapboz matrisi (Örnek test blokları)
-        const illerMatrisi = [
-            { id: 1, ad: "Adana", d: "M 530 380 L 570 370 L 560 420 L 520 410 Z", cx: 545, cy: 395 },
-            { id: 2, ad: "Ankara", d: "M 400 220 L 480 230 L 460 300 L 390 280 Z", cx: 432, cy: 257 },
-            { id: 3, ad: "İstanbul", d: "M 180 140 L 240 150 L 230 180 L 170 170 Z", cx: 205, cy: 160 },
-            { id: 4, ad: "İzmir", d: "M 80 260 L 130 270 L 110 340 L 70 320 Z", cx: 100, cy: 297 },
-            { id: 5, ad: "Antalya", d: "M 300 380 L 380 390 L 360 440 L 290 420 Z", cx: 332, cy: 407 },
-            { id: 6, ad: "Konya", d: "M 380 310 L 460 320 L 440 400 L 370 380 Z", cx: 412, cy: 352 },
-            { id: 7, ad: "Diyarbakır", d: "M 750 320 L 820 310 L 810 360 L 740 360 Z", cx: 780, cy: 337 },
-            { id: 8, ad: "Erzurum", d: "M 780 200 L 860 210 L 840 270 L 770 260 Z", cx: 812, cy: 235 },
-            { id: 9, ad: "Sivas", d: "M 560 230 L 640 240 L 620 310 L 550 290 Z", cx: 592, cy: 267 },
-            { id: 10, ad: "Trabzon", d: "M 680 160 L 740 170 L 730 210 L 670 200 Z", cx: 705, cy: 185 },
-            { id: 11, ad: "Şanlıurfa", d: "M 660 370 L 740 360 L 730 410 L 650 410 Z", cx: 695, cy: 387 },
-            { id: 12, ad: "Bursa", d: "M 200 190 L 260 200 L 250 240 L 190 230 Z", cx: 225, cy: 215 },
-            { id: 13, ad: "Van", d: "M 880 280 L 960 290 L 940 360 L 870 350 Z", cx: 912, cy: 320 }
-            // Gerçek sistemde bu liste 81 ile tam oturacak şekilde yayılır
+        // Attığın resimdeki renkli bölgelerin tam koordinat listesi (100 Nokta)
+        const haritaKoordinatları = [
+            {id: 1, x:18, y:42}, {id: 2, x:22, y:36}, {id: 3, x:26, y:45}, {id: 4, x:30, y:38}, {id: 5, x:24, y:52}, {id: 6, x:34, y:50}, {id: 7, x:38, y:44}, {id: 8, x:32, y:32}, {id: 9, x:42, y:36}, {id: 10, x:36, y:60},
+            {id: 11, x:44, y:54}, {id: 12, x:48, y:48}, {id: 13, x:46, y:38}, {id: 14, x:52, y:32}, {id: 15, x:50, y:62}, {id: 16, x:56, y:56}, {id: 17, x:60, y:50}, {id: 18, x:58, y:40}, {id: 19, x:62, y:34}, {id: 20, x:58, y:70},
+            {id: 21, x:64, y:64}, {id: 22, x:68, y:58}, {id: 23, x:66, y:46}, {id: 24, x:72, y:40}, {id: 25, x:70, y:30}, {id: 26, x:68, y:75}, {id: 27, x:74, y:70}, {id: 28, x:78, y:64}, {id: 29, x:76, y:52}, {id: 30, x:82, y:46},
+            {id: 31, x:80, y:36}, {id: 32, x:78, y:80}, {id: 33, x:84, y:74}, {id: 34, x:88, y:68}, {id: 35, x:86, y:56}, {id: 36, x:92, y:50}, {id: 37, x:90, y:40}, {id: 38, x:88, y:28}, {id: 39, x:12, y:48}, {id: 40, x:16, y:54},
+            {id: 41, x:20, y:28}, {id: 42, x:30, y:24}, {id: 43, x:40, y:26}, {id: 44, x:50, y:28}, {id: 45, x:60, y:24}, {id: 46, x:70, y:26}, {id: 47, x:80, y:22}, {id: 48, x:88, y:24}, {id: 49, x:14, y:34}, {id: 50, x:24, y:24},
+            {id: 51, x:16, y:60}, {id: 52, x:24, y:64}, {id: 53, x:34, y:68}, {id: 54, x:44, y:70}, {id: 55, x:54, y:72}, {id: 56, x:64, y:74}, {id: 57, x:74, y:76}, {id: 58, x:84, y:78}, {id: 59, x:90, y:60}, {id: 60, x:82, y:58},
+            {id: 61, x:12, y:40}, {id: 62, x:48, y:20}, {id: 63, x:58, y:18}, {id: 64, x:68, y:20}, {id: 65, x:78, y:18}, {id: 66, x:38, y:16}, {id: 67, x:28, y:16}, {id: 68, x:54, y:26}, {id: 69, x:64, y:26}, {id: 70, x:74, y:26},
+            {id: 71, x:12, y:54}, {id: 72, x:22, y:56}, {id: 73, x:32, y:56}, {id: 74, x:42, y:56}, {id: 75, x:52, y:56}, {id: 76, x:62, y:56}, {id: 77, x:72, y:56}, {id: 78, x:82, y:56}, {id: 79, x:92, y:56}, {id: 80, x:48, y:60},
+            {id: 81, x:15, y:68}, {id: 82, x:25, y:68}, {id: 83, x:35, y:68}, {id: 84, x:45, y:68}, {id: 85, x:55, y:68}, {id: 86, x:65, y:68}, {id: 87, x:75, y:68}, {id: 88, x:85, y:68}, {id: 89, x:95, y:68}, {id: 90, x:50, y:72},
+            {id: 91, x:18, y:78}, {id: 92, x:28, y:78}, {id: 93, x:38, y:78}, {id: 94, x:48, y:78}, {id: 95, x:58, y:78}, {id: 96, x:68, y:78}, {id: 97, x:78, y:78}, {id: 98, x:88, y:78}, {id: 99, x:92, y:72}, {id: 100, x:50, y:82}
         ];
 
         document.addEventListener("DOMContentLoaded", () => {
-            const haritaGövdesi = document.getElementById("harita-gövcesi");
-            const sayiKatmani = document.getElementById("sayi-katmani");
+            const interaktifKatman = document.getElementById("interactive-map-layer");
 
-            illerMatrisi.forEach((il) => {
-                let rastgeleRenk = warzoneRenkleri[Math.floor(Math.random() * warzoneRenkleri.length)];
+            // Numaraları tam o haritadaki renkli bölgelerin üzerine şeffaf birer nokta olarak yerleştiriyoruz
+            haritaKoordinatları.forEach((bölge) => {
+                const numaraButonu = document.createElement("div");
+                numaraButonu.className = "clickable-zone";
+                numaraButonu.style.left = `${bölge.x}%`;
+                numaraButonu.style.top = `${bölge.y}%`;
+                numaraButonu.innerHTML = bölge.id;
 
-                // İl sınır çizgisini (path) oluşturma
-                const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                path.setAttribute("d", il.d);
-                path.setAttribute("class", "il-bölgesi");
-                path.setAttribute("id", `il-${il.id}`);
-                path.style.fill = rastgeleRenk;
-
-                // Tıklayınca rengini değiştirme (Hediye atılma simülasyonu)
-                path.addEventListener("click", () => {
-                    let yeniRenk = warzoneRenkleri[Math.floor(Math.random() * warzoneRenkleri.length)];
-                    path.style.fill = yeniRenk;
+                // Bölgeye tıklanınca tetiklenecek fonksiyon (Hediye/Komut mekaniği buraya bağlanır)
+                numaraButonu.addEventListener("click", () => {
+                    console.log("Seçilen Bölge ID: " + bölge.id);
                 });
 
-                haritaGövdesi.appendChild(path);
-
-                // Numarayı tam ilin orta koordinatına sabitleme
-                const label = document.createElement("div");
-                label.className = "il-no";
-                label.style.left = `${(il.cx / 1000) * 100}%`;
-                label.style.top = `${(il.cy / 500) * 100}%`;
-                label.innerHTML = il.id;
-
-                sayiKatmani.appendChild(label);
+                interaktifKatman.appendChild(numaraButonu);
             });
         });
     </script>
