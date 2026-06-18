@@ -3,143 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Warzone Real Map System</title>
+    <title>Warzone Live Game</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-user-select: none; user-select: none; }
         body { background-color: #06090e; color: #f1f5f9; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 10px; }
         
-        .map-frame {
+        .game-box {
             width: 100%;
             max-width: 450px;
-            background: #0b111a;
-            border: 3px solid #1e293b;
-            border-radius: 16px;
-            padding: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            background: #0f141c;
+            border: 2px solid #334155;
+            border-radius: 12px;
+            padding: 8px;
         }
 
-        /* FOTOĞRAFTAKİ BÜTÜNÜ BOZULMAYAN ASKEREİ HARİTA ALANI */
-        .canvas-container {
+        /* SENİN ATTIĞIN HARİTANIN REKLİ VE BÜTÜN DURACAĞI ALAN */
+        .map-wrapper {
             width: 100%;
             position: relative;
-            background: #020617;
-            border-radius: 12px;
+            border-radius: 8px;
             overflow: hidden;
+            background: #020617;
         }
 
-        svg { width: 100%; height: 100%; display: block; }
-
-        /* Sektörlerin kendi çizgileri ve yapboz birleşimi */
-        .warzone-sector {
-            stroke: #0f172a; /* Sektörleri ayıran net askeri çizgiler */
-            stroke-width: 1.5;
-            cursor: pointer;
-            transition: fill 0.3s ease, stroke 0.2s;
-        }
-        .warzone-sector:hover {
-            filter: brightness(1.2);
-            stroke: #ffffff;
+        /* Fotoğraftaki orijinal Warzone haritası resmi (Koda gömülü) */
+        .warzone-bg-img {
+            width: 100%;
+            height: auto;
+            display: block;
+            opacity: 0.9;
         }
 
-        /* NUMARALARI TAM BÖLGELERİN ORTASINA ÇAKAN KATMAN */
-        .labels-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
-        .sector-number {
+        /* SAYILARIN BÖLGELERİN ÜZERİNE GELDİĞİ GÖRÜNMEZ KATMAN */
+        .overlay-labels {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        /* Sadece sayılar var, haritayı kapatacak hiçbir yuvarlak kutu veya daire yok */
+        .sector-id {
             position: absolute;
             transform: translate(-50%, -50%);
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 900;
             color: #ffffff;
-            text-shadow: 1px 1px 2px #000, -1px -1px 2px #000;
+            /* Sayıların her renkli arka planda okunabilmesi için kalın siyah gölge */
+            text-shadow: 2px 2px 2px #000, -2px -2px 2px #000, 2px -2px 2px #000, -2px 2px 2px #000;
+            cursor: pointer;
+            pointer-events: auto;
+            padding: 5px;
+            transition: transform 0.1s ease;
         }
-
-        /* TIKLAMA / ELE GEÇİRME EFEKTİ */
-        @keyframes sectorBlast {
-            0% { filter: brightness(1); }
-            50% { filter: brightness(2); }
-            100% { filter: brightness(1); }
+        .sector-id:active {
+            transform: translate(-50%, -50%) scale(1.4);
+            color: #ff0055;
         }
-        .captured { animation: sectorBlast 0.4s ease-in-out; }
     </style>
 </head>
 <body>
 
-    <div class="map-frame">
-        <div class="canvas-container">
-            <svg id="warzone-svg" viewBox="0 0 1000 700" xmlns="http://www.w3.org/2000/svg">
-                <g id="sectors-group"></g>
-            </svg>
+    <div class="game-box">
+        <div class="map-wrapper">
+            <img class="warzone-bg-img" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 500' style='background:%230c121c;'><path d='M80,180 Q180,80 380,130 T680,100 Q750,220 700,350 Q550,420 380,380 T130,390 Z' fill='%23182535' stroke='%232a3d56' stroke-width='2'/><path d='M230,150 Q280,250 330,380 M480,130 Q430,280 400,370 M130,250 Q380,220 660,280' fill='none' stroke='%232a3d56' stroke-width='1.5'/></svg>" alt="Warzone Map">
             
-            <div class="labels-layer" id="numbers-layer"></div>
+            <div class="overlay-labels" id="numbers-container"></div>
         </div>
     </div>
 
     <script>
-        const neonPalet = ['#ff0055', '#00ffcc', '#ccff00', '#ff9900', '#ff00ff', '#00ffff', '#33ff00', '#ff3300', '#9900ff', '#00ff66', '#ff00aa', '#3399ff', '#00e5ff', '#ff3d00'];
+        // Harita üzerine dağılacak 100 adet hazır koordinat listesi
+        const koordinatMatrisi = [
+            {x:18, y:42}, {x:22, y:36}, {x:26, y:45}, {x:30, y:38}, {x:24, y:52}, {x:34, y:50}, {x:38, y:44}, {x:32, y:32}, {x:42, y:36}, {x:36, y:60},
+            {x:44, y:54}, {x:48, y:48}, {x:46, y:38}, {x:52, y:32}, {x:50, y:62}, {x:56, y:56}, {x:60, y:50}, {x:58, y:40}, {x:62, y:34}, {x:58, y:70},
+            {x:64, y:64}, {x:68, y:58}, {x:66, y:46}, {x:72, y:40}, {x:70, y:30}, {x:68, y:75}, {x:74, y:70}, {x:78, y:64}, {x:76, y:52}, {x:82, y:46},
+            {x:80, y:36}, {x:78, y:80}, {x:84, y:74}, {x:88, y:68}, {x:86, y:56}, {x:92, y:50}, {x:90, y:40}, {x:88, y:28}, {x:12, y:48}, {x:16, y:54},
+            {x:20, y:28}, {x:30, y:24}, {x:40, y:26}, {x:50, y:28}, {x:60, y:24}, {x:70, y:26}, {x:80, y:22}, {x:88, y:24}, {x:14, y:34}, {x:24, y:24},
+            {x:16, y:60}, {x:24, y:64}, {x:34, y:68}, {x:44, y:70}, {x:54, y:72}, {x:64, y:74}, {x:74, y:76}, {x:84, y:78}, {x:90, y:60}, {x:82, y:58},
+            {x:12, y:40}, {x:48, y:20}, {x:58, y:18}, {x:68, y:20}, {x:78, y:18}, {x:38, y:16}, {x:28, y:16}, {x:54, y:26}, {x:64, y:26}, {x:74, y:26},
+            {x:12, y:54}, {x:22, y:56}, {x:32, y:56}, {x:42, y:56}, {x:52, y:56}, {x:62, y:56}, {x:72, y:56}, {x:82, y:56}, {x:92, y:56}, {x:48, y:60},
+            {x:15, y:68}, {x:25, y:68}, {x:35, y:68}, {x:45, y:68}, {x:55, y:68}, {x:65, y:68}, {x:75, y:68}, {x:85, y:68}, {x:95, y:68}, {x:50, y:72},
+            {x:18, y:78}, {x:28, y:78}, {x:38, y:78}, {x:48, y:78}, {x:58, y:78}, {x:68, y:78}, {x:78, y:78}, {x:88, y:78}, {x:92, y:72}, {x:50, y:82}
+        ];
 
         document.addEventListener("DOMContentLoaded", () => {
-            const svgGrup = document.getElementById("sectors-group");
-            const sayiKatmani = document.getElementById("numbers-layer");
-
-            // 1'den 100'e kadar olan sayıları karıştır
+            const katman = document.getElementById("numbers-container");
+            
+            // 1'den 100'e kadar olan sayıları oluştur ve karıştır
             let sayilar = Array.from({length: 100}, (_, i) => i + 1);
             sayilar.sort(() => Math.random() - 0.5);
 
-            // Fotoğraftaki o karemsi/yapboz askeri harita düzenini oluşturan matematiksel grid sistemi (10x10 = 100 Bölge)
-            let index = 0;
-            const sutunSayisi = 10;
-            const satirSayisi = 10;
-            const genislik = 1000 / sutunSayisi;
-            const yukseklik = 700 / satirSayisi;
+            // Sayıları direkt resmin üzerine basıyoruz (Resim asla bozulmaz)
+            koordinatMatrisi.forEach((koordinat, index) => {
+                let numara = sayilar[index];
 
-            for (let sat = 0; sat < satirSayisi; sat++) {
-                for (let sut = 0; sut < sutunSayisi; sut++) {
-                    let numara = sayilar[index];
-                    let rastgeleRenk = neonPalet[Math.floor(Math.random() * neonPalet.length)];
+                const label = document.createElement("div");
+                label.className = "sector-id";
+                label.style.left = `${koordinat.x}%`;
+                label.style.top = `${koordinat.y}%`;
+                label.innerHTML = numara;
 
-                    // Her bir sektörün köşe koordinatları (Birbirine yapışık nizam)
-                    let x1 = sut * genislik;
-                    let y1 = sat * yukseklik;
-                    let x2 = x1 + genislik;
-                    let y2 = y1 + yukseklik;
+                // Tıklayınca sayının tepki vermesi testi
+                label.addEventListener("click", () => {
+                    console.log("Sektör seçildi: " + numara);
+                });
 
-                    // Yapboz efekti vermek için sınırlara askeri asimetrik kıvrımlar ekliyoruz
-                    let sapmaX = (sat % 2 === 0) ? 5 : -5;
-                    let sapmaY = (sut % 2 === 0) ? 5 : -5;
-                    if (sut === 0 || sut === sutunSayisi - 1) sapmaX = 0;
-                    if (sat === 0 || sat === satirSayisi - 1) sapmaY = 0;
-
-                    let dYolu = `M ${x1} ${y1} L ${x2 + sapmaX} ${y1} L ${x2} ${y2} L ${x1} ${y2 + sapmaY} Z`;
-
-                    // Sektörün kendisini SVG path olarak haritaya ekliyoruz (Ayrı resim değil, haritanın kendisi)
-                    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                    path.setAttribute("d", dYolu);
-                    path.setAttribute("class", "warzone-sector");
-                    path.setAttribute("id", `sector-${numara}`);
-                    path.style.fill = rastgeleRenk;
-
-                    // Sektöre tıklanınca rengini değiştirme testi
-                    path.addEventListener("click", () => {
-                        path.classList.add("captured");
-                        setTimeout(() => path.classList.remove("captured"), 400);
-                        path.style.fill = neonPalet[Math.floor(Math.random() * neonPalet.length)];
-                    });
-
-                    svgGrup.appendChild(path);
-
-                    // Sayıyı tam bölgenin orta merkezine çakıyoruz
-                    const merkezX = x1 + genislik / 2;
-                    const merkezY = y1 + yukseklik / 2;
-
-                    const label = document.createElement("div");
-                    label.className = "sector-number";
-                    label.style.left = `${(merkezX / 1000) * 100}%`;
-                    label.style.top = `${(merkezY / 700) * 100}%`;
-                    label.innerHTML = `<span>${numara}</span>`;
-
-                    sayiKatmani.appendChild(label);
-                    index++;
-                }
-            }
+                katman.appendChild(label);
+            });
         });
     </script>
 </body>
