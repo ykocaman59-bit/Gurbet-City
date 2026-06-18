@@ -2,82 +2,66 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Battlezone 100 - Final Sürüm</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Battlezone Canlı Savaş</title>
     <style>
-        body { margin: 0; background: #0b0f17; color: white; display: flex; flex-direction: column; align-items: center; min-height: 100vh; font-family: sans-serif; }
-        .app-container { width: 100%; max-width: 500px; padding: 10px; }
+        /* TÜM TASARIMIN VE ANİMASYONLARIN BURADA */
+        body { background-color: #0b0f17; color: #fff; margin: 0; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
         
-        /* HARİTA ZEMİNİ - Kodular'da 'harita.png' olarak assets'e atılmalı */
-        .map-wrapper {
-            position: relative;
-            width: 100%;
-            aspect-ratio: 16/9; /* Haritanın en-boy oranına göre ayarlandı */
-            background-image: url('harita.png');
-            background-size: cover;
-            background-position: center;
-            border: 3px solid #1e293b;
-            border-radius: 12px;
-            overflow: hidden;
-        }
+        #splash-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #070a12; z-index: 100000; display: flex; align-items: center; justify-content: center; transition: opacity 0.8s; }
+        .animated-title { font-size: 36px; font-weight: 900; color: #2563eb; text-transform: uppercase; animation: introBlast 2.3s ease-in-out forwards; }
+        @keyframes introBlast { 0% { transform: scale(0.7); opacity: 0; } 100% { transform: scale(1.2); opacity: 0; } }
 
-        /* 100 BÖLGE IZGARA */
-        .grid-layer {
-            display: grid;
-            grid-template-columns: repeat(10, 1fr);
-            grid-template-rows: repeat(10, 1fr);
-            width: 100%; height: 100%;
-        }
+        #launch-menu-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; display: flex; align-items: center; justify-content: center; z-index: 9999; }
+        .login-box { background: #111827; padding: 30px; border-radius: 16px; border: 2px solid #2563eb; text-align: center; width: 80%; }
+        button { width: 100%; padding: 15px; margin-top: 10px; background: #2563eb; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
 
-        .zone {
-            border: 0.5px solid rgba(255,255,255,0.1);
+        /* HARİTA VE IZGARA SİSTEMİ */
+        .map-wrapper { 
+            position: relative; width: 95%; max-width: 500px; margin-top: 20px;
+            background: url('1000193060.png') no-repeat center/contain;
+            aspect-ratio: 1.6; /* Haritana göre ayarlandı */
+        }
+        .grid-container { 
+            display: grid; grid-template-columns: repeat(10, 1fr); grid-template-rows: repeat(10, 1fr); 
+            width: 100%; height: 100%; 
+        }
+        .zone { 
+            border: 0.5px solid rgba(255,255,255,0.1); 
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            font-size: 10px; font-weight: bold; color: white;
-            text-shadow: 1px 1px 2px black;
+            font-size: 7px; color: #fbbf24; background: rgba(0,0,0,0.2);
         }
     </style>
 </head>
 <body>
 
-    <div class="app-container">
-        <div class="map-wrapper">
-            <div class="grid-layer" id="grid"></div>
-        </div>
-        <div style="margin-top:20px; text-align:center;">
-            <p id="status">Harita Yükleniyor...</p>
+    <div id="splash-screen"><div class="animated-title">BATTLEZONE LIVE</div></div>
+
+    <div id="launch-menu-overlay">
+        <div class="login-box">
+            <h2>BATTLEZONE</h2>
+            <input type="text" id="username" placeholder="TikTok ID Gir" style="padding:10px; width:90%;">
+            <button onclick="startWar()">SAVAŞI BAŞLAT</button>
         </div>
     </div>
 
+    <div class="map-wrapper">
+        <div class="grid-container" id="grid"></div>
+    </div>
+
     <script>
-        const grid = document.getElementById('grid');
-        const zones = {};
+        // Animasyonu kapat
+        setTimeout(() => document.getElementById('splash-screen').style.display = 'none', 2300);
 
-        // 100 Bölgeyi Oluştur
-        function initGame() {
+        function startWar() {
+            document.getElementById('launch-menu-overlay').style.display = 'none';
+            const grid = document.getElementById('grid');
+            grid.innerHTML = "";
             for(let i=1; i<=100; i++) {
-                const z = document.createElement('div');
-                z.className = 'zone';
-                z.id = 'zone-'+i;
-                z.innerHTML = `<div>${i}</div><div id="info-${i}"></div>`;
-                grid.appendChild(z);
-                zones[i] = { owner: "", troops: 0 };
-            }
-            document.getElementById('status').innerText = "Savaş Alanı Hazır!";
-        }
-
-        // Oyun Başlatıcı
-        initGame();
-
-        // ÖRNEK: Kodular'dan gelen join komutu için fonksiyon
-        function processCommand(cmd, username, params) {
-            if(cmd === "join") {
-                let id = params[0];
-                if(zones[id] && zones[id].owner === "") {
-                    zones[id].owner = username;
-                    zones[id].troops = 20;
-                    document.getElementById('zone-'+id).style.backgroundColor = "rgba(0,100,255,0.5)";
-                    document.getElementById('info-'+id).innerText = username.substring(0,4);
-                }
+                const div = document.createElement('div');
+                div.className = 'zone';
+                div.innerHTML = `<b>${i}</b><span id="z-${i}">-</span>`;
+                grid.appendChild(div);
             }
         }
     </script>
