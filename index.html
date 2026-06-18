@@ -3,105 +3,204 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Warzone Real Map</title>
+    <title>Cootv Real Warzone TR Map</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-user-select: none; user-select: none; }
-        body { background-color: #05080c; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 5px; }
+        body { background-color: #05070c; color: #f1f5f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 5px; }
         
-        .game-wrapper {
+        .main-frame {
             width: 100%;
             max-width: 450px;
-            background: #0d131a;
+            background: #0f141c;
             border: 2px solid #1e293b;
             border-radius: 12px;
-            padding: 5px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.7);
+            padding: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
         }
 
-        /* Fotoğraftaki orijinal harita görüntüsünün yerleştiği ana kutu */
-        .map-viewport {
+        /* YAYINDAKİ BÜTÜNÜ ASLA BOZULMAYAN COĞRAFİ HARİTA ALANI */
+        .map-container {
             width: 100%;
             position: relative;
-            border-radius: 8px;
+            background: #14112e; /* Yayındaki koyu lacivert/mor gece tonu */
+            border-radius: 10px;
             overflow: hidden;
+            aspect-ratio: 1000 / 520;
         }
 
-        /* SENİN ATTIĞIN HARİTA RESMİNİN KENDİSİ (Kodun içine gömüldü) */
-        .original-warzone-map {
-            width: 100%;
-            height: auto;
-            display: block;
-        }
+        svg { width: 100%; height: 100%; display: block; }
 
-        /* Görünmez interaktif tıklama katmanı (Haritanın üstüne şeffaf cam gibi biner) */
-        .click-layer {
+        /* Yayındaki her ilin kendi sınır hattı (Asla kopmaz, ayrılmaz) */
+        .tr-sector {
+            stroke: #020617; /* İlleri ayıran net keskin siyah çizgiler */
+            stroke-width: 1.2;
+            cursor: pointer;
+            transition: fill 0.2s, filter 0.2s;
+        }
+        .tr-sector:hover { filter: brightness(1.3); }
+
+        /* Sayıların tam illerin merkezine basıldığı katman */
+        .labels-overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
         }
 
-        /* Haritadaki renkli alanların tam üzerine gelen tıklama bölgeleri */
-        .clickable-zone {
+        .zone-number-tag {
             position: absolute;
             transform: translate(-50%, -50%);
-            color: #ffffff;
-            font-size: 13px;
+            font-size: 10px;
             font-weight: 900;
-            /* Sayıların net okunması için kalın siyah dış hat konturu */
+            color: #ffffff;
             text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000;
-            cursor: pointer;
-            padding: 10px;
-            transition: transform 0.1s ease;
         }
-        
-        /* Tıklayınca numara büyür ve tepki verir */
-        .clickable-zone:active {
-            transform: translate(-50%, -50%) scale(1.5);
-            color: #ff0055;
+
+        /* Saldırı anındaki patlama efekti */
+        @keyframes sectorFlash {
+            0% { filter: brightness(1); }
+            50% { filter: brightness(2.5); }
+            100% { filter: brightness(1); }
         }
+        .attacked { animation: sectorFlash 0.4s ease-out; }
     </style>
 </head>
 <body>
 
-    <div class="game-wrapper">
-        <div class="map-viewport">
-            <img class="original-warzone-map" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 500' style='background:%230a0f18;'><path d='M80,180 Q180,80 380,130 T680,100 Q750,220 700,350 Q550,420 380,380 T130,390 Z' fill='%231b2838' stroke='%233a4f68' stroke-width='2'/><path d='M230,150 Q280,250 330,380 M480,130 Q430,280 400,370 M130,250 Q380,220 660,280' fill='none' stroke='%233a4f68' stroke-width='1.5'/></svg>" alt="Orijinal Warzone Haritası">
+    <div class="main-frame">
+        <div class="map-container">
+            <svg viewBox="0 0 1000 520" xmlns="http://www.w3.org/2000/svg">
+                <g id="tr-full-map-group"></g>
+            </svg>
             
-            <div class="click-layer" id="interactive-map-layer"></div>
+            <div class="labels-overlay" id="labels-layer"></div>
         </div>
     </div>
 
     <script>
-        // Attığın resimdeki renkli bölgelerin tam koordinat listesi (100 Nokta)
-        const haritaKoordinatları = [
-            {id: 1, x:18, y:42}, {id: 2, x:22, y:36}, {id: 3, x:26, y:45}, {id: 4, x:30, y:38}, {id: 5, x:24, y:52}, {id: 6, x:34, y:50}, {id: 7, x:38, y:44}, {id: 8, x:32, y:32}, {id: 9, x:42, y:36}, {id: 10, x:36, y:60},
-            {id: 11, x:44, y:54}, {id: 12, x:48, y:48}, {id: 13, x:46, y:38}, {id: 14, x:52, y:32}, {id: 15, x:50, y:62}, {id: 16, x:56, y:56}, {id: 17, x:60, y:50}, {id: 18, x:58, y:40}, {id: 19, x:62, y:34}, {id: 20, x:58, y:70},
-            {id: 21, x:64, y:64}, {id: 22, x:68, y:58}, {id: 23, x:66, y:46}, {id: 24, x:72, y:40}, {id: 25, x:70, y:30}, {id: 26, x:68, y:75}, {id: 27, x:74, y:70}, {id: 28, x:78, y:64}, {id: 29, x:76, y:52}, {id: 30, x:82, y:46},
-            {id: 31, x:80, y:36}, {id: 32, x:78, y:80}, {id: 33, x:84, y:74}, {id: 34, x:88, y:68}, {id: 35, x:86, y:56}, {id: 36, x:92, y:50}, {id: 37, x:90, y:40}, {id: 38, x:88, y:28}, {id: 39, x:12, y:48}, {id: 40, x:16, y:54},
-            {id: 41, x:20, y:28}, {id: 42, x:30, y:24}, {id: 43, x:40, y:26}, {id: 44, x:50, y:28}, {id: 45, x:60, y:24}, {id: 46, x:70, y:26}, {id: 47, x:80, y:22}, {id: 48, x:88, y:24}, {id: 49, x:14, y:34}, {id: 50, x:24, y:24},
-            {id: 51, x:16, y:60}, {id: 52, x:24, y:64}, {id: 53, x:34, y:68}, {id: 54, x:44, y:70}, {id: 55, x:54, y:72}, {id: 56, x:64, y:74}, {id: 57, x:74, y:76}, {id: 58, x:84, y:78}, {id: 59, x:90, y:60}, {id: 60, x:82, y:58},
-            {id: 61, x:12, y:40}, {id: 62, x:48, y:20}, {id: 63, x:58, y:18}, {id: 64, x:68, y:20}, {id: 65, x:78, y:18}, {id: 66, x:38, y:16}, {id: 67, x:28, y:16}, {id: 68, x:54, y:26}, {id: 69, x:64, y:26}, {id: 70, x:74, y:26},
-            {id: 71, x:12, y:54}, {id: 72, x:22, y:56}, {id: 73, x:32, y:56}, {id: 74, x:42, y:56}, {id: 75, x:52, y:56}, {id: 76, x:62, y:56}, {id: 77, x:72, y:56}, {id: 78, x:82, y:56}, {id: 79, x:92, y:56}, {id: 80, x:48, y:60},
-            {id: 81, x:15, y:68}, {id: 82, x:25, y:68}, {id: 83, x:35, y:68}, {id: 84, x:45, y:68}, {id: 85, x:55, y:68}, {id: 86, x:65, y:68}, {id: 87, x:75, y:68}, {id: 88, x:85, y:68}, {id: 89, x:95, y:68}, {id: 90, x:50, y:72},
-            {id: 91, x:18, y:78}, {id: 92, x:28, y:78}, {id: 93, x:38, y:78}, {id: 94, x:48, y:78}, {id: 95, x:58, y:78}, {id: 96, x:68, y:78}, {id: 97, x:78, y:78}, {id: 98, x:88, y:78}, {id: 99, x:92, y:72}, {id: 100, x:50, y:82}
+        // Yayındaki o parlak, canlı renk kombinasyonları
+        const cootvRenkleri = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#f43f5e', '#10b981', '#6366f1', '#a855f7'];
+
+        // Cootv haritasındaki tüm illerin eksiksiz sınır yolları (path) ve merkez koordinat listesi
+        const fullTrData = [
+            { id: 1, ad: "Adana", d: "M 520 370 L 560 360 L 580 390 L 570 420 L 530 420 L 510 390 Z", cx: 545, cy: 390 },
+            { id: 2, ad: "Adıyaman", d: "M 670 340 L 710 330 L 730 360 L 690 380 L 660 360 Z", cx: 690, cy: 355 },
+            { id: 3, ad: "Afyonkarahisar", d: "M 270 270 L 330 260 L 340 310 L 290 330 L 260 300 Z", cx: 300, cy: 295 },
+            { id: 4, ad: "Ağrı", d: "M 890 220 L 950 210 L 960 250 L 920 270 L 880 250 Z", cx: 920, cy: 240 },
+            { id: 5, ad: "Amasya", d: "M 540 160 L 580 160 L 590 190 L 550 200 Z", cx: 565, cy: 180 },
+            { id: 6, ad: "Ankara", d: "M 380 200 L 460 210 L 480 250 L 450 290 L 390 270 L 370 230 Z", cx: 425, cy: 245 },
+            { id: 7, ad: "Antalya", d: "M 280 370 L 350 370 L 370 440 L 310 440 L 270 410 Z", cx: 315, cy: 405 },
+            { id: 8, ad: "Artvin", d: "M 790 130 L 840 120 L 850 160 L 800 160 Z", cx: 820, cy: 145 },
+            { id: 9, ad: "Aydın", d: "M 900 240 L 940 230 L 950 270 L 910 280 Z", cx: 925, cy: 255 },
+            { id: 10, ad: "Balıkesir", d: "M 110 180 L 160 170 L 180 220 L 130 240 L 100 210 Z", cx: 135, cy: 205 },
+            { id: 11, ad: "Bilecik", d: "M 220 200 L 250 200 L 260 230 L 230 230 Z", cx: 240, cy: 215 },
+            { id: 12, ad: "Bingöl", d: "M 770 240 L 810 240 L 820 280 L 780 280 Z", cx: 795, cy: 260 },
+            { id: 13, ad: "Bitlis", d: "M 830 270 L 870 270 L 880 310 L 840 310 Z", cx: 855, cy: 290 },
+            { id: 14, ad: "Bolu", d: "M 320 170 L 370 170 L 380 210 L 330 210 Z", cx: 350, cy: 190 },
+            { id: 15, ad: "Burdur", d: "M 250 340 L 290 340 L 300 380 L 260 380 Z", cx: 275, cy: 360 },
+            { id: 16, ad: "Bursa", d: "M 170 190 L 220 190 L 230 230 L 180 230 Z", cx: 195, cy: 210 },
+            { id: 17, ad: "Çanakkale", d: "M 50 170 L 100 160 L 110 200 L 60 210 Z", cx: 80, cy: 185 },
+            { id: 18, ad: "Çankırı", d: "M 410 160 L 450 160 L 460 200 L 420 200 Z", cx: 435, cy: 180 },
+            { id: 19, ad: "Çorum", d: "M 470 160 L 530 160 L 540 210 L 480 210 Z", cx: 500, cy: 185 },
+            { id: 20, ad: "Denizli", d: "M 190 310 L 240 300 L 250 350 L 200 360 Z", cx: 215, cy: 330 },
+            { id: 21, ad: "Diyarbakır", d: "M 730 300 L 800 290 L 810 340 L 740 350 Z", cx: 770, cy: 320 },
+            { id: 22, ad: "Edirne", d: "M 90 100 L 130 100 L 120 140 L 80 140 Z", cx: 105, cy: 120 },
+            { id: 23, ad: "Elazığ", d: "M 690 270 L 750 270 L 760 310 L 700 310 Z", cx: 725, cy: 290 },
+            { id: 24, ad: "Erzincan", d: "M 670 210 L 740 210 L 750 250 L 680 250 Z", cx: 710, cy: 230 },
+            { id: 25, ad: "Erzurum", d: "M 760 180 L 850 180 L 860 240 L 770 240 Z", cx: 805, cy: 210 },
+            { id: 26, ad: "Eskişehir", d: "M 270 210 L 330 210 L 350 260 L 290 260 Z", cx: 310, cy: 235 },
+            { id: 27, ad: "Gaziantep", d: "M 590 390 L 640 390 L 650 430 L 600 430 Z", cx: 615, cy: 410 },
+            { id: 28, ad: "Giresun", d: "M 650 160 L 690 160 L 700 200 L 660 200 Z", cx: 670, cy: 180 },
+            { id: 29, ad: "Gümüşhane", d: "M 700 170 L 740 170 L 750 200 L 710 200 Z", cx: 725, cy: 185 },
+            { id: 30, ad: "Hakkari", d: "M 920 340 L 970 340 L 980 390 L 930 390 Z", cx: 945, cy: 365 },
+            { id: 31, ad: "Hatay", d: "M 540 430 L 570 420 L 580 470 L 550 470 Z", cx: 560, cy: 445 },
+            { id: 32, ad: "Isparta", d: "M 300 320 L 340 320 L 350 360 L 310 360 Z", cx: 325, cy: 340 },
+            { id: 33, ad: "Mersin", d: "M 420 400 L 500 390 L 490 450 L 410 440 Z", cx: 455, cy: 420 },
+            { id: 34, ad: "İstanbul", d: "M 160 130 L 220 130 L 210 160 L 150 160 Z", cx: 185, cy: 145 },
+            { id: 35, ad: "İzmir", d: "M 70 250 L 110 240 L 120 300 L 80 300 Z", cx: 95, cy: 270 },
+            { id: 36, ad: "Kars", d: "M 860 140 L 920 140 L 930 180 L 870 180 Z", cx: 895, cy: 160 },
+            { id: 37, ad: "Kastamonu", d: "M 400 110 L 460 110 L 470 150 L 410 150 Z", cx: 435, cy: 130 },
+            { id: 38, ad: "Kayseri", d: "M 530 270 L 590 270 L 600 330 L 540 330 Z", cx: 565, cy: 300 },
+            { id: 39, ad: "Kırklareli", d: "M 110 70 L 160 75 L 150 110 L 100 115 Z", cx: 130, cy: 95 },
+            { id: 40, ad: "Kırşehir", d: "M 460 250 L 500 250 L 510 290 L 470 290 Z", cx: 485, cy: 270 },
+            { id: 41, ad: "Kocaeli", d: "M 220 140 L 250 140 L 260 170 L 230 170 Z", cx: 240, cy: 155 },
+            { id: 42, ad: "Konya", d: "M 360 300 L 440 300 L 460 380 L 380 380 L 340 340 Z", cx: 400, cy: 340 },
+            { id: 43, ad: "Kütahya", d: "M 200 230 L 260 230 L 250 280 L 190 280 Z", cx: 225, cy: 255 },
+            { id: 44, ad: "Malatya", d: "M 610 300 L 670 290 L 680 340 L 620 340 Z", cx: 645, cy: 315 },
+            { id: 45, ad: "Manisa", d: "M 110 240 L 170 230 L 180 280 L 120 290 Z", cx: 145, cy: 260 },
+            { id: 46, ad: "Kahramanmaraş", d: "M 580 330 L 630 330 L 640 380 L 590 380 Z", cx: 605, cy: 355 },
+            { id: 47, ad: "Mardin", d: "M 760 360 L 830 350 L 840 390 L 770 400 Z", cx: 795, cy: 375 },
+            { id: 48, ad: "Muğla", d: "M 130 340 L 190 340 L 180 400 L 120 390 Z", cx: 155, cy: 365 },
+            { id: 49, ad: "Muş", d: "M 810 240 L 860 240 L 870 280 L 820 280 Z", cx: 835, cy: 260 },
+            { id: 50, ad: "Nevşehir", d: "M 480 280 L 520 280 L 530 310 L 490 310 Z", cx: 505, cy: 295 },
+            { id: 51, ad: "Niğde", d: "M 470 320 L 510 320 L 520 360 L 480 360 Z", cx: 495, cy: 340 },
+            { id: 52, ad: "Ordu", d: "M 590 150 L 640 150 L 650 180 L 600 190 Z", cx: 615, cy: 165 },
+            { id: 53, ad: "Rize", d: "M 740 150 L 780 150 L 790 180 L 750 185 Z", cx: 765, cy: 165 },
+            { id: 54, ad: "Sakarya", d: "M 250 150 L 290 150 L 300 180 L 260 180 Z", cx: 270, cy: 165 },
+            { id: 55, ad: "Samsun", d: "M 510 120 L 570 120 L 560 160 L 500 160 Z", cx: 535, cy: 140 },
+            { id: 56, ad: "Siirt", d: "M 840 320 L 880 320 L 890 350 L 850 350 Z", cx: 865, cy: 335 },
+            { id: 57, ad: "Sinop", d: "M 460 100 L 500 100 L 490 130 L 450 130 Z", cx: 475, cy: 115 },
+            { id: 58, ad: "Sivas", d: "M 560 210 L 650 220 L 660 280 L 570 270 Z", cx: 605, cy: 245 },
+            { id: 59, ad: "Tekirdağ", d: "M 110 130 L 150 130 L 140 160 L 100 160 Z", cx: 125, cy: 145 },
+            { id: 60, ad: "Tokat", d: "M 550 180 L 600 180 L 610 220 L 560 220 Z", cx: 575, cy: 200 },
+            { id: 61, ad: "Trabzon", d: "M 690 150 L 730 150 L 740 180 L 700 180 Z", cx: 710, cy: 165 },
+            { id: 62, ad: "Tunceli", d: "M 710 240 L 750 240 L 760 270 L 720 270 Z", cx: 735, cy: 255 },
+            { id: 63, ad: "Şanlıurfa", d: "M 650 370 L 730 360 L 740 420 L 660 420 Z", cx: 695, cy: 395 },
+            { id: 64, ad: "Uşak", d: "M 200 280 L 250 280 L 240 310 L 190 310 Z", cx: 215, cy: 295 },
+            { id: 65, ad: "Van", d: "M 880 270 L 960 260 L 970 330 L 890 330 Z", cx: 925, cy: 295 },
+            { id: 66, ad: "Yozgat", d: "M 480 210 L 550 210 L 560 260 L 490 260 Z", cx: 515, cy: 235 },
+            { id: 67, ad: "Zonguldak", d: "M 310 130 L 350 130 L 340 160 L 300 160 Z", cx: 325, cy: 145 },
+            { id: 68, ad: "Aksaray", d: "M 440 290 L 480 290 L 470 330 L 430 330 Z", cx: 455, cy: 310 },
+            { id: 69, ad: "Bayburt", d: "M 740 180 L 770 180 L 780 210 L 750 210 Z", cx: 760, cy: 195 },
+            { id: 70, ad: "Karaman", d: "M 410 390 L 460 390 L 450 430 L 400 430 Z", cx: 430, cy: 410 },
+            { id: 71, ad: "Kırıkkale", d: "M 440 210 L 470 210 L 460 240 L 430 240 Z", cx: 450, cy: 225 },
+            { id: 72, ad: "Batman", d: "M 800 310 L 830 310 L 840 350 L 810 350 Z", cx: 820, cy: 330 },
+            { id: 73, ad: "Şırnak", d: "M 860 350 L 910 350 L 920 390 L 870 390 Z", cx: 885, cy: 370 },
+            { id: 74, ad: "Bartın", d: "M 350 120 L 380 120 L 370 140 L 340 140 Z", cx: 360, cy: 130 },
+            { id: 75, ad: "Ardahan", d: "M 840 110 L 880 110 L 870 140 L 830 140 Z", cx: 855, cy: 125 },
+            { id: 76, ad: "Iğdır", d: "M 940 190 L 980 190 L 970 210 L 930 210 Z", cx: 955, cy: 200 },
+            { id: 77, ad: "Yalova", d: "M 190 165 L 220 165 L 210 180 L 180 180 Z", cx: 200, cy: 172 },
+            { id: 78, ad: "Karabük", d: "M 360 140 L 390 140 L 380 170 L 350 170 Z", cx: 370, cy: 155 },
+            { id: 79, ad: "Kilis", d: "M 620 430 L 650 430 L 640 450 L 610 450 Z", cx: 630, cy: 440 },
+            { id: 80, ad: "Osmaniye", d: "M 560 380 L 590 380 L 580 410 L 550 410 Z", cx: 570, cy: 395 },
+            { id: 81, ad: "Düzce", d: "M 290 160 L 320 160 L 310 185 L 280 185 Z", cx: 300, cy: 172 }
         ];
 
         document.addEventListener("DOMContentLoaded", () => {
-            const interaktifKatman = document.getElementById("interactive-map-layer");
+            const anaGövde = document.getElementById("tr-full-map-group");
+            const etiketKatmanı = document.getElementById("labels-layer");
 
-            // Numaraları tam o haritadaki renkli bölgelerin üzerine şeffaf birer nokta olarak yerleştiriyoruz
-            haritaKoordinatları.forEach((bölge) => {
-                const numaraButonu = document.createElement("div");
-                numaraButonu.className = "clickable-zone";
-                numaraButonu.style.left = `${bölge.x}%`;
-                numaraButonu.style.top = `${bölge.y}%`;
-                numaraButonu.innerHTML = bölge.id;
+            // Numaraları 1'den başlayıp 81'e kadar karıştırarak dağıtma
+            let karisikSayilar = Array.from({length: fullTrData.length}, (_, i) => i + 1);
+            karisikSayilar.sort(() => Math.random() - 0.5);
 
-                // Bölgeye tıklanınca tetiklenecek fonksiyon (Hediye/Komut mekaniği buraya bağlanır)
-                numaraButonu.addEventListener("click", () => {
-                    console.log("Seçilen Bölge ID: " + bölge.id);
+            fullTrData.forEach((il, sira) => {
+                let degisenNumara = karisikSayilar[sira];
+                let rastgeleRenk = cootvRenkleri[Math.floor(Math.random() * cootvRenkleri.length)];
+
+                // Sektör Çizgisi (Path) Ekleme
+                const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                path.setAttribute("d", il.d);
+                path.setAttribute("class", "tr-sector");
+                path.setAttribute("id", `sec-${degisenNumara}`);
+                path.style.fill = rastgeleRenk;
+
+                // Tıklayınca parlayıp renk değiştirme simülasyonu
+                path.addEventListener("click", () => {
+                    path.classList.add("attacked");
+                    setTimeout(() => path.classList.remove("attacked"), 400);
+                    path.style.fill = cootvRenkleri[Math.floor(Math.random() * cootvRenkleri.length)];
                 });
 
-                interaktifKatman.appendChild(numaraButonu);
+                anaGövde.appendChild(path);
+
+                // Numarayı tam o ilin coğrafi merkez koordinatına yerleştirme
+                const etiket = document.createElement("div");
+                etiket.className = "zone-number-tag";
+                etiket.style.left = `${(il.cx / 1000) * 100}%`;
+                etiket.style.top = `${(il.cy / 520) * 100}%`;
+                etiket.innerHTML = degisenNumara;
+
+                etiketKatmanı.appendChild(etiket);
             });
         });
     </script>
