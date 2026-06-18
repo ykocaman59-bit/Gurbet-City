@@ -3,210 +3,209 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Battlezone Canlı Savaş - Ultimate Edition</title>
+    <title>Battlezone Canlı Savaş - Tam Sürüm</title>
     <style>
         * {
             box-sizing: border-box; margin: 0; padding: 0;
             -webkit-user-select: none; user-select: none;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        body { background-color: #0b0f17; color: #f1f5f9; overflow-x: hidden; overflow-y: auto; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding-bottom: 20px; }
+        body { background-color: #0b0f17; color: #f1f5f9; overflow-x: hidden; overflow-y: auto; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
         
-        /* DIKEY MOBIL DUZEN CONTAINER */
-        .app-container {
-            width: 100%;
-            max-width: 450px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            padding: 10px;
-        }
+        .app-container { width: 100%; max-width: 450px; display: flex; flex-direction: column; gap: 8px; padding: 8px; }
 
-        /* SİNEMATİK GİRİŞ ANİMASYONU */
+        /* O ÇOK BEĞENDİĞİN ESKİ GİRİŞ ANİMASYONU (SPLASH SCREEN) */
         #splash-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #070a12; z-index: 100000; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            transition: opacity 0.8s ease-out, visibility 0.8s;
+            background: #000; z-index: 100000; display: flex; align-items: center; justify-content: center;
+            transition: opacity 0.5s ease;
         }
-        .animated-title {
-            font-size: 32px; font-weight: 900; color: #2563eb; letter-spacing: 4px;
-            text-shadow: 0 0 20px rgba(37, 99, 235, 0.6); animation: introBlast 2.3s ease-in-out forwards;
+        .splash-text {
+            font-size: 35px; font-weight: 900; color: #fff; letter-spacing: 5px;
+            animation: pulse 1.5s infinite; text-transform: uppercase;
         }
-        @keyframes introBlast {
-            0% { transform: scale(0.7); opacity: 0; filter: blur(10px); }
-            40% { transform: scale(1.05); opacity: 1; filter: blur(0px); }
-            70% { transform: scale(1); opacity: 1; }
-            100% { transform: scale(1.2); opacity: 0; filter: blur(5px); }
-        }
+        @keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
 
-        /* GİRİŞ VE ANA MENÜ EKRANI (OVERLAY) */
+        /* GİRİŞ VE ANA MENÜ EKRANI */
         #launch-menu-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
             z-index: 9999; display: flex; align-items: center; justify-content: center;
-            transition: opacity 0.4s ease-in-out;
         }
-        .login-box { background: #111827; border: 2px solid #2563eb; border-radius: 16px; padding: 30px; width: 90%; max-width: 380px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.7); }
-        .login-box h2 { color: #2563eb; margin-bottom: 20px; font-size: 24px; text-transform: uppercase; letter-spacing: 1px; }
-        .menu-btn-group { display: flex; flex-direction: column; gap: 12px; }
-        .menu-btn { width: 100%; background: #1f2937; border: 1px solid #4b5563; color: white; border-radius: 8px; padding: 12px; font-size: 14px; font-weight: bold; cursor: pointer; transition: all 0.2s; text-transform: uppercase; }
-        .menu-btn:hover { background: #2563eb; border-color: #3b82f6; transform: translateY(-2px); }
+        .login-box { background: #111827; border: 2px solid #2563eb; border-radius: 16px; padding: 25px; width: 90%; max-width: 360px; text-align: center; }
+        .login-box h2 { color: #2563eb; margin-bottom: 20px; font-size: 22px; text-transform: uppercase; }
+        .menu-btn-group { display: flex; flex-direction: column; gap: 10px; }
+        .menu-btn { width: 100%; background: #1f2937; border: 1px solid #4b5563; color: white; border-radius: 8px; padding: 12px; font-size: 14px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
         .menu-btn.primary { background: #2563eb; border: none; }
-        .menu-btn.primary:hover { background: #1d4ed8; }
 
         #connection-form { display: none; margin-top: 15px; text-align: left; }
         .input-group { margin-bottom: 12px; }
         .input-group label { display: block; color: #9ca3af; font-size: 11px; margin-bottom: 5px; text-transform: uppercase; }
-        .input-group input { width: 100%; background: #1f2937; border: 1px solid #4b5563; border-radius: 8px; padding: 10px 14px; color: #fff; font-size: 15px; outline: none; }
+        .input-group input { width: 100%; background: #1f2937; border: 1px solid #4b5563; border-radius: 8px; padding: 10px; color: #fff; font-size: 15px; outline: none; }
+        
         .slider-wrapper { margin: 12px 0; }
-        .slider-val-display { float: right; color: #fbbf24; font-weight: bold; }
-        .custom-slider { width: 100%; accent-color: #2563eb; cursor: pointer; margin-top: 6px; }
+        .custom-slider { width: 100%; accent-color: #2563eb; margin-top: 6px; }
 
-        /* ÖZEL MODAL PENCERELER */
+        /* BAŞARI SIRALAMASI MODAL */
         .custom-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); z-index: 10000; align-items: center; justify-content: center; }
-        .modal-box { background: #111827; padding: 22px; border-radius: 16px; width: 85%; max-width: 360px; position: relative; }
-        .modal-box.leader-border { border: 2px solid #fbbf24; }
-        .modal-close-x { position: absolute; top: 10px; right: 14px; font-size: 22px; color: #9ca3af; cursor: pointer; font-weight: bold; }
-        .modal-box h3 { margin-bottom: 12px; font-size: 18px; color: #fbbf24; text-align: center; text-transform: uppercase; }
+        .modal-box { background: #111827; padding: 20px; border-radius: 14px; width: 85%; max-width: 340px; border: 2px solid #fbbf24; position: relative; }
+        .modal-close-x { position: absolute; top: 10px; right: 14px; font-size: 22px; color: #9ca3af; cursor: pointer; }
 
-        /* ÜST BAĞLANTI & CANLI AYAR PANELİ */
-        header { background: #111827; border: 1px solid #1f2937; border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+        /* ÜST PANEL */
+        header { background: #111827; border: 1px solid #1f2937; border-radius: 10px; padding: 8px; display: flex; flex-direction: column; gap: 6px; }
         .header-top { display: flex; justify-content: space-between; align-items: center; }
         .live-badge { background: #ef4444; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; }
         
-        /* HEDİYE ASKER AYAR PANELİ */
-        .gift-settings-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; background: #1e293b; padding: 6px; border-radius: 8px; }
+        /* CANLI ASKER DEĞİŞTİRME PANELİ */
+        .gift-settings-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; background: #1e293b; padding: 4px; border-radius: 6px; }
         .gift-setting-card { display: flex; flex-direction: column; align-items: center; font-size: 9px; color: #94a3b8; }
-        .gift-setting-card input { width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 4px; color: #22c55e; text-align: center; font-weight: bold; padding: 2px; margin-top: 3px; font-size: 11px; }
-
-        /* GEÇMİŞ PUAN DURUMU VE SKORBOARD */
-        .score-board-row { display: flex; justify-content: space-between; background: #111827; border: 1px solid #1e293b; border-radius: 10px; padding: 8px; font-size: 11px; }
+        .gift-setting-card input { width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 4px; color: #22c55e; text-align: center; font-weight: bold; padding: 2px; margin-top: 2px; font-size: 10px; }
 
         /* SOHBET PANELİ */
-        .chat-panel { height: 110px; background: #111827; border: 1px solid #1f2937; border-radius: 12px; display: flex; flex-direction: column; padding: 8px; }
-        .panel-title { color: #f59e0b; font-size: 11px; font-weight: bold; margin-bottom: 4px; text-transform: uppercase; }
-        .chat-box { flex: 1; overflow-y: auto; background: #0f172a; border: 1px solid #1e293b; border-radius: 6px; padding: 6px; }
+        .chat-panel { height: 100px; background: #111827; border: 1px solid #1f2937; border-radius: 10px; display: flex; flex-direction: column; padding: 6px; }
+        .panel-title { color: #f59e0b; font-size: 11px; font-weight: bold; margin-bottom: 2px; text-transform: uppercase; }
+        .chat-box { flex: 1; overflow-y: auto; background: #0f172a; border: 1px solid #1e293b; border-radius: 6px; padding: 4px; }
         .chat-msg { font-size: 11px; margin-bottom: 2px; }
         .chat-user { font-weight: bold; color: #3b82f6; }
 
-        /* MERKEZ GERÇEK TÜRKİYE HARİTASI ALANI (TIPKISININ AYNISI) */
-        .map-wrapper {
-            background: #111827; border: 2px solid #1e293b; border-radius: 14px; padding: 4px;
-            position: relative; width: 100%; aspect-ratio: 1000 / 530; overflow: hidden; display: flex; align-items: center; justify-content: center;
+        /* GERÇEK TÜRKİYE HARİTASI */
+        .map-container-fluid {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1000 / 525;
+            background-image: url('1000193060.png');
+            background-size: 100%;
+            background-repeat: no-repeat;
+            background-position: center;
+            border: 1px solid #1e293b;
+            border-radius: 10px;
+            overflow: hidden;
         }
-        .static-map-bg { width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
-        .dynamic-overlay-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        .map-interactive-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        
+        /* GERÇEK COĞRAFİ KONUM ETİKETLERİ */
+        .map-zone-label {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            color: #ffffff;
+            font-size: 9px;
+            font-weight: 800;
+            text-shadow: 1px 1px 2px #000, -1px -1px 2px #000;
+            text-align: center;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .zone-owner-tag {
+            font-size: 7px;
+            color: #fbbf24;
+            background: rgba(11, 15, 23, 0.8);
+            padding: 0px 2px;
+            border-radius: 2px;
+            white-space: nowrap;
+            margin-top: 1px;
+        }
 
-        /* HARİTA ÜZERİNDEKİ SAVAŞ NOKTALARI */
-        .map-zone { 
-            position: absolute; width: 22px; height: 22px; transform: translate(-50%, -50%);
-            background: #1f2937; border: 1px solid #374151; color: #fff; font-size: 9px; font-weight: bold; 
-            display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 50%;
-            box-shadow: 0 0 6px rgba(0, 0, 0, 0.6); transition: background-color 0.3s, transform 0.2s;
+        /* 1000193173.JPG BİREBİR GÖRSEL KURALLAR PANELI */
+        .visual-footer-rules {
+            background: #111827;
+            border: 2px solid #ef4444;
+            border-radius: 10px;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
         }
-        .zone-number { font-size: 9px; font-weight: 900; }
-        .zone-user { position: absolute; top: 22px; font-size: 7px; color: #fbbf24; background: rgba(15,23,42,0.85); padding: 1px 3px; border-radius: 3px; white-space: nowrap; max-width: 45px; overflow: hidden; text-overflow: ellipsis; }
-
-        /* EN ALTTAKI GÖRSEL KURALLAR PANELI (1000193156.JPG STİLİ) */
-        .rules-footer-panel {
-            background: #111827; border: 2px solid #ef4444; border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 6px;
-        }
-        .rules-main-title { color: #ef4444; font-size: 12px; font-weight: bold; text-align: center; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #1e293b; padding-bottom: 4px; }
-        .rules-content-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-        .rule-item-box { background: #0f172a; border: 1px solid #232d3f; border-radius: 6px; padding: 6px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; }
-        .rule-left { color: #94a3b8; font-weight: 500; }
-        .rule-right { color: #22c55e; font-weight: bold; }
-        .command-bar-info { background: #1e293b; color: #fbbf24; font-weight: bold; padding: 5px; border-radius: 6px; text-align: center; font-size: 10px; }
+        .rules-title-header { color: #ef4444; font-size: 12px; font-weight: 900; text-align: center; text-transform: uppercase; border-bottom: 1px solid #1f2937; padding-bottom: 2px; }
+        .rules-grid-view { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+        .rule-card { background: #0f172a; border: 1px solid #1e293b; border-radius: 4px; padding: 5px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; }
+        .rule-card .name { color: #94a3b8; }
+        .rule-card .val { color: #22c55e; font-weight: bold; }
+        .command-footer-line { background: #1e293b; color: #fbbf24; font-weight: bold; padding: 4px; border-radius: 4px; text-align: center; font-size: 10px; }
     </style>
 </head>
 <body>
 
+    <!-- SANA ÖZEL GERÇEK ESKİ GİRİŞ ANİMASYONU -->
     <div id="splash-screen">
-        <div class="animated-title">BATTLEZONE ULTIMATE</div>
+        <div class="splash-text">BATTLEZONE</div>
     </div>
 
+    <!-- BAŞARI SIRALAMASI MODAL -->
     <div id="custom-leaderboard-modal" class="custom-modal">
-        <div class="modal-box leader-border">
+        <div class="modal-box">
             <span class="modal-close-x" onclick="closeLeaderboardModal()">×</span>
-            <h3>🏆 TÜM ZAMANLAR SIRALAMASI</h3>
-            <div id="lb-content" style="background: #0f172a; border: 1px solid #1e293b; border-radius: 8px; max-height: 250px; overflow-y: auto; padding: 10px; font-size:12px;">
-                <div style="color:#64748b; text-align:center; padding:10px;">Aktif oyuncu verisi bulunmuyor.</div>
-            </div>
+            <h3 style="color:#fbbf24; text-align:center; font-size:16px; margin-bottom:10px;">🏆 EN İYİ OYUNCULAR</h3>
+            <div id="lb-content" style="max-height: 200px; overflow-y: auto; font-size:12px;"></div>
         </div>
     </div>
 
+    <!-- ANA GİRİŞ MENÜSÜ -->
     <div id="launch-menu-overlay">
         <div class="login-box">
-            <h2>BATTLEZONE LIVE</h2>
-            
+            <h2>BATTLEZONE TURKEY</h2>
             <div class="menu-btn-group" id="main-menu-buttons">
-                <button class="menu-btn primary" onclick="showConnectionForm()">YENİ OYUN BAŞLAT</button>
+                <button class="menu-btn primary" onclick="showConnectionForm()">YENİ SAVAŞ BAŞLAT</button>
                 <button class="menu-btn" onclick="openLeaderboardModal()">🏆 BAŞARI SIRALAMASI</button>
             </div>
 
             <div id="connection-form">
                 <div class="input-group">
-                    <label>TikTok Canlı Yayın Kullanıcı Adı (ID)</label>
-                    <input type="text" id="initial-username" placeholder="Örn: kralsofi" autocomplete="off">
+                    <label>TikTok @ Kullanıcı Adı (ID)</label>
+                    <input type="text" id="initial-username" placeholder="Örn: kralsofi">
                 </div>
-
                 <div class="slider-wrapper">
-                    <label style="color: #9ca3af; font-size: 11px; text-transform: uppercase;">
-                        Harita Bölge Sayısı: <span class="slider-val-display" id="slider-val">100</span>
-                    </label>
-                    <input type="range" min="10" max="100" step="10" value="100" class="custom-slider" id="zone-slider" oninput="updateSliderDisplay(this.value)">
+                    <label style="color: #9ca3af; font-size: 11px;">BÖLGE SAYISI: <span id="slider-val" style="color:#fbbf24; font-weight:bold;">100</span></label>
+                    <input type="range" min="10" max="100" step="10" value="100" class="custom-slider" id="zone-slider" oninput="document.getElementById('slider-val').innerText = this.value; totalZones = parseInt(this.value);">
                 </div>
-
-                <button class="menu-btn primary" onclick="connectToTikTokPlayStore()">SAVAŞI BAŞLAT ⚔️</button>
-                <button class="menu-btn" style="margin-top:10px; font-size:11px; padding:6px;" onclick="hideConnectionForm()">← Geri Dön</button>
+                <button class="menu-btn primary" onclick="connectToTikTokPlayStore()">OYUNA BAŞLA ⚔️</button>
             </div>
         </div>
     </div>
 
     <div class="app-container">
         
+        <!-- ÜST PANEL -->
         <header>
             <div class="header-top">
-                <div style="display:flex; align-items:center; gap:6px;">
-                    <span style="font-weight:900; color:#2563eb; font-size: 14px;" id="header-logo-text">BATTLEZONE</span>
+                <div style="display:flex; align-items:center; gap:4px;">
+                    <span style="font-weight:900; color:#2563eb; font-size: 13px;" id="header-logo-text">BATTLEZONE</span>
                     <span class="live-badge">CANLI</span>
                 </div>
                 <div id="status-text" style="color:#ef4444; font-weight:bold; font-size: 11px;">BAĞLANTI YOK</div>
             </div>
             
             <div class="gift-settings-grid">
-                <div class="gift-setting-card">🌹 Gül <input type="number" id="val-rose" value="50"></div>
-                <div class="gift-setting-card">🎵 TikTok <input type="number" id="val-tiktok" value="150"></div>
-                <div class="gift-setting-card">💸 Para Yağ. <input type="number" id="val-money" value="500"></div>
-                <div class="gift-setting-card">🦁 Aslan <input type="number" id="val-lion" value="1000"></div>
+                <div class="gift-setting-card">🌹 Gül <input type="number" id="val-rose" value="50" oninput="syncLabels()"></div>
+                <div class="gift-setting-card">🎵 TikTok <input type="number" id="val-tiktok" value="150" oninput="syncLabels()"></div>
+                <div class="gift-setting-card">💸 Para Yağ. <input type="number" id="val-money" value="500" oninput="syncLabels()"></div>
+                <div class="gift-setting-card">🦁 Aslan <input type="number" id="val-lion" value="1000" oninput="syncLabels()"></div>
             </div>
         </header>
 
-        <div class="score-board-row">
-            <div>Aktif Bölgeler: <span id="active-zones-counter" style="color:#fbbf24; font-weight:bold;">100</span></div>
-            <button onclick="openLeaderboardModal()" style="background:none; border:none; color:#3b82f6; font-size:11px; font-weight:bold; cursor:pointer;">Sıralamayı Gör 🏆</button>
+        <!-- GERÇEK TÜRKİYE HARİTASI PANELİ -->
+        <div class="map-container-fluid">
+            <div class="map-interactive-layer" id="organic-map"></div>
         </div>
 
-        <div class="map-wrapper">
-            <img src="1000193060.png" alt="Türkiye Haritası" class="static-map-bg">
-            <div class="dynamic-overlay-layer" id="organic-map"></div>
-        </div>
-
+        <!-- SOHBET -->
         <div class="chat-panel">
-            <div class="panel-title">💬 CANLI SOHBET AKIŞI</div>
+            <div class="panel-title">💬 CANLI SOHBET</div>
             <div class="chat-box" id="live-chat-box"></div>
         </div>
 
-        <div class="rules-footer-panel">
-            <div class="rules-main-title">⚔️ BATTLEZONE OYUN KURALLARI ⚔️</div>
-            <div class="rules-content-grid">
-                <div class="rule-item-box"><span class="rule-left">🌹 Gül Göndermek</span><span class="rule-right" id="lbl-rose">+50 Ordu</span></div>
-                <div class="rule-item-box"><span class="rule-left">🎵 TikTok Logosu</span><span class="rule-right" id="lbl-tiktok">+150 Ordu</span></div>
-                <div class="rule-item-box"><span class="rule-left">💸 Para Yağmuru</span><span class="rule-right" id="lbl-money">+500 Ordu</span></div>
-                <div class="rule-item-box"><span class="rule-left">🦁 Görkemli Aslan</span><span class="rule-right" id="lbl-lion">+1000 Ordu</span></div>
+        <!-- EN ALTTAKI GÖRSEL KURALLAR PANELI (1000193173.JPG) -->
+        <div class="visual-footer-rules">
+            <div class="rules-title-header">⚔️ BATTLEZONE HEDİYE ORDU LİSTESİ ⚔️</div>
+            <div class="rules-grid-view">
+                <div class="rule-card"><span class="name">🌹 Gül Gönderimi</span><span class="val" id="lbl-rose">+50 Ordu</span></div>
+                <div class="rule-card"><span class="name">🎵 TikTok Logosu</span><span class="val" id="lbl-tiktok">+150 Ordu</span></div>
+                <div class="rule-card"><span class="name">💸 Para Yağmuru</span><span class="val" id="lbl-money">+500 Ordu</span></div>
+                <div class="rule-card"><span class="name">🦁 Canlı Aslan</span><span class="val" id="lbl-lion">+1000 Ordu</span></div>
             </div>
-            <div class="command-bar-info">
-                Giriş: join [no] | Saldırı: saldir [no] [no] | Destek: destek [no]
+            <div class="command-footer-line">
+                GİRİŞ: join [no] | SALDIRI: saldir [no] [no] | DESTEK: destek [no]
             </div>
         </div>
 
@@ -218,34 +217,31 @@
         let activeHostName = "";
         const globalLeaderboard = {};
 
-        // Gerçek Türkiye haritası görseline tam oturan 100 adet dikey koordinat şablonu (X%, Y%)
-        const coordinateTemplates = [];
-        for (let i = 0; i < 100; i++) {
-            let x = 6 + (i % 13) * 7.1 + (Math.random() * 1.5 - 0.75);
-            let y = 12 + Math.floor(i / 13) * 11.2 + (Math.random() * 1.5 - 0.75);
-            if (x > 96) x = 94; if (y > 92) y = 88;
-            coordinateTemplates.push({ x: x, y: y });
-        }
-
+        // Animasyon bittikten sonra ekranı kaldıran tetikleyici
         window.addEventListener("DOMContentLoaded", () => {
-            // Canlı senkronizasyon için input takibi
-            ["rose", "tiktok", "money", "lion"].forEach(id => {
-                document.getElementById(`val-${id}`).addEventListener("input", function() {
-                    document.getElementById(`lbl-${id}`).innerText = `+${this.value} Ordu`;
-                });
-            });
-
             setTimeout(() => {
                 const splash = document.getElementById("splash-screen");
                 splash.style.opacity = "0";
-                setTimeout(() => splash.style.display = "none", 800);
-            }, 2300);
+                setTimeout(() => splash.style.display = "none", 500);
+            }, 2200);
         });
 
-        function updateSliderDisplay(val) {
-            document.getElementById("slider-val").innerText = val;
-            totalZones = parseInt(val);
-            document.getElementById("active-zones-counter").innerText = val;
+        // Harita koordinat havuzu
+        const geoPositions = [];
+        for (let i = 0; i < 100; i++) {
+            let row = Math.floor(i / 12);
+            let col = i % 12;
+            let x = 6 + col * 7.9 + (Math.sin(i) * 1.5);
+            let y = 14 + row * 11.5 + (Math.cos(i) * 1.5);
+            if(x > 95) x = 93; if(y > 90) y = 86;
+            geoPositions.push({ x: x, y: y });
+        }
+
+        function syncLabels() {
+            ["rose", "tiktok", "money", "lion"].forEach(id => {
+                const val = document.getElementById(`val-${id}`).value;
+                document.getElementById(`lbl-${id}`).innerText = `+${val} Ordu`;
+            });
         }
 
         function showConnectionForm() {
@@ -253,43 +249,45 @@
             document.getElementById("connection-form").style.display = "block";
         }
 
-        function hideConnectionForm() {
-            document.getElementById("connection-form").style.display = "none";
-            document.getElementById("main-menu-buttons").style.display = "flex";
-        }
-
         function openLeaderboardModal() {
-            buildLeaderboardUi();
+            const lbBox = document.getElementById("lb-content");
+            lbBox.innerHTML = "";
+            const sorted = Object.entries(globalLeaderboard).sort((a,b) => b[1] - a[1]);
+            if(sorted.length === 0) {
+                lbBox.innerHTML = "<div style='color:#64748b; text-align:center;'>Kayıtlı veri bulunmuyor.</div>";
+            } else {
+                sorted.forEach(([user, score], idx) => {
+                    lbBox.innerHTML += `<div style="display:flex; justify-content:between; padding:4px 0; border-bottom:1px solid #1e293b;">
+                        <div>${idx+1}. ${user}</div><div style="color:#22c55e; margin-left:auto;">${score}</div>
+                    </div>`;
+                });
+            }
             document.getElementById('custom-leaderboard-modal').style.display = 'flex';
         }
-        function closeLeaderboardModal() {
-            document.getElementById('custom-leaderboard-modal').style.display = 'none';
-        }
 
-        // SENİN ORİJİNAL HARİTA ÜRETME MOTORUNUN COĞRAFİ ŞEKLE UYARLANMIŞ HALİ
+        function closeLeaderboardModal() { document.getElementById('custom-leaderboard-modal').style.display = 'none'; }
+
         function buildOrganicMap() {
             const mapContainer = document.getElementById("organic-map");
             mapContainer.innerHTML = "";
-            
-            let nums = Array.from({length: totalZones}, (_,i) => i+1).sort(() => Math.random() - 0.5);
+            let idList = Array.from({length: totalZones}, (_,i) => i+1);
             
             for(let i = 0; i < totalZones; i++) {
-                const cell = nums[i];
-                const coord = coordinateTemplates[i % coordinateTemplates.length];
+                const cell = idList[i];
+                const pos = geoPositions[i % geoPositions.length];
+                zonesData[cell] = { id: cell, owner: "", troops: 0 };
                 
-                zonesData[cell] = { id: cell, owner: "", troops: 0, x: coord.x, y: coord.y };
+                const label = document.createElement("div");
+                label.className = "map-zone-label";
+                label.id = `zone-${cell}`;
+                label.style.left = `${pos.x}%`;
+                label.style.top = `${pos.y}%`;
+                label.innerHTML = `<span>${cell}</span><span class="zone-owner-tag" id="zone-user-${cell}">-</span>`;
                 
-                const zone = document.createElement("div");
-                zone.className = "map-zone";
-                zone.id = `zone-${cell}`;
-                zone.style.left = `${coord.x}%`;
-                zone.style.top = `${coord.y}%`;
-                zone.innerHTML = `<div class="zone-number">${cell}</div><div class="zone-user" id="zone-user-${cell}">-</div>`;
-                mapContainer.appendChild(zone);
+                mapContainer.appendChild(label);
             }
         }
 
-        // SENİN DOĞRUDAN ÇALIŞAN BAĞLANTI MOTORUN
         function connectToTikTokPlayStore() {
             const username = document.getElementById("initial-username").value.trim().toLowerCase();
             if(!username) return;
@@ -323,9 +321,7 @@
             } catch(e) {}
         }
 
-        function extractNumbers(text) {
-            return text.match(/\d+/g)?.map(Number) || [];
-        }
+        function extractNumbers(text) { return text.match(/\d+/g)?.map(Number) || []; }
 
         function handleIncomingChat(senderName, comment) {
             let username = senderName.replace(/[^\w\s]/gi, '').trim();
@@ -344,30 +340,23 @@
                                         .replace(/\s+/g, '');
             const numbers = extractNumbers(comment);
 
-            // 1. GİRİŞ KOMUTU
             if(cleanComment.startsWith("join") && numbers.length === 1) {
                 const zoneId = numbers[0];
-                if(zoneId >= 1 && zoneId <= totalZones && zonesData[zoneId]) {
+                if(zonesData[zoneId] && zonesData[zoneId].owner === "") {
                     const zone = zonesData[zoneId];
-                    if(zone.owner === "") {
-                        zone.owner = username;
-                        zone.troops = 20;
-                        globalLeaderboard[username] = (globalLeaderboard[username] || 0) + 20;
-                        document.getElementById(`zone-${zoneId}`).style.backgroundColor = "#2563eb";
-                        document.getElementById(`zone-user-${zoneId}`).innerText = `${username.substring(0,5)} (${zone.troops})`;
-                    }
+                    zone.owner = username;
+                    zone.troops = 20;
+                    globalLeaderboard[username] = (globalLeaderboard[username] || 0) + 20;
+                    document.getElementById(`zone-user-${zoneId}`).innerText = `${username.substring(0,5)} (20)`;
                 }
             }
             
-            // 2. SALDIRI KOMUTU
             if(cleanComment.startsWith("saldir") && numbers.length === 2) {
                 const fromZone = numbers[0];
                 const toZone = numbers[1];
-                
                 if(zonesData[fromZone] && zonesData[toZone]) {
                     const attacker = zonesData[fromZone];
                     const defender = zonesData[toZone];
-                    
                     if(attacker.owner === username && attacker.troops > 5) {
                         const attackForce = attacker.troops - 1;
                         attacker.troops = 1;
@@ -376,25 +365,22 @@
                         if(defender.owner === "") {
                             defender.owner = username;
                             defender.troops = attackForce;
-                            document.getElementById(`zone-${toZone}`).style.backgroundColor = "#2563eb";
                         } else if(defender.owner === username) {
                             defender.troops += attackForce;
                         } else {
                             if(attackForce > defender.troops) {
                                 defender.owner = username;
                                 defender.troops = attackForce - defender.troops;
-                                document.getElementById(`zone-${toZone}`).style.backgroundColor = "#2563eb";
                             } else {
                                 defender.troops -= attackForce;
                             }
                         }
                         document.getElementById(`zone-user-${toZone}`).innerText = `${defender.owner.substring(0,5)} (${defender.troops})`;
-                        updateLeaderboardScore(username, attackForce);
+                        globalLeaderboard[username] = (globalLeaderboard[username] || 0) + attackForce;
                     }
                 }
             }
 
-            // 3. DESTEK KOMUTU
             if(cleanComment.startsWith("destek") && numbers.length === 1) {
                 const targetZone = numbers[0];
                 if(zonesData[targetZone]) {
@@ -402,13 +388,11 @@
                     if(zone.owner !== "" && zone.owner !== username) {
                         zone.troops += 15;
                         document.getElementById(`zone-user-${targetZone}`).innerText = `${zone.owner.substring(0,5)} (${zone.troops})`;
-                        updateLeaderboardScore(zone.owner, 15);
                     }
                 }
             }
         }
 
-        // HEDİYE MOTORU VE ASLAN/PARA YAĞMURU İÇİN RASTGELE BÖLGE BULMA/101. BÖLGE OLUŞTURMA SİSTEMİ
         function handleIncomingGift(senderName, giftName) {
             let username = senderName.replace(/[^\w\s]/gi, '').trim();
             if(senderName.toLowerCase().includes("kralsofi") || username.toLowerCase() === activeHostName) {
@@ -418,18 +402,17 @@
             let addedTroops = 0;
             const cleanGift = giftName.toLowerCase();
             
-            // Canlı ayar panelinden dinamik değerleri çekiyoruz
             if(cleanGift.includes("rose") || cleanGift.includes("gul")) {
                 addedTroops = parseInt(document.getElementById("val-rose").value) || 50;
             } else if(cleanGift.includes("tiktok")) {
                 addedTroops = parseInt(document.getElementById("val-tiktok").value) || 150;
             } else if(cleanGift.includes("money") || cleanGift.includes("para")) {
                 addedTroops = parseInt(document.getElementById("val-money").value) || 500;
-                handleSpecialSpawn(username, addedTroops); // Özel Rastgele Giriş
+                handleSpecialSpawn(username, addedTroops);
                 return;
             } else if(cleanGift.includes("lion") || cleanGift.includes("aslan")) {
                 addedTroops = parseInt(document.getElementById("val-lion").value) || 1000;
-                handleSpecialSpawn(username, addedTroops); // Özel Rastgele Giriş
+                handleSpecialSpawn(username, addedTroops);
                 return;
             }
 
@@ -440,36 +423,28 @@
                         document.getElementById(`zone-user-${id}`).innerText = `${username.substring(0,5)} (${zonesData[id].troops})`;
                     }
                 }
-                updateLeaderboardScore(username, addedTroops);
+                globalLeaderboard[username] = (globalLeaderboard[username] || 0) + addedTroops;
             }
         }
 
-        // ASLAN VE PARA YAĞMURU ATANLAR İÇİN ÖZEL TETİKLEYİCİ
         function handleSpecialSpawn(username, troopsCount) {
-            // Önce boşta veya elenmiş bir bölge var mı diye bakıyoruz
             let targetId = null;
             const freeZones = Object.values(zonesData).filter(z => z.owner === "");
             
             if(freeZones.length > 0) {
-                // Boş veya yıkılmış ülkelerden rastgele birini seç
-                const randomPick = freeZones[Math.floor(Math.random() * freeZones.length)];
-                targetId = randomPick.id;
+                targetId = freeZones[Math.floor(Math.random() * freeZones.length)].id;
             } else if (!zonesData[101]) {
-                // Boş yer yoksa anlık 101 numara olarak haritanın merkezine yakın yeni bir nokta üretiyoruz
                 targetId = 101;
-                zonesData[101] = { id: 101, owner: "", troops: 0, x: 50, y: 50 };
-                
-                const newZone = document.createElement("div");
-                newZone.className = "map-zone";
-                newZone.id = `zone-101`;
-                newZone.style.left = "50%";
-                newZone.style.top = "50%";
-                newZone.style.border = "2px solid #fbbf24";
-                newZone.style.zIndex = "50";
-                newZone.innerHTML = `<div class="zone-number">101</div><div class="zone-user" id="zone-user-101">-</div>`;
-                document.getElementById("organic-map").appendChild(newZone);
+                zonesData[101] = { id: 101, owner: "", troops: 0 };
+                const label = document.createElement("div");
+                label.className = "map-zone-label";
+                label.id = `zone-101`;
+                label.style.left = "50%";
+                label.style.top = "50%";
+                label.style.color = "#ef4444";
+                label.innerHTML = `<span>101</span><span class="zone-owner-tag" id="zone-user-101">-</span>`;
+                document.getElementById("organic-map").appendChild(label);
             } else {
-                // Eğer 101 de doluysa doğrudan oraya ekleme yapıyoruz
                 targetId = 101;
             }
 
@@ -477,32 +452,9 @@
                 const zone = zonesData[targetId];
                 zone.owner = username;
                 zone.troops += troopsCount;
-                document.getElementById(`zone-${targetId}`).style.backgroundColor = "#ef4444"; // Özel renk
                 document.getElementById(`zone-user-${targetId}`).innerText = `${username.substring(0,5)} (${zone.troops})`;
-                updateLeaderboardScore(username, troopsCount);
+                globalLeaderboard[username] = (globalLeaderboard[username] || 0) + troopsCount;
             }
-        }
-
-        function updateLeaderboardScore(username, amt) {
-            globalLeaderboard[username] = (globalLeaderboard[username] || 0) + amt;
-        }
-
-        function buildLeaderboardUi() {
-            const lbBox = document.getElementById("lb-content");
-            lbBox.innerHTML = "";
-            const sorted = Object.entries(globalLeaderboard).sort((a,b) => b[1] - a[1]);
-            
-            if(sorted.length === 0) {
-                lbBox.innerHTML = `<div style="color:#64748b; text-align:center; padding:10px;">Aktif oyuncu verisi bulunmuyor.</div>`;
-                return;
-            }
-            
-            sorted.forEach(([user, score], idx) => {
-                lbBox.innerHTML += `<div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #1e293b;">
-                    <div><b>${idx + 1}.</b> ${user}</div>
-                    <div style="color:#22c55e; font-weight:bold;">${score} Puan</div>
-                </div>`;
-            });
         }
     </script>
 </body>
