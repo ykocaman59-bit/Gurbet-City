@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Battlezone Canlı Savaş - 100 Bölge Warzone Sürümü</title>
+    <title>Battlezone Canlı Savaş - 100 Bölge Özel Sürüm</title>
     <style>
         * {
             box-sizing: border-box; margin: 0; padding: 0;
@@ -84,11 +84,11 @@
 
         .score-board-row { display: flex; justify-content: space-between; background: #111827; border: 1px solid #1e293b; border-radius: 10px; padding: 8px; font-size: 11px; align-items: center; }
 
-        /* WARZONE DOĞAL HARİTA ALANI (CANVAS TABANLI) */
+        /* BATTLEZONE DOĞAL HARİTA ALANI (CANVAS TABANLI) */
         .map-wrapper {
             position: relative; 
             width: 100%; 
-            aspect-ratio: 1 / 1; /* Kare formatlı orantılı harita */
+            aspect-ratio: 1 / 1; 
             border: 3px solid #1e293b; 
             border-radius: 14px; 
             overflow: hidden;
@@ -103,7 +103,7 @@
             z-index: 2;
         }
 
-        /* SAĞ ALT GERİ SAYIM SAYACI (Orijinal Oyundaki Grafik) */
+        /* SAĞ ALT GERİ SAYIM SAYACI */
         .warzone-countdown-overlay {
             position: absolute; bottom: 10px; right: 10px; background: rgba(0, 0, 0, 0.85); border: 2px solid #3b82f6; border-radius: 8px; padding: 6px 12px; text-align: center; z-index: 10; pointer-events: none;
         }
@@ -139,7 +139,7 @@
 <body>
 
     <div id="splash-screen">
-        <div class="animated-title">WARZONE INTERACTIVE</div>
+        <div class="animated-title">BATTLEZONE LIVE</div>
     </div>
 
     <div id="custom-leaderboard-modal" class="custom-modal">
@@ -154,7 +154,7 @@
 
     <div id="launch-menu-overlay">
         <div class="login-box">
-            <h2>WARZONE LIVE</h2>
+            <h2>BATTLEZONE LIVE</h2>
             <div class="menu-btn-group" id="main-menu-buttons">
                 <button class="menu-btn primary" onclick="showConnectionForm()">YENİ OYUN BAŞLAT (100 BÖLGE)</button>
                 <button class="menu-btn" onclick="openLeaderboardModal()">🏆 BAŞARI SIRALAMASI</button>
@@ -174,7 +174,7 @@
         <header>
             <div class="header-top">
                 <div style="display:flex; align-items:center; gap:6px;">
-                    <span style="font-weight:900; color:#2563eb; font-size: 14px;" id="header-logo-text">WARZONE</span>
+                    <span style="font-weight:900; color:#2563eb; font-size: 14px;" id="header-logo-text">BATTLEZONE</span>
                     <span class="live-badge">CANLI</span>
                 </div>
                 <div id="status-text" style="color:#ef4444; font-weight:bold; font-size: 11px;">BAĞLANTI YOK</div>
@@ -240,9 +240,9 @@
     </div>
 
     <script>
-        // Orijinal Harita Resmi Yükleme Mantığı
+        let isMapLoaded = false;
         const mapImage = new Image();
-        mapImage.src = '1000193060.png'; // Senin telefonundaki orijinal arka plan resmi
+        mapImage.src = '1000193060.png'; 
         
         const canvas = document.getElementById("warzoneCanvas");
         const ctx = canvas.getContext("2d");
@@ -250,18 +250,17 @@
         const zonesData = {};
         let activeHostName = "";
         const globalLeaderboard = {};
-        let roundTimeLeft = 60; // 60 saniyelik Warzone periyotları
+        let roundTimeLeft = 60; 
 
-        // Takım Renk Havuzu (Orijinal oyundaki gibi yarı saydam estetik fetih efektleri)
         const playerColorsPool = [
-            'rgba(239, 68, 68, 0.5)',  // Kırmızı
-            'rgba(34, 197, 94, 0.5)',  // Yeşil
-            'rgba(59, 130, 246, 0.5)', // Mavi
-            'rgba(245, 158, 11, 0.5)', // Turuncu
-            'rgba(168, 85, 247, 0.5)', // Mor
-            'rgba(236, 72, 153, 0.5)', // Pembe
-            'rgba(6, 182, 212, 0.5)',  // Turkuaz
-            'rgba(234, 179, 8, 0.5)'   // Sarı
+            'rgba(239, 68, 68, 0.5)',  
+            'rgba(34, 197, 94, 0.5)',  
+            'rgba(59, 130, 246, 0.5)', 
+            'rgba(245, 158, 11, 0.5)', 
+            'rgba(168, 85, 247, 0.5)', 
+            'rgba(236, 72, 153, 0.5)', 
+            'rgba(6, 182, 212, 0.5)',  
+            'rgba(234, 179, 8, 0.5)'   
         ];
 
         window.addEventListener("DOMContentLoaded", () => {
@@ -277,8 +276,15 @@
                 setTimeout(() => splash.style.display = "none", 800);
             }, 2300);
 
-            // Harita resmi her yüklendiğinde veya değiştiğinde canvas'ı tazele
-            mapImage.onload = () => { drawWarzoneCanvas(); };
+            mapImage.onload = () => { 
+                isMapLoaded = true; 
+                drawWarzoneCanvas(); 
+            };
+            mapImage.onerror = () => {
+                console.log("Harita resmi yüklenemedi, varsayılan arka plan kullanılacak.");
+                isMapLoaded = false;
+                drawWarzoneCanvas();
+            };
         });
 
         function showConnectionForm() {
@@ -297,7 +303,7 @@
             document.getElementById('custom-leaderboard-modal').style.display = 'none';
         }
 
-        // WARZONE DOĞAL HARİTA YAPISI (100 Kişilik Hücre Merkezleri)
+        // BAŞLAMA HATASI GİDERİLEN HARİTA KURULUMU
         function build100GridMap() {
             let idCounter = 1;
             const cols = 10;
@@ -305,10 +311,8 @@
             const cellW = canvas.width / cols;
             const cellH = canvas.height / rows;
 
-            // Hücreleri tam kare yerine doğal eğri/merkez yapısında haritaya yerleştiriyoruz
             for (let r = 0; r < rows; r++) {
                 for (let c = 0; c < cols; c++) {
-                    // Merkez koordinatları hafif dalgalandırarak doğal sınır etkisi veriyoruz
                     let centerX = (c * cellW) + (cellW / 2);
                     let centerY = (r * cellH) + (cellH / 2);
 
@@ -331,45 +335,45 @@
             startWarzoneLoop();
         }
 
-        // CANVAS ÇİZİM MOTORU (Orijinal Arayüzü Birebir Saniyede 30 Defa Günceller)
         function drawWarzoneCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // 1. Arka Plandaki Orijinal Harita Resmini Çiz
-            if (mapImage.complete) {
+            // Resim yüklenmemiş olsa dahi canvas alanını çizerek siyah kalmasını önler
+            if (isMapLoaded && mapImage.complete) {
                 ctx.drawImage(mapImage, 0, 0, canvas.width, canvas.height);
             } else {
-                ctx.fillStyle = "#0f172a";
+                ctx.fillStyle = "#111c2e";
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Teknolojik grid çizgileri ekleyelim ki resim yoksa bile güzel dursun
+                ctx.strokeStyle = "rgba(37, 99, 235, 0.15)";
+                ctx.lineWidth = 1;
+                for(let i=0; i<canvas.width; i+=80) {
+                    ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); ctx.stroke();
+                }
             }
 
-            // 2. 100 Bölgenin Katmanlarını ve Yazılarını İşle
             Object.values(zonesData).forEach(zone => {
-                // Eğer bölge fethedilmişse üzerini şeffaf oyuncu rengiyle kapla
                 ctx.fillStyle = zone.currentBg;
                 ctx.fillRect(zone.rectX, zone.rectY, zone.w, zone.h);
 
-                // Hafif Sınır Çizgileri
-                ctx.strokeStyle = "rgba(255,255,255,0.07)";
+                ctx.strokeStyle = "rgba(255,255,255,0.08)";
                 ctx.lineWidth = 1;
                 ctx.strokeRect(zone.rectX, zone.rectY, zone.w, zone.h);
 
-                // Numara Çizimi (Büyük, Siyah Gölgeli)
                 ctx.fillStyle = "#ffffff";
-                ctx.font = "900 16px sans-serif";
+                ctx.font = "900 15px sans-serif";
                 ctx.textAlign = "center";
                 ctx.shadowColor = "black";
-                ctx.shadowBlur = 4;
+                ctx.shadowBlur = 3;
                 ctx.fillText(zone.id, zone.x, zone.y - 4);
-                ctx.shadowBlur = 0; // Sıfırla
+                ctx.shadowBlur = 0; 
 
-                // Oyuncu Bilgisi Çizimi (Eğer Sahibi Varsa)
                 if(zone.owner !== "") {
                     let displayName = `${zone.owner.substring(0,5)}(${zone.troops})`;
-                    
                     ctx.fillStyle = "rgba(11, 15, 23, 0.85)";
                     ctx.fillRect(zone.x - 28, zone.y + 8, 56, 14);
-                    
                     ctx.fillStyle = "#fbbf24";
                     ctx.font = "bold 9px sans-serif";
                     ctx.fillText(displayName, zone.x, zone.y + 18);
@@ -379,7 +383,6 @@
             updateVersusBar();
         }
 
-        // SAVAŞ KURALI: Üst Bar Dinamik Güç Dağılımı Hesaplama
         function updateVersusBar() {
             let blueForce = 0;
             let redForce = 0;
@@ -391,7 +394,6 @@
                 }
             });
 
-            // Başlangıç dengesi koruması
             if(blueForce === 0 && redForce === 0) { blueForce = 1000; redForce = 1000; }
 
             const total = blueForce + redForce;
@@ -404,23 +406,23 @@
             document.getElementById("vs-red-bar").innerText = Math.floor(redForce);
         }
 
-        // TIKTOK SAVAŞ DÖNGÜSÜ (Geri sayım bitince otomatik çarpışma kuralları)
         function startWarzoneLoop() {
-            setInterval(() => {
+            // Varsa eski döngüleri temizle
+            if(window.gameInterval) clearInterval(window.gameInterval);
+            
+            window.gameInterval = setInterval(() => {
                 if(roundTimeLeft > 0) {
                     roundTimeLeft--;
                     let min = Math.floor(roundTimeLeft / 60).toString().padStart(2, '0');
                     let sec = (roundTimeLeft % 60).toString().padStart(2, '0');
                     document.getElementById("warzone-timer").innerText = `${min}:${sec}`;
                 } else {
-                    // ZAMAN DOLDU: Haritada Otomatik Büyük Savaş Tetiklenir!
                     executeAutomatedWarzoneBattle();
-                    roundTimeLeft = 60; // Yeni turu başlat
+                    roundTimeLeft = 60; 
                 }
             }, 1000);
         }
 
-        // OTOMATİK SAVAŞ KURALLARI (Komşu bölgeler birbiriyle otomatik savaşır)
         function executeAutomatedWarzoneBattle() {
             for(let id in zonesData) {
                 let current = zonesData[id];
@@ -428,14 +430,12 @@
                 let target = zonesData[neighborId];
 
                 if(current.owner !== "" && target.id !== current.id) {
-                    // Eğer hedef boşsa doğrudan genişle
                     if(target.owner === "") {
                         target.owner = current.owner;
                         target.troops = Math.floor(current.troops / 2);
                         current.troops = Math.ceil(current.troops / 2);
                         target.currentBg = current.currentBg;
                     } 
-                    // Hedef düşmansa kozları paylaş
                     else if(target.owner !== current.owner && current.troops > target.troops) {
                         target.owner = current.owner;
                         target.troops = current.troops - target.troops;
@@ -454,7 +454,8 @@
             activeHostName = username;
             document.getElementById("header-logo-text").innerText = username.toUpperCase();
             
-            build100GridMap(); // Harita Kurulumunu Başlat
+            // Mekanizmayı doğrudan tetikler
+            build100GridMap(); 
             
             document.getElementById("launch-menu-overlay").style.display = "none";
             document.getElementById("status-text").innerText = `@${username.toUpperCase()} BAĞLANDI`;
@@ -501,7 +502,6 @@
                                         .replace(/\s+/g, '');
             const numbers = extractNumbers(comment);
 
-            // KURAL 1 - GİRİŞ (join [no])
             if(cleanComment.startsWith("join") && numbers.length === 1) {
                 const zoneId = numbers[0];
                 if(zonesData[zoneId]) {
@@ -520,7 +520,6 @@
                 }
             }
             
-            // KURAL 2 - DOĞRUDAN SALDIRI (saldir [no] [no])
             if((cleanComment.startsWith("saldir") || cleanComment.startsWith("attack")) && numbers.length === 2) {
                 const fromZone = numbers[0];
                 const toZone = numbers[1];
@@ -555,7 +554,6 @@
                 }
             }
 
-            // KURAL 3 - DESTEK VE İTTİFAK (destek [no])
             if((cleanComment.startsWith("destek") || cleanComment.startsWith("ittifak")) && numbers.length === 1) {
                 const targetZone = numbers[0];
                 if(zonesData[targetZone]) {
@@ -609,7 +607,6 @@
             }
         }
 
-        // HEDİYE KURALI - ÖZEL BİRLİK SEVKİYATI (Haritada rastgele veya boş yeri fetheder)
         function handleSpecialSpawn(username, troopsCount) {
             let targetId = null;
             const freeZones = Object.values(zonesData).filter(z => z.owner === "");
@@ -660,4 +657,3 @@
     </script>
 </body>
 </html>
-           
