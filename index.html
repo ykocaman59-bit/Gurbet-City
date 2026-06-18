@@ -96,7 +96,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            pointer-events: none; /* Tıklamayı engellemesin */
+            pointer-events: none;
         }
 
         .zone-text-label {
@@ -190,10 +190,8 @@
         </div>
 
         <div class="map-container-vector">
-            <svg id="svg-map-root" viewBox="0 0 1000 550">
-                </svg>
-            <div class="map-labels-overlay" id="text-labels-layer">
-                </div>
+            <svg id="svg-map-root" viewBox="0 0 1000 550"></svg>
+            <div class="map-labels-overlay" id="text-labels-layer"></div>
         </div>
 
         <div class="chat-panel">
@@ -231,7 +229,12 @@
             }, 2000);
         });
 
-        // 100 ADET GERÇEK GEOMETRİK SVG PATH (YOL) YAPISINI VE KOORDİNATLARINI ÜRETEN MOTOR
+        // Tıklandığında formu açan eksik fonksiyon eklendi
+        function showConnectionForm() {
+            document.getElementById("main-menu-buttons").style.display = "none";
+            document.getElementById("connection-form").style.display = "block";
+        }
+
         function generateVektor100Map() {
             const svgRoot = document.getElementById("svg-map-root");
             const labelsLayer = document.getElementById("text-labels-layer");
@@ -240,10 +243,9 @@
 
             let idList = Array.from({length: 100}, (_, i) => i + 1);
             
-            // Karışık numaralandırma kuralı
             for (let i = idList.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
-                [idList[i], idList[idList[j]]] = [idList[j], idList[i]];
+                [idList[i], idList[j]] = [idList[j], idList[i]];
             }
 
             const cols = 10;
@@ -259,7 +261,6 @@
                     let x1 = c * widthPerZone;
                     let y1 = r * heightPerZone;
                     
-                    // Amorf ve organik yapboz harita hissi için köşe kırılımları hesaplama
                     let jitterX = (c > 0 && c < cols) ? (Math.random() * 12 - 6) : 0;
                     let jitterY = (r > 0 && r < rows) ? (Math.random() * 12 - 6) : 0;
                     
@@ -268,7 +269,6 @@
 
                     zonesData[zoneId] = { id: zoneId, owner: "", troops: 0, color: "" };
 
-                    // Gerçek Vektörel Sınır Çizgileri (Path Verisi)
                     let pathD = `M ${x1} ${y1} L ${x1 + widthPerZone + jitterX} ${y1} L ${x1 + widthPerZone} ${y1 + heightPerZone + jitterY} L ${x1} ${y1 + heightPerZone} Z`;
                     
                     const pathEl = document.createElementNS("http://www.w3.org/2000/svg", "path");
@@ -277,7 +277,6 @@
                     pathEl.setAttribute("id", `svg-zone-${zoneId}`);
                     svgRoot.appendChild(pathEl);
 
-                    // Metin Katmanı Yerleşimi
                     const labelDiv = document.createElement("div");
                     labelDiv.className = "zone-text-label";
                     labelDiv.style.left = `${(cx / 1000) * 100}%`;
@@ -298,7 +297,7 @@
             activeHostName = username;
             document.getElementById("header-logo-text").innerText = username.toUpperCase();
             
-            generateVektor100Map(); // Vektör haritayı bizzat çiz
+            generateVektor100Map();
             
             document.getElementById("launch-menu-overlay").style.display = "none";
             document.getElementById("status-text").innerText = `@${username.toUpperCase()} BAĞLANDI`;
@@ -330,7 +329,6 @@
             const cleanComment = comment.trim().toLowerCase().replace(/\s+/g, '');
             const numbers = extractNumbers(comment);
 
-            // JOIN SİSTEMİ
             if(cleanComment.startsWith("join") && numbers.length === 1) {
                 const zoneId = numbers[0];
                 if(zonesData[zoneId] && zonesData[zoneId].owner === "") {
@@ -342,14 +340,12 @@
                     el.style.display = "block";
                     el.innerText = `${username.substring(0,4)} (${zone.troops})`;
                     
-                    // Saf SVG alanını fatihin rengine boya
                     let randomColor = playerColorsPool[Math.floor(Math.random() * playerColorsPool.length)];
                     zone.color = randomColor;
                     document.getElementById(`svg-zone-${zoneId}`).style.fill = randomColor;
                 }
             }
 
-            // SALDIRI SİSTEMİ
             if((cleanComment.startsWith("saldir") || cleanComment.startsWith("attack")) && numbers.length === 2) {
                 const fromZ = numbers[0];
                 const toZ = numbers[1];
