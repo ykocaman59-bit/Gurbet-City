@@ -2,35 +2,92 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Battlezone Canlı Savaş</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Battlezone Canlı Savaş - 100 Bölge Özel Sürüm</title>
     <style>
-        body { background-color: #0b0f17; color: #fff; margin: 0; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 10px; }
-        
-        /* ANİMASYON */
-        #splash-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #070a12; z-index: 100000; display: flex; align-items: center; justify-content: center; }
-        .animated-title { font-size: 36px; font-weight: 900; color: #2563eb; text-transform: uppercase; animation: introBlast 2s ease-in-out forwards; }
-        @keyframes introBlast { 0% { transform: scale(0.7); opacity: 0; } 100% { transform: scale(1.2); opacity: 0; display: none; } }
-
-        /* ARAYÜZ */
-        #launch-menu-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; display: flex; align-items: center; justify-content: center; z-index: 9999; }
-        .login-box { background: #111827; padding: 25px; border-radius: 16px; border: 2px solid #2563eb; text-align: center; width: 90%; max-width: 400px; }
-        input { padding: 12px; width: 90%; border-radius: 8px; border: none; margin-bottom: 10px; }
-        button { width: 100%; padding: 15px; background: #2563eb; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
-
-        /* HARİTA VE IZGARA */
-        .map-wrapper { 
-            position: relative; width: 100%; max-width: 500px; margin-top: 10px;
-            background: url('1000193060.png') no-repeat center/contain;
-            aspect-ratio: 1.6; border: 2px solid #1f2937; border-radius: 10px;
+        * {
+            box-sizing: border-box; margin: 0; padding: 0;
+            -webkit-user-select: none; user-select: none;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        .grid-container { display: grid; grid-template-columns: repeat(10, 1fr); grid-template-rows: repeat(10, 1fr); width: 100%; height: 100%; }
-        .zone { border: 0.5px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 7px; color: #fbbf24; background: rgba(0,0,0,0.2); }
+        body { background-color: #0b0f17; color: #f1f5f9; overflow-x: hidden; overflow-y: auto; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding-bottom: 20px; }
+        
+        .app-container {
+            width: 100%;
+            max-width: 450px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 10px;
+        }
 
-        /* YENİ PANEL DETAYLARI */
-        .panels { width: 100%; max-width: 500px; margin-top: 10px; display: flex; flex-direction: column; gap: 10px; }
-        .panel { background: #111827; padding: 10px; border-radius: 10px; border: 1px solid #1f2937; font-size: 12px; }
-        .gift-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
+        /* GİRİŞ ANİMASYONU */
+        #splash-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #070a12; z-index: 100000; display: flex; align-items: center; justify-content: center;
+            transition: opacity 0.8s ease-out, visibility 0.8s;
+        }
+        .animated-title {
+            font-size: 36px; font-weight: 900; color: #2563eb; letter-spacing: 4px;
+            text-shadow: 0 0 20px rgba(37, 99, 235, 0.6); animation: introBlast 2.3s ease-in-out forwards;
+            text-transform: uppercase; text-align: center;
+        }
+        @keyframes introBlast {
+            0% { transform: scale(0.7); opacity: 0; }
+            40% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(1.2); opacity: 0; }
+        }
+
+        #launch-menu-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #0b0f17; z-index: 9999; display: flex; align-items: center; justify-content: center;
+        }
+        .login-box { background: #111827; border: 2px solid #2563eb; border-radius: 16px; padding: 30px; width: 90%; max-width: 380px; text-align: center; }
+        .menu-btn { width: 100%; background: #1f2937; color: white; border-radius: 8px; padding: 12px; margin-bottom: 10px; cursor: pointer; border: none; font-weight: bold; }
+        .menu-btn.primary { background: #2563eb; }
+
+        /* HARİTA GÖRÜNÜMÜ - GÜNCEL */
+        .map-wrapper {
+            background-color: #0b0f17; 
+            border: 1px solid #1f2937; 
+            border-radius: 8px; 
+            position: relative; 
+            width: 100%; 
+            aspect-ratio: 1 / 0.8; 
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .grid-map-container {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            grid-template-rows: repeat(10, 1fr);
+            width: 100%;
+            height: 100%;
+            border-left: 1px solid #1f2937;
+            border-top: 1px solid #1f2937;
+        }
+
+        .map-zone-block {
+            border-right: 1px solid #1f2937;
+            border-bottom: 1px solid #1f2937;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #0b0f17; 
+            transition: background-color 0.2s ease;
+        }
+
+        .zone-number { font-size: 10px; font-weight: 500; color: #ffffff; }
+        .zone-user { font-size: 6px; color: #fbbf24; display: none; margin-top: 2px; }
+
+        /* DİĞER PANEL STİLLERİ */
+        header { background: #111827; padding: 10px; border-radius: 8px; border: 1px solid #1f2937; }
+        .chat-panel { height: 110px; background: #111827; padding: 8px; border-radius: 8px; border: 1px solid #1f2937; overflow-y: auto; }
+        .chat-msg { font-size: 11px; margin-bottom: 2px; }
+        .chat-user { font-weight: bold; color: #3b82f6; }
     </style>
 </head>
 <body>
@@ -39,41 +96,58 @@
 
     <div id="launch-menu-overlay">
         <div class="login-box">
-            <h2>BATTLEZONE</h2>
-            <input type="text" id="username" placeholder="TikTok ID Gir">
-            <button onclick="startWar()">SAVAŞI BAŞLAT</button>
-        </div>
-    </div>
-
-    <div class="map-wrapper">
-        <div class="grid-container" id="grid"></div>
-    </div>
-
-    <div class="panels">
-        <div class="panel">
-            <div class="gift-grid">
-                <div>🌹 Gül <br> 50</div>
-                <div>🎵 TikTok <br> 150</div>
-                <div>💸 Para <br> 500</div>
-                <div>🦁 Aslan <br> 1000</div>
+            <h2>BATTLEZONE LIVE</h2>
+            <button class="menu-btn primary" onclick="startTheGame()">YENİ OYUN BAŞLAT</button>
+            <div id="connection-form" style="display:none;">
+                <input type="text" id="initial-username" placeholder="TikTok ID giriniz" style="width:100%; padding:10px; margin-bottom:10px; border-radius:5px;">
+                <button class="menu-btn primary" onclick="connectToTikTok()">SAVAŞI BAŞLAT ⚔️</button>
             </div>
         </div>
-        <div class="panel" style="height: 80px;">💬 SOHBET AKIŞI</div>
+    </div>
+
+    <div class="app-container">
+        <header>
+            <div style="font-weight:bold; color:#2563eb;" id="header-logo-text">BATTLEZONE</div>
+        </header>
+
+        <div class="map-wrapper">
+            <div class="grid-map-container" id="game-grid-layer"></div>
+        </div>
+
+        <div class="chat-panel" id="live-chat-box"></div>
     </div>
 
     <script>
-        setTimeout(() => document.getElementById('splash-screen').style.display = 'none', 2000);
+        const zonesData = {};
 
-        function startWar() {
-            document.getElementById('launch-menu-overlay').style.display = 'none';
-            const grid = document.getElementById('grid');
-            for(let i=1; i<=100; i++) {
-                const div = document.createElement('div');
-                div.className = 'zone';
-                div.innerHTML = `<b>${i}</b><span id="z-${i}">-</span>`;
-                grid.appendChild(div);
+        function startTheGame() {
+            document.querySelector('.menu-btn.primary').style.display = 'none';
+            document.getElementById('connection-form').style.display = 'block';
+        }
+
+        function connectToTikTok() {
+            document.getElementById("launch-menu-overlay").style.display = "none";
+            build100GridMap();
+        }
+
+        function build100GridMap() {
+            const gridContainer = document.getElementById("game-grid-layer");
+            gridContainer.innerHTML = "";
+            for(let i = 1; i <= 100; i++) {
+                zonesData[i] = { id: i, owner: "", troops: 0 };
+                const zoneBlock = document.createElement("div");
+                zoneBlock.className = "map-zone-block";
+                zoneBlock.innerHTML = `<div class="zone-number">${i}</div><div class="zone-user" id="zone-user-${i}">-</div>`;
+                gridContainer.appendChild(zoneBlock);
             }
         }
+
+        // Oyun mantığı burada kalmaya devam edecek...
+        setTimeout(() => {
+            const splash = document.getElementById("splash-screen");
+            splash.style.opacity = "0";
+            setTimeout(() => splash.style.display = "none", 800);
+        }, 2300);
     </script>
 </body>
 </html>
