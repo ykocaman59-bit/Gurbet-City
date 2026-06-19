@@ -3,73 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Battlezone Canlı Savaş - 100 Bölge Özel Sürüm</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-user-select: none; user-select: none; font-family: 'Segoe UI', Tahoma, sans-serif; }
-        body { background-color: #0b0f17; color: #f1f5f9; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding-bottom: 20px; }
-        
-        /* HARİTA VE SAYI AYARLARI (İstediğin netlikte) */
-        .map-wrapper { width: 95%; max-width: 900px; margin: 20px auto; background: #0f172a; border: 2px solid #1e293b; border-radius: 14px; padding: 10px; }
-        #Layer_1 path { stroke: #111827; stroke-width: 0.5px; transition: 0.3s; cursor: pointer; }
-        
-        /* Sayıların beyaz ve her arka planda okunması için */
-        #Layer_1 text { 
-            fill: #ffffff !important; 
-            font-size: 20px !important; 
-            font-weight: 900 !important; 
-            text-shadow: 2px 2px 4px #000 !important; 
-            pointer-events: none; 
-        }
-
-        /* DİĞER BİLEŞENLER */
-        #splash-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #070a12; z-index: 100000; display: flex; align-items: center; justify-content: center; }
-        .extra-dashboard-panel { background: #111827; border: 1px solid #1f2937; border-radius: 12px; padding: 10px; display: flex; gap: 10px; width: 95%; max-width: 900px; margin-top: 10px; }
-        .query-army-box { width: 170px; background: #0f172a; border: 2px solid #f59e0b; border-radius: 12px; padding: 8px; text-align: center; }
-        .query-count { font-size: 24px; font-weight: 900; color: #ffffff; }
-        
-        /* Modal ve Menü Stilleri */
-        .custom-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 10000; align-items: center; justify-content: center; }
-        #launch-menu-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%); z-index: 9999; display: flex; align-items: center; justify-content: center; }
-        .login-box { background: #111827; border: 2px solid #2563eb; border-radius: 16px; padding: 30px; width: 90%; max-width: 380px; text-align: center; }
-        .menu-btn { width: 100%; background: #1f2937; border: 1px solid #4b5563; color: white; border-radius: 8px; padding: 12px; margin-top: 10px; font-weight: bold; cursor: pointer; }
-    </style>
-</head>
-<body>
-
-    <div id="splash-screen"><div class="animated-title">BATTLEZONE LIVE</div></div>
-
-    <div id="launch-menu-overlay">
-        <div class="login-box">
-            <h2>BATTLEZONE LIVE</h2>
-            <button class="menu-btn primary" onclick="document.getElementById('launch-menu-overlay').style.display='none'">SAVAŞI BAŞLAT</button>
-        </div>
-    </div>
-
-    <div class="extra-dashboard-panel">
-        <div><b>OYUN TALİMATLARI:</b> Bölgeye girmek için "join [numara]" yaz!</div>
-        <div class="query-army-box">
-            <div style="font-size:10px; color:#f59e0b;">AKTİF BÖLGELER</div>
-            <div class="query-count" id="active-count">0</div>
-        </div>
-    </div>
-
-    <div class="map-wrapper">
-        <svg id="Layer_1" viewBox="0 0 1024 544" width="100%">
-            </svg>
-    </div>
-
-    <div id="custom-leaderboard-modal" class="custom-modal">
-        <div class="modal-box">
-            <h3>🏆 SIRALAMA</h3>
-            <button class="menu-btn" onclick="this.parentElement.parentElement.style.display='none'">KAPAT</button>
-        </div>
-    </div>
-
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Battlezone Canlı Savaş</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-user-select: none; user-select: none; font-family: sans-serif; }
@@ -135,8 +68,7 @@
     </script>
 </body>
 </html>
-	
-	
+
 
      <div id="splash-screen">
         <div class="animated-title">BATTLEZONE LIVE</div>
