@@ -170,8 +170,9 @@
         </div>
     </div>
 
-    <div class="map-wrapper" style="width: 100%; margin-top: 20px;">
-        <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 1024 544" enable-background="new 0 0 1024 544" xml:space="preserve">
+
+    <div class="map-wrapper">
+        <svg id="Layer_1" viewBox="0 0 1024 544" width="100%">
             </svg>
     </div>
 
@@ -180,17 +181,24 @@
             const paths = document.querySelectorAll('#Layer_1 path');
             const renkler = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#a855f7', '#ec4899'];
             
+            // Rastgele renk ataması
             paths.forEach((path) => {
-                let randomRenk = renkler[Math.floor(Math.random() * renkler.length)];
-                path.style.fill = randomRenk;
-                path.style.stroke = '#111827';
-                path.style.strokeWidth = '0.5px';
+                path.style.fill = renkler[Math.floor(Math.random() * renkler.length)];
             });
         });
+
+        // FETİH MANTIĞI: (Bölgeyi fethetmek için kullanacaksın)
+        function bolgeyiFethet(numara) {
+            let bolge = document.getElementById("bolge-" + numara);
+            if(bolge) {
+                bolge.style.fill = "#ffffff"; // Fethedilen yer beyaza döner
+                bolge.style.strokeWidth = "3px"; // Sınırı kalınlaşır
+            }
+        }
     </script>
 </body>
 </html>
-	
+
 
      <div id="splash-screen">
         <div class="animated-title">BATTLEZONE LIVE</div>
