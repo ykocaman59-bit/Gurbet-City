@@ -190,6 +190,17 @@
     </script>
 </body>
 </html>
+<div id="settings-panel" style="padding: 10px; color: white;">
+    <label>Bölge Sayısı (10-100): </label>
+    <input type="range" id="regionSlider" min="10" max="100" value="100" oninput="updateMapRegions(this.value)">
+    <span id="sliderVal">100</span>
+</div>
+
+<div id="map-container" style="width: 100%; max-width: 800px; margin: auto;">
+    <svg id="turkey-map" viewBox="0 0 1000 600">
+        </svg>
+</div>
+
 	
 
      <div id="splash-screen">
