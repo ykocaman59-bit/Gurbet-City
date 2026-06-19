@@ -153,6 +153,14 @@
         .query-title { color: #f59e0b; font-size: 10px; font-weight: bold; text-transform: uppercase; margin-bottom: 2px; }
         .query-count { font-size: 24px; font-weight: 900; color: #ffffff; margin: 2px 0; }
         .query-desc { color: #64748b; font-size: 8px; }
+		#Layer_1 text {
+    fill: #ffffff !important;
+    font-weight: 900 !important;
+    paint-order: stroke;
+    stroke: #000000;
+    stroke-width: 2px; /* Sayı etrafında siyah çerçeve oluşturur */
+		}
+		
     </style>
 </head>
 <body>
@@ -175,18 +183,54 @@
     </div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const paths = document.querySelectorAll('#Layer_1 path');
-            const renkler = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#a855f7', '#ec4899'];
-            
-            paths.forEach((path) => {
-                let randomRenk = renkler[Math.floor(Math.random() * renkler.length)];
-                path.style.fill = randomRenk;
-                path.style.stroke = '#111827';
-                path.style.strokeWidth = '0.5px';
-            });
+    document.addEventListener("DOMContentLoaded", function() {
+        const paths = document.querySelectorAll('#Layer_1 path');
+        const texts = document.querySelectorAll('#Layer_1 text');
+        
+        // 1. Bölgeleri (path) Rastgele Renklendir
+        const renkler = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#a855f7', '#ec4899'];
+        
+        paths.forEach((path) => {
+            let randomRenk = renkler[Math.floor(Math.random() * renkler.length)];
+            path.style.fill = randomRenk;
+            path.style.stroke = '#ffffff'; // Sınır çizgilerini beyaz yap ki belirgin olsun
+            path.style.strokeWidth = '2px';
         });
-    </script>
+
+        // 2. Sayıları (text) Sabit ve Belirgin Yap
+        texts.forEach((text) => {
+            text.style.fill = "#ffffff";           // Sayı rengi her zaman BEYAZ
+            text.style.fontWeight = "bold";        // KALIN yazı
+            text.style.fontSize = "24px";          // Boyutunu istediğin gibi ayarla
+            text.style.textShadow = "2px 2px 4px #000000"; // Sayının arkasına SİYAH GÖLGE (Belirginlik için)
+        });
+    });
+	</script>
+	<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const paths = document.querySelectorAll('#Layer_1 path');
+        const texts = document.querySelectorAll('#Layer_1 text');
+        
+        // 1. Bölgeleri (path) Rastgele Renklendir
+        const renkler = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#a855f7', '#ec4899'];
+        
+        paths.forEach((path) => {
+            let randomRenk = renkler[Math.floor(Math.random() * renkler.length)];
+            path.style.fill = randomRenk;
+            path.style.stroke = '#ffffff'; // Sınır çizgilerini beyaz yap ki belirgin olsun
+            path.style.strokeWidth = '2px';
+        });
+
+        // 2. Sayıları (text) Sabit ve Belirgin Yap
+        texts.forEach((text) => {
+            text.style.fill = "#ffffff";           // Sayı rengi her zaman BEYAZ
+            text.style.fontWeight = "bold";        // KALIN yazı
+            text.style.fontSize = "24px";          // Boyutunu istediğin gibi ayarla
+            text.style.textShadow = "2px 2px 4px #000000"; // Sayının arkasına SİYAH GÖLGE (Belirginlik için)
+        });
+    });
+	</script>
+	
 </body>
 </html>
 	
