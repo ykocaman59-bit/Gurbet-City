@@ -86,16 +86,15 @@
 
         /* DOĞRUDAN SENİN GÖNDERDİĞİN RESMİ ARKA PLAN YAPAN 100 BÖLGELİ ALAN */
         .map-wrapper {
-            background-image: url('1000193060.png'); /* Telefonundaki orijinal harita resmi */
-            background-size: cover;
-            background-position: center;
-            border: 2px solid #1e293b; 
-            border-radius: 14px; 
-            position: relative; 
-            width: 100%; 
-            aspect-ratio: 1000 / 500; 
-            overflow: hidden;
-        }
+    width: 95% !important;   /* Ekranın neredeyse tamamını kaplasın */
+    margin: 20px auto;       /* Ortala */
+    max-width: 1200px;       /* Çok fazla yayılmaması için sınır */
+    background: #0f172a;     /* Arka planla uyumlu renk */
+    padding: 15px;
+    border-radius: 15px;
+    border: 1px solid #1f2937;
+		}
+		
         
         /* 10x10=100 Eşit Parçaya Bölen Görünmez Izgara Sistemi */
         .grid-map-container {
