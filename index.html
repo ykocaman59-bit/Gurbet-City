@@ -86,15 +86,16 @@
 
         /* DOĞRUDAN SENİN GÖNDERDİĞİN RESMİ ARKA PLAN YAPAN 100 BÖLGELİ ALAN */
         .map-wrapper {
-    width: 95% !important;   /* Ekranın neredeyse tamamını kaplasın */
-    margin: 20px auto;       /* Ortala */
-    max-width: 1200px;       /* Çok fazla yayılmaması için sınır */
-    background: #0f172a;     /* Arka planla uyumlu renk */
-    padding: 15px;
-    border-radius: 15px;
-    border: 1px solid #1f2937;
-		}
-		
+            background-image: url('1000193060.png'); /* Telefonundaki orijinal harita resmi */
+            background-size: cover;
+            background-position: center;
+            border: 2px solid #1e293b; 
+            border-radius: 14px; 
+            position: relative; 
+            width: 100%; 
+            aspect-ratio: 1000 / 500; 
+            overflow: hidden;
+        }
         
         /* 10x10=100 Eşit Parçaya Bölen Görünmez Izgara Sistemi */
         .grid-map-container {
@@ -157,49 +158,59 @@
 </head>
 <body>
 
-    
-    <div class="extra-dashboard-panel">
-        <div class="commands-helper-text">
-            <b>OYUN TALİMATLARI:</b> Bölgeye girmek için "join [numara]" yazman yeterli!
-        </div>
-        <div class="query-army-box">
-            <div class="query-title">Aktif Bölgeler</div>
-            <div class="query-count" id="active-count">0</div>
-            <div class="query-desc">toplam işgal edilen bölge</div>
-        </div>
-    </div>
-
-    <div class="map-wrapper" style="width: 100%; margin-top: 20px;">
-        <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 1024 544" enable-background="new 0 0 1024 544" xml:space="preserve">
-            </svg>
-    </div>
-
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const paths = document.querySelectorAll('#Layer_1 path');
-            const renkler = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#a855f7', '#ec4899'];
-            
-            paths.forEach((path) => {
-                let randomRenk = renkler[Math.floor(Math.random() * renkler.length)];
-                path.style.fill = randomRenk;
-                path.style.stroke = '#111827';
-                path.style.strokeWidth = '0.5px';
-            });
-        });
-    </script>
-</body>
-</html>
-	
-
-     <div id="splash-screen">
+    <div id="splash-screen">
         <div class="animated-title">BATTLEZONE LIVE</div>
     </div>
 
-    <div id="custom-leaderboard">
+    <div id="custom-leaderboard-modal" class="custom-modal">
+        <div class="modal-box leader-border">
+            <span class="modal-close-x" onclick="closeLeaderboardModal()">×</span>
+            <h3>🏆 TÜM ZAMANLAR SIRALAMASI</h3>
+            <div id="lb-content" style="background: #0f172a; border: 1px solid #1e293b; border-radius: 8px; max-height: 250px; overflow-y: auto; padding: 10px; font-size:12px;">
+                <div style="color:#64748b; text-align:center; padding:10px;">Aktif oyuncu verisi bulunmuyor.</div>
+            </div>
         </div>
+    </div>
 
-</body>
-</html>
+    <div id="launch-menu-overlay">
+        <div class="login-box">
+            <h2>BATTLEZONE LIVE</h2>
+            <div class="menu-btn-group" id="main-menu-buttons">
+                <button class="menu-btn primary" onclick="showConnectionForm()">YENİ OYUN BAŞLAT (100 BÖLGE)</button>
+                <button class="menu-btn" onclick="openLeaderboardModal()">🏆 BAŞARI SIRALAMASI</button>
+            </div>
+            <div id="connection-form">
+                <div class="input-group">
+                    <label>TikTok Canlı Yayın Kullanıcı Adı (ID)</label>
+                    <input type="text" id="initial-username" placeholder="Örn: canliyayinid" autocomplete="off">
+                </div>
+                <button class="menu-btn primary" onclick="connectToTikTokPlayStore()">SAVAŞI BAŞLAT ⚔️</button>
+                <button class="menu-btn" style="margin-top:10px; font-size:11px; padding:6px;" onclick="hideConnectionForm()">← Geri Dön</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <header>
+            <div class="header-top">
+                <div style="display:flex; align-items:center; gap:6px;">
+                    <span style="font-weight:900; color:#2563eb; font-size: 14px;" id="header-logo-text">BATTLEZONE</span>
+                    <span class="live-badge">CANLI</span>
+                </div>
+                <div id="status-text" style="color:#ef4444; font-weight:bold; font-size: 11px;">BAĞLANTI YOK</div>
+            </div>
+            <div class="gift-settings-grid">
+                <div class="gift-setting-card">🌹 Gül <input type="number" id="val-rose" value="50"></div>
+                <div class="gift-setting-card">🎵 TikTok <input type="number" id="val-tiktok" value="150"></div>
+                <div class="gift-setting-card">💸 Para Yağ. <input type="number" id="val-money" value="500"></div>
+                <div class="gift-setting-card">🦁 Aslan <input type="number" id="val-lion" value="1000"></div>
+            </div>
+        </header>
+
+        <div class="score-board-row">
+            <div>Toplam Bölge: <span style="color:#fbbf24; font-weight:bold;">100 / 100</span></div>
+            <button onclick="openLeaderboardModal()" style="background:none; border:none; color:#3b82f6; font-size:11px; font-weight:bold; cursor:pointer;">Sıralamayı Gör 🏆</button>
+		</div>
 
         div class="map-wrapper" style="width: 100%; text-align: center;">
     <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 1024 544"> enable-background="new 0 0 1024 544" xml:space="preserve">
