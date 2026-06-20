@@ -158,6 +158,59 @@
 </head>
 <body>
 
+	 <div id="launch-menu-overlay">
+        <div class="login-box">
+            <h2>BATTLEZONE LIVE</h2>
+            <div id="main-menu-buttons">
+                <button class="menu-btn primary" onclick="showConnectionForm()">YENİ OYUN BAŞLAT</button>
+            </div>
+            
+            <div id="connection-form">
+                <div class="input-group">
+                    <label>Bölge Sayısı (10-100): <span id="sliderVal">100</span></label>
+                    <input type="range" id="regionSlider" min="10" max="100" step="10" value="100" 
+                           style="width: 100%;" oninput="document.getElementById('sliderVal').innerText = this.value">
+                </div>
+
+                <div class="input-group">
+                    <label>TikTok Kullanıcı Adı</label>
+                    <input type="text" id="initial-username" placeholder="Örn: canliyayinid">
+                </div>
+                <button class="menu-btn primary" onclick="startBattle()">SAVAŞI BAŞLAT ⚔️</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <div class="map-wrapper">
+            <svg id="turkey-map" viewBox="0 0 1024 544">
+                </svg>
+        </div>
+    </div>
+
+    <script>
+        // Rastgele Parlak Renk Fonksiyonu
+        function getBrightColor() {
+            return `hsl(${Math.floor(Math.random() * 360)}, 100%, 60%)`;
+        }
+
+        function startBattle() {
+            const count = document.getElementById("regionSlider").value;
+            // Buraya mevcut oyun başlatma fonksiyonunu bağla: connectToTikTokPlayStore();
+            document.getElementById("launch-menu-overlay").style.display = "none";
+            
+            // Haritayı boya ve slider'a göre filtrele
+            const paths = document.querySelectorAll('#turkey-map path');
+            paths.forEach((path, index) => {
+                path.style.display = (index < count) ? "block" : "none";
+                path.style.fill = getBrightColor(); // Her başlatmada rastgele parlak renk
+            });
+        }
+
+        function showConnectionForm() {
+            document.getElementById('main-menu-buttons').style.display = 'none';
+            document.getElementById('connection-form').style.display = 'block';
+        }
     
     <div class="extra-dashboard-panel">
         <div class="commands-helper-text">
