@@ -4,13 +4,14 @@
     <meta charset="UTF-8">
     <title>Battlezone Canlı Savaş</title>
     <style>
-        /* CSS kodların buraya gelecek (Mevcut stillerini korudum) */
-        body { background-color: #0b0f17; color: white; display: flex; flex-direction: column; align-items: center; }
+        body { background-color: #0b0f17; color: white; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; font-family: sans-serif; }
         #launch-menu-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: #0f172a; z-index: 9999; display: flex; align-items: center; justify-content: center; }
         .login-box { background: #111827; padding: 30px; border-radius: 16px; width: 300px; text-align: center; border: 2px solid #2563eb; }
         .menu-btn { width: 100%; background: #2563eb; color: white; padding: 12px; margin-top: 10px; border: none; border-radius: 8px; cursor: pointer; }
         #connection-form { display: none; margin-top: 15px; }
         .input-group { margin-bottom: 15px; text-align: left; }
+        #turkey-map { width: 100%; max-width: 800px; height: auto; }
+        path { display: none; stroke: #000; stroke-width: 0.5px; } /* Başlangıçta gizli */
     </style>
 </head>
 <body>
@@ -24,11 +25,10 @@
             
             <div id="connection-form">
                 <div class="input-group">
-                    <label>Bölge Sayısı: <span id="sliderVal">100</span></label>
+                    <label>Bölge Sayısı (10-100): <span id="sliderVal">100</span></label>
                     <input type="range" id="regionSlider" min="10" max="100" step="10" value="100" 
                            style="width: 100%;" oninput="document.getElementById('sliderVal').innerText = this.value">
                 </div>
-
                 <div class="input-group">
                     <label>TikTok Kullanıcı Adı</label>
                     <input type="text" id="initial-username" placeholder="Örn: canliyayinid">
@@ -38,35 +38,28 @@
         </div>
     </div>
 
-    <div class="app-container">
-        <div class="map-wrapper">
-            <svg id="turkey-map" viewBox="0 0 1024 544">
-                </svg>
-        </div>
-    </div>
+    <svg id="turkey-map" viewBox="0 0 1024 544">
+        </svg>
 
     <script>
         function startBattle() {
             const count = document.getElementById("regionSlider").value;
             const username = document.getElementById("initial-username").value;
             
-            if(!username) { alert("Kullanıcı adı girin!"); return; }
-
-            // Menüyü kapat
+            if(!username) { alert("Lütfen kullanıcı adı girin!"); return; }
             document.getElementById("launch-menu-overlay").style.display = "none";
             
-            // Haritayı slider'a göre ayarla
+            // Haritayı slider değerine göre göster
             const paths = document.querySelectorAll('#turkey-map path');
             paths.forEach((path, index) => {
                 path.style.display = (index < count) ? "block" : "none";
+                // Rastgele renk ata
+                path.style.fill = `hsl(${Math.random() * 360}, 100%, 60%)`;
             });
-
-            console.log("Oyun " + count + " bölge ile başlatıldı.");
         }
     </script>
 </body>
 </html>
-
 	
 
      <div id="splash-screen">
