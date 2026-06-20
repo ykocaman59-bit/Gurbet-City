@@ -2,61 +2,191 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>Battlezone Canlı Savaş</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Battlezone Canlı Savaş - 100 Bölge Özel Sürüm</title>
     <style>
-        body { background-color: #0b0f17; color: white; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; font-family: sans-serif; }
-        #launch-menu-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: #0f172a; z-index: 9999; display: flex; align-items: center; justify-content: center; }
-        .login-box { background: #111827; padding: 30px; border-radius: 16px; width: 300px; text-align: center; border: 2px solid #2563eb; }
-        .menu-btn { width: 100%; background: #2563eb; color: white; padding: 12px; margin-top: 10px; border: none; border-radius: 8px; cursor: pointer; }
-        #connection-form { display: none; margin-top: 15px; }
-        .input-group { margin-bottom: 15px; text-align: left; }
-        #turkey-map { width: 100%; max-width: 800px; height: auto; }
-        path { display: none; stroke: #000; stroke-width: 0.5px; } /* Başlangıçta gizli */
+        * {
+            box-sizing: border-box; margin: 0; padding: 0;
+            -webkit-user-select: none; user-select: none;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body { background-color: #0b0f17; color: #f1f5f9; overflow-x: hidden; overflow-y: auto; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding-bottom: 20px; }
+        
+        .app-container {
+            width: 100%;
+            max-width: 450px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 10px;
+        }
+
+        /* GİRİŞ ANİMASYONU MAVİ NEON */
+        #splash-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #070a12; z-index: 100000; display: flex; align-items: center; justify-content: center;
+            transition: opacity 0.8s ease-out, visibility 0.8s;
+        }
+        .animated-title {
+            font-size: 36px; font-weight: 900; color: #2563eb; letter-spacing: 4px;
+            text-shadow: 0 0 20px rgba(37, 99, 235, 0.6); animation: introBlast 2.3s ease-in-out forwards;
+            text-transform: uppercase; text-align: center;
+        }
+        @keyframes introBlast {
+            0% { transform: scale(0.7); opacity: 0; filter: blur(10px); }
+            40% { transform: scale(1.05); opacity: 1; filter: blur(0px); }
+            70% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1.2); opacity: 0; filter: blur(5px); }
+        }
+
+        /* GİRİŞ VE ANA MENÜ EKRANI */
+        #launch-menu-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+            z-index: 9999; display: flex; align-items: center; justify-content: center;
+            transition: opacity 0.4s ease-in-out;
+        }
+        .login-box { background: #111827; border: 2px solid #2563eb; border-radius: 16px; padding: 30px; width: 90%; max-width: 380px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.7); }
+        .login-box h2 { color: #2563eb; margin-bottom: 20px; font-size: 24px; text-transform: uppercase; letter-spacing: 1px; }
+        .menu-btn-group { display: flex; flex-direction: column; gap: 12px; }
+        .menu-btn { width: 100%; background: #1f2937; border: 1px solid #4b5563; color: white; border-radius: 8px; padding: 12px; font-size: 14px; font-weight: bold; cursor: pointer; transition: all 0.2s; text-transform: uppercase; }
+        .menu-btn:hover { background: #2563eb; border-color: #3b82f6; transform: translateY(-2px); }
+        .menu-btn.primary { background: #2563eb; border: none; }
+        .menu-btn.primary:hover { background: #1d4ed8; }
+
+        #connection-form { display: none; margin-top: 15px; text-align: left; }
+        .input-group { margin-bottom: 12px; }
+        .input-group label { display: block; color: #9ca3af; font-size: 11px; margin-bottom: 5px; text-transform: uppercase; }
+        .input-group input { width: 100%; background: #1f2937; border: 1px solid #4b5563; border-radius: 8px; padding: 10px 14px; color: #fff; font-size: 15px; outline: none; }
+
+        /* BAŞARI SIRALAMASI MODAL */
+        .custom-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); z-index: 10000; align-items: center; justify-content: center; }
+        .modal-box { background: #111827; padding: 22px; border-radius: 16px; width: 85%; max-width: 360px; position: relative; }
+        .modal-box.leader-border { border: 2px solid #fbbf24; }
+        .modal-close-x { position: absolute; top: 10px; right: 14px; font-size: 22px; color: #9ca3af; cursor: pointer; font-weight: bold; }
+        .modal-box h3 { margin-bottom: 12px; font-size: 18px; color: #fbbf24; text-align: center; text-transform: uppercase; }
+
+        /* ÜST PANEL VE HEDİYE AYARLARI */
+        header { background: #111827; border: 1px solid #1f2937; border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+        .header-top { display: flex; justify-content: space-between; align-items: center; }
+        .live-badge { background: #ef4444; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; }
+        
+        .gift-settings-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; background: #1e293b; padding: 6px; border-radius: 8px; }
+        .gift-setting-card { display: flex; flex-direction: column; align-items: center; font-size: 9px; color: #94a3b8; }
+        .gift-setting-card input { width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 4px; color: #22c55e; text-align: center; font-weight: bold; padding: 2px; margin-top: 3px; font-size: 11px; }
+
+        .score-board-row { display: flex; justify-content: space-between; background: #111827; border: 1px solid #1e293b; border-radius: 10px; padding: 8px; font-size: 11px; }
+
+        /* SOHBET PANELİ */
+        .chat-panel { height: 110px; background: #111827; border: 1px solid #1f2937; border-radius: 12px; display: flex; flex-direction: column; padding: 8px; }
+        .panel-title { color: #f59e0b; font-size: 11px; font-weight: bold; margin-bottom: 4px; text-transform: uppercase; }
+        .chat-box { flex: 1; overflow-y: auto; background: #0f172a; border: 1px solid #1e293b; border-radius: 6px; padding: 6px; }
+        .chat-msg { font-size: 11px; margin-bottom: 2px; }
+        .chat-user { font-weight: bold; color: #3b82f6; }
+
+        /* DOĞRUDAN SENİN GÖNDERDİĞİN RESMİ ARKA PLAN YAPAN 100 BÖLGELİ ALAN */
+        .map-wrapper {
+            background-image: url('1000193060.png'); /* Telefonundaki orijinal harita resmi */
+            background-size: cover;
+            background-position: center;
+            border: 2px solid #1e293b; 
+            border-radius: 14px; 
+            position: relative; 
+            width: 100%; 
+            aspect-ratio: 1000 / 500; 
+            overflow: hidden;
+        }
+        
+        /* 10x10=100 Eşit Parçaya Bölen Görünmez Izgara Sistemi */
+        .grid-map-container {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            grid-template-rows: repeat(10, 1fr);
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Bölgelerin Kendisi (Başlangıçta şeffaftır, haritayı kapatmaz) */
+        .map-zone-block {
+            border: 0.5px solid rgba(255, 255, 255, 0.08); /* Hafif sınır çizgileri */
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.4s ease;
+            background-color: rgba(0, 0, 0, 0.15); /* Resmi hafif karartır ki yazılar okunsun */
+        }
+
+        /* DAİRE YOK: Sadece Numara ve Oyuncu İsmi */
+        .zone-number { 
+            font-size: 12px; 
+            font-weight: 900; 
+            color: #ffffff; 
+            text-shadow: 1px 1px 3px #000, -1px -1px 3px #000; 
+        }
+        .zone-user { 
+            font-size: 7px; 
+            color: #fbbf24; 
+            background: rgba(11, 15, 23, 0.9); 
+            padding: 1px 3px; 
+            border-radius: 3px; 
+            white-space: nowrap; 
+            margin-top: 1px; 
+            display: none; 
+            text-shadow: none;
+        }
+
+        /* KURALLAR PANELİ */
+        .rules-footer-panel { background: #111827; border: 2px solid #ef4444; border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 6px; }
+        .rules-main-title { color: #ef4444; font-size: 12px; font-weight: bold; text-align: center; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #1e293b; padding-bottom: 4px; }
+        .rules-content-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+        .rule-item-box { background: #0f172a; border: 1px solid #232d3f; border-radius: 6px; padding: 6px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; }
+        .rule-left { color: #94a3b8; font-weight: 500; }
+        .rule-right { color: #22c55e; font-weight: bold; }
+        .command-bar-info { background: #1e293b; color: #fbbf24; font-weight: bold; padding: 5px; border-radius: 6px; text-align: center; font-size: 10px; }
+
+        /* SORGU DASHBOARD */
+        .extra-dashboard-panel { background: #111827; border: 1px solid #1f2937; border-radius: 12px; padding: 10px; display: flex; gap: 10px; align-items: stretch; }
+        .commands-helper-text { flex: 1; font-size: 10px; color: #94a3b8; line-height: 1.4; display: flex; flex-direction: column; justify-content: center; }
+        .commands-helper-text b { color: #3b82f6; text-transform: uppercase; }
+        .query-army-box { width: 170px; background: #0f172a; border: 2px solid #f59e0b; border-radius: 12px; padding: 8px; text-align: center; display: flex; flex-direction: column; justify-content: center; }
+        .query-title { color: #f59e0b; font-size: 10px; font-weight: bold; text-transform: uppercase; margin-bottom: 2px; }
+        .query-count { font-size: 24px; font-weight: 900; color: #ffffff; margin: 2px 0; }
+        .query-desc { color: #64748b; font-size: 8px; }
     </style>
 </head>
 <body>
 
-    <div id="launch-menu-overlay">
-        <div class="login-box">
-            <h2>BATTLEZONE LIVE</h2>
-            <div id="main-menu-buttons">
-                <button class="menu-btn" onclick="document.getElementById('connection-form').style.display='block'; this.parentElement.style.display='none';">YENİ OYUN BAŞLAT</button>
-            </div>
-            
-            <div id="connection-form">
-                <div class="input-group">
-                    <label>Bölge Sayısı (10-100): <span id="sliderVal">100</span></label>
-                    <input type="range" id="regionSlider" min="10" max="100" step="10" value="100" 
-                           style="width: 100%;" oninput="document.getElementById('sliderVal').innerText = this.value">
-                </div>
-                <div class="input-group">
-                    <label>TikTok Kullanıcı Adı</label>
-                    <input type="text" id="initial-username" placeholder="Örn: canliyayinid">
-                </div>
-                <button class="menu-btn" onclick="startBattle()">SAVAŞI BAŞLAT ⚔️</button>
-            </div>
+    
+    <div class="extra-dashboard-panel">
+        <div class="commands-helper-text">
+            <b>OYUN TALİMATLARI:</b> Bölgeye girmek için "join [numara]" yazman yeterli!
+        </div>
+        <div class="query-army-box">
+            <div class="query-title">Aktif Bölgeler</div>
+            <div class="query-count" id="active-count">0</div>
+            <div class="query-desc">toplam işgal edilen bölge</div>
         </div>
     </div>
 
-    <svg id="turkey-map" viewBox="0 0 1024 544">
-        </svg>
+    <div class="map-wrapper" style="width: 100%; margin-top: 20px;">
+        <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 1024 544" enable-background="new 0 0 1024 544" xml:space="preserve">
+            </svg>
+    </div>
 
     <script>
-        function startBattle() {
-            const count = document.getElementById("regionSlider").value;
-            const username = document.getElementById("initial-username").value;
+        document.addEventListener("DOMContentLoaded", function() {
+            const paths = document.querySelectorAll('#Layer_1 path');
+            const renkler = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#a855f7', '#ec4899'];
             
-            if(!username) { alert("Lütfen kullanıcı adı girin!"); return; }
-            document.getElementById("launch-menu-overlay").style.display = "none";
-            
-            // Haritayı slider değerine göre göster
-            const paths = document.querySelectorAll('#turkey-map path');
-            paths.forEach((path, index) => {
-                path.style.display = (index < count) ? "block" : "none";
-                // Rastgele renk ata
-                path.style.fill = `hsl(${Math.random() * 360}, 100%, 60%)`;
+            paths.forEach((path) => {
+                let randomRenk = renkler[Math.floor(Math.random() * renkler.length)];
+                path.style.fill = randomRenk;
+                path.style.stroke = '#111827';
+                path.style.strokeWidth = '0.5px';
             });
-        }
+        });
     </script>
 </body>
 </html>
